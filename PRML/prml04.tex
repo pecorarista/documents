@@ -1,0 +1,2139 @@
+\documentclass[10pt,%
+hyperref={unicode}]{beamer}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,accents,amsthm}
+\usepackage{datetime}
+%\usepackage[safe]{tipa}
+\usepackage{luatextra}
+\usepackage{luatexja-otf}
+\usepackage{luatexja-fontspec}
+\usepackage[hiragino-pron]{luatexja-preset}
+\usepackage{polyglossia}
+\setmainlanguage{english}
+%\setotherlanguage{russian}
+\usepackage{tikz}
+\usepackage{tikz-3dplot}
+\usepackage{pgfplots}
+\usetikzlibrary{arrows,quotes,angles}
+\usepackage{scrextend}
+\usepackage{natbib}
+\deffootnote[10pt]{10pt}{10pt}{\makebox[10pt][l]{\thefootnotemark\hspace{10pt}}}
+\usetheme{default}
+\usecolortheme{metropolis}
+\usefonttheme{professionalfonts}
+\usepackage[framemethod=tikz]{mdframed}
+\setmainfont[BoldFont=Hiragino Kaku Gothic ProN W6]%
+{Hiragino Kaku Gothic ProN W3}
+\setmainjfont[BoldFont=Hiragino Kaku Gothic ProN W6]%
+{Hiragino Kaku Gothic ProN W3}
+\setsansfont[BoldFont=Hiragino Kaku Gothic ProN W6]{Hiragino Kaku Gothic ProN W3}
+%\setmonofont{DejaVu Sans Mono}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\id}{id}
+\DeclareMathOperator*{\rank}{rank}
+\DeclareMathOperator*{\sgn}{sgn}
+\DeclareMathOperator*{\tr}{tr}
+\DeclareMathOperator*{\var}{var}
+\newcommand{\parallelsl}{\mathbin{\!/\mkern-5mu/\!}}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{itemize/enumerate subbody begin}{\vspace{1em}}
+\setbeamertemplate{caption}{\raggedright\insertcaption\par}
+\newenvironment{wideitemize}{\itemize\addtolength{\itemsep}{1em}}{\enditemize}
+\newenvironment{wideenumerate}{\enumerate\addtolength{\itemsep}{1em}}{\endenumerate}
+\addtobeamertemplate{navigation symbols}{}{%
+\usebeamerfont{footline}%
+\usebeamercolor[fg]{footline}%
+\hspace{1em}%
+\insertframenumber/\inserttotalframenumber
+}
+\makeatletter
+\def\tagform@#1{\maketag@@@{{\fontfamily{cmr}\selectfont(#1)}\@@italiccorr}}
+\makeatother
+\newcommand{\braref}[1]{{\fontfamily{cmr}\selectfont (\ref{#1})}}
+\makeatletter
+\renewenvironment{proof}{\par%
+\pushQED{\qed}\normalfont\topsep6\p@\@plus6\p@\relax\trivlist%
+\item[\hskip\labelsep{\bfseries 証明}\hskip\labelsep]\ignorespaces}{\popQED\endtrivlist\@endpefalse}
+\makeatother
+\renewcommand{\qedsymbol}{\rule{5pt}{10pt}}
+\pgfplotsset{
+    width=5cm,
+    compat=newest,
+    xlabel near ticks,
+    ylabel near ticks
+}
+\title{PRML 第4章}
+\institute{総合研究大学院大学 博士前期1年\newline\newline\texttt{miyazawa-a@nii.ac.jp}}
+\author{宮澤　彬}
+\date{\today}
+\begin{document}
+\nocite{bishop2008}
+\begin{frame}
+\maketitle
+\end{frame}
+
+\section{はじめに}
+
+\begin{frame}
+    \frametitle{はじめに}
+    \begin{wideitemize}
+        \item 計算過程を別ファイルに分けようと思いましたが，
+            面倒なので分けませんでした．そのためスライドが
+            すこしごちゃごちゃしています．すみません．
+        \item このスライドの{\LuaLaTeX}のソースコードは
+            \href{https://github.com/pecorarista/documents}{\texttt{https://github.com/pecorarista/documents}}に
+            あります．
+        \item 自分の好みにより教科書とは違う表記をしている箇所があります．
+            \begin{wideitemize}
+                \item 転置を${}^\top$ではなく${}'$で表しています．
+                \item $\tr (A'B)$は内積の公理を満たすので$\langle A, B\rangle$と書きます．
+                \item 勾配の代わりに導関数を使っている箇所があります．
+                \item 誤解の恐れがない限りベクトルを太字で書きません．
+                \item 左辺を右辺で定義するとき$(\text{左辺}):=(\text{右辺})$と書きます．
+            \end{wideitemize}
+    \end{wideitemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{分類問題を解く}
+    入力$x$に対して，
+    離散クラス$\mathcal{C}_1,\,\ldots,\,\mathcal{C}_k$のただ1つを割り当てたい．
+    つまり入力空間をいくつかの\textbf{決定領域}(decision region)に分離したい．
+
+    \bigskip
+
+    決定領域の境界は\textbf{決定境界}(decision boundary)，あるいは
+    \textbf{決定面}(decision surface)などと呼ばれる．
+
+    \bigskip
+
+    しばらくは\textbf{線形識別モデル}を考える．
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{線形識別モデルとは}
+    線形識別モデルは決定面が，$x$の線形関数であり，
+    $D$次元入力空間に対して，その決定面が$D - 1$次元の超平面
+    で定義されるもの．
+
+    \bigskip
+
+    線形決定面で正しく各クラスに分類できるデータの集合は
+    \textbf{線形分離可能}であると言われる．
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{目的変数の表し方について}
+    目的変数の表し方はいろいろあるが，
+    2変数の表し方で一般的なのは
+    目的変数を$t \in \{0,\,1\}$として
+    $t = 1$で$\mathcal{C}_1$を，
+    $t = 0$で$\mathcal{C}_2$を表す方法である．
+
+    \bigskip
+
+    $K > 2$クラスの場合は1-of-K表記法を使用する．
+    この表記法では
+    \begin{align*}
+        t = (0\ \cdots\ 0
+            \ \raisebox{.7pt}{$\stackrel{\substack{i \\ \smallsmile}}{1}$}
+            \ 0\ \cdots\ 0)' \in \{0,\,1\}^K
+    \end{align*}
+    がクラス$\mathcal{C}_i$に対応する．
+\end{frame}
+
+\begin{frame}
+    \frametitle{分類問題に対する3つのアプローチ}
+    分類問題に対するアプローチは大きく3つに分けられる．
+
+    \bigskip
+
+    \begin{wideenumerate}
+        \item \textbf{識別関数}(discriminant function)を構築する方法．
+            \begin{wideitemize}
+                \item パーセプトロンやSVMなど
+            \end{wideitemize}
+        \item 事後確率$p(\mathcal{C}_k|x)$を直接モデル化する方法（\textbf{識別モデル}）．
+            \begin{wideitemize}
+                \item ロジスティック回帰モデルなど
+            \end{wideitemize}
+        \item $p(\mathcal{C}_k)$と$p(x|\mathcal{C}_k)$を生成し，
+            これらから$p(\mathcal{C}_k|x)$を求める方法（\textbf{生成モデル}）．
+            \begin{wideitemize}
+                \item ナイーブベイズなど
+            \end{wideitemize}
+    \end{wideenumerate}
+
+    \bigskip
+    %この本も結構詳しい Murphy, Kevin P. Machine learning: a probabilistic perspective. MIT press, 2012.
+    %Section 8.6
+    これらの比較は1.5.4で詳しく扱った\footnote{\cite{murphy2012}の8.6も詳しい．}．
+\end{frame}
+
+\begin{frame}
+    \frametitle{第3章との違い}
+    第3章の線形回帰モデルでは$y : x \in \mathbb{R}^D \mapsto  w'x + w_0 \in \mathbb{R}$のような
+    関数を使ってきた．
+    しかし分類問題では離散値であるクラスラベルを出力してほしいので，
+    非線形関数$f$を噛ませる．
+    \begin{align}
+        y(x) = f(w'x + b) \label{4.3} \tag{4.3}
+    \end{align}
+    $f$は\textbf{活性化関数}(activation function)と呼ばれる．
+    $f$は非線形であっても，決定面は線形であるから，
+    \braref{4.3}で表現されるモデルのクラスを
+    \textbf{一般化線形モデル}(generalized linear model)
+    と呼ぶ．
+\end{frame}
+
+\section{識別関数（判別関数）}
+\subsection{2クラス}
+\begin{frame}
+    \frametitle{2クラスの線形識別関数}
+    最も簡単な線形識別関数は，入力ベクトル$x$の線形関数
+    \begin{align}
+        y(x) = w'x + w_0 \tag{4.4}
+    \end{align}
+    で与えられる．$w$を\textbf{重みベクトル}，$w_0$を\textbf{バイアスパラメータ}と呼ぶ．
+
+    \bigskip
+
+    このとき決定境界は超平面$\pi: y(x) = 0$となる．
+
+    \bigskip
+
+    \begin{center}
+    \tdplotsetmaincoords{70}{110}
+        \begin{tikzpicture}[scale=2.5,tdplot_main_coords]
+            \def\x{0.7}
+            \def\y{0.8}
+            \def\u{1}
+            \def\z{0.3}
+            \filldraw[
+                %draw=red,%
+                fill=gray!20,%
+            ]
+            (\x,-\u,-\z)
+            -- (0,\y,0)
+            -- (-\x,\u,\z)
+            -- (0,-\y,0)
+            -- cycle;
+            \def\nx{2 * \z * \y}
+            \def\ny{0}
+            \def\nz{2 * \x * \y}
+            \def\norm{sqrt(\nx * \nx + \ny * \ny + \nz * \nz)}
+            \def\r{0.7}
+            \def\m{0.6}
+            \draw[->]
+            % (0,0,0) node[anchor=north west]{$\overline{x}$}
+            % -- ({\r * \nx / \norm},{\r * \ny/ \norm},{\r * \nz / \norm}) node[anchor=south]{$x$};
+            (0,0,0)
+            -- ({\m * \r * \nx / \norm},{\m * \r * \ny/ \norm},{\m * \r * \nz / \norm})
+            node[anchor=west]{$w$}
+            -- ({\r * \nx / \norm},{\r * \ny/ \norm},{\r * \nz / \norm});
+            \node at (-0.5,0.5 * \y,0) {$\pi$};
+        \end{tikzpicture}
+    \end{center}
+\end{frame}
+
+\begin{frame}
+    \frametitle{$y(x)$の性質}
+    $y(x)/\|w\|$は$x$から平面までの（符号付き）距離を与える．
+
+    \bigskip
+
+    \begin{proof}Hilbert空間の射影定理より，任意の点$x$から
+    超平面$\pi$への最短距離を与える点$x_\bot \in \pi$がただ1つ存在し，
+    $(x - x_\bot) \bot \pi$を満たす．したがって適当な実数$r$を使って
+    \begin{align*}
+        x - x_\bot = r \frac{w}{\|w\|}
+    \end{align*}
+    と書ける．両辺と$w$の標準内積をとって，$w' x_\bot + w_0 = 0$を使えば，
+    \begin{gather*}
+        w' x - w' x_\bot = r\|w\| \\
+        r = \frac{y(x)}{\|w\|}
+    \end{gather*}
+    を得る．\end{proof}
+
+\end{frame}
+
+\subsection{多クラス}
+\begin{frame}
+    \frametitle{多クラスに拡張すると生じる問題(1)}
+    $K = 2$の線形識別を$K > 2$に拡張する．単純に2クラス識別関数を組み合わせると
+    問題が生じる．
+
+    \bigskip
+
+    \textbf{1対他分類器}(one-versus-the-rest classifier)を使う方法．
+
+    \smallskip
+
+    \begin{center}
+        \begin{tikzpicture}[scale=0.5]
+            \draw[thick,red] (-2,-2) -- (6,6);
+            \draw[thick,red] (1,6) -- (7,-3);
+            \node at (3,5) {$?$};
+            \node at (0.5,3) {$\mathcal{R}_1$};
+            \node at (2.8,1) {$\mathcal{R}_3$};
+            \node at (4.7,2.7) {$\mathcal{R}_2$};
+            \draw[<->,thick] (-1,1) node[anchor=south] {$\mathcal{C}_1$}
+            -- (1,-1) node[anchor=north] {$\mathrm{not}\ \mathcal{C}_1$};
+            \draw[<->,thick] (3.8,-1) node[anchor=north] {$\mathrm{not}\ \mathcal{C}_2$}
+            -- (6.2,0.6) node[anchor=south] {$\mathcal{C}_2$};
+        \end{tikzpicture}
+    \end{center}
+\end{frame}
+
+\begin{frame}
+    \frametitle{多クラスに拡張すると生じる問題(2)}
+    \textbf{1対1分類器}(one-versus-on classifier)
+
+    \bigskip
+
+    $\binom{K}{2} = K(K - 1) / 2$個の
+    2クラス識別関数を導入する．各点は識別関数の多数決で分類される．
+
+    \smallskip
+
+    \begin{center}
+        \begin{tikzpicture}[scale=0.5]
+            \def\x{-2}
+            \def\y{2.95}
+            \draw[thick,red] (\x,\x) -- (\y,\y);
+            \draw[thick,dotted,red] (\y,\y) -- (6,6);
+            \def\t{1.83}
+            \def\z{1 + \t * 2}
+            \def\u{6 - \t * 3}
+            \draw[thick,red] (0,7.5) -- (\z,\u);
+            \draw[thick,dotted,red] (\z,\u) -- (7,-3);
+            \def\s{0.39}
+            \def\v{-2.5 + \s * 9.5}
+            \def\w{2 - \s * 2}
+            \def\ss{1.1}
+            \def\vv{-2.5 + \ss * 9.5}
+            \def\ww{2 - \ss * 2}
+            \draw[thick,dotted,red] (-2.5,2) -- (\v,\w);
+            \draw[thick,red] (\v,\w) -- (\vv,\ww);
+            \node at (3,1.5) {$?$};
+            \node at (0.5,3) {$\mathcal{R}_1$};
+            \node at (2.8,0) {$\mathcal{R}_2$};
+            \node at (4.7,2.7) {$\mathcal{R}_3$};
+            \draw[<->,thick] (-1,1) node[anchor=east] {$\mathcal{C}_1$}
+            -- (1,-1) node[anchor=north] {$\mathcal{C}_2$};
+            \def\a{3.8}
+            \def\b{-6}
+            \draw[<->,thick] (3.8 - \a,-1 - \b) node[anchor=north east] {$\mathcal{C}_1$}
+            -- (6.2 - \a,0.6 - \b) node[anchor=south west] {$\mathcal{C}_3$};
+            \def\d{0.3}
+            \def\e{7}
+            \def\f{-1.5}
+            \def\k{\e + \d * 2}
+            \def\l{\f + \d * 9.5}
+            \draw[<->,thick] (\e,\f) node[anchor=north] {$\mathcal{C}_2$}
+            -- (\k,\l) node[anchor=south] {$\mathcal{C}_3$};
+        \end{tikzpicture}
+    \end{center}
+\end{frame}
+
+\begin{frame}
+    \frametitle{曖昧な領域をなくしたい(1)}
+    以下の$K$個の線形関数
+    \begin{align*}
+        y_k(x) = w_k'x + w_{k0} \quad (k = 0,\,\ldots,\,K) \tag{4.9}
+    \end{align*}
+    を作り，すべての$j\,(\neq k)$で
+    \begin{align*}
+        y_k(x) > y_j(x)
+    \end{align*}
+    すなわち
+    \begin{align*}
+        (w_k - w_j)' x + (w_{k0} - w_{j0}) > 0
+    \end{align*}
+    が成り立つ場合に$x$は$\mathcal{C}_k$に分類されるとする．
+\end{frame}
+
+\begin{frame}
+    \frametitle{曖昧な領域をなくしたい(2)}
+    前のページで紹介した基準で「謎の領域」が存在しないことを示す．
+
+    \bigskip
+
+    任意の点$x$をとる．
+    $I := \argmax_i \{y_i(x)\}\,(\neq \emptyset)$としたとき$|I| = 1$ならば
+    $\mathcal{C}_{i_0}\,(i_0 \in I)$に一意に分類できる．
+    $|I| > 1$ならば，任意の異なる$i,\,j \in I$について
+    $y_i(x) = y_j(x)$となっているので$x$が$\mathcal{C}_i$と$\mathcal{C}_j$の
+    決定境界上にあることが分かる．
+
+    \bigskip
+
+    \begin{center}
+        \begin{tikzpicture}[scale=0.7]
+            \def\x{-1}
+            \def\y{7}
+            \def\z{-1}
+            \def\u{-1}
+            \def\v{3}
+            \def\w{-1}
+            \def\s{0.3}
+            \def\t{2}
+            \def\k{2}
+            \def\a{0}
+            \def\b{0}
+            \draw[thick,red] (\a, \b) -- (\s * \x, \s * \y);
+            \draw[thick,red] (\a, \b) -- (\t * \z, \t * \u);
+            \draw[thick,red] (\a, \b) -- (\k * \v, \k * \w);
+            \node at (\a - 1.3, \b + 0.5) {$\mathcal{R}_i$};
+            \node at (\a + 0.5, \b - 1.3) {$\mathcal{R}_j$};
+            \node at (\a + 1,\b + 1) {$\mathcal{R}_k$};
+        \end{tikzpicture}
+    \end{center}
+\end{frame}
+
+\begin{frame}
+    \frametitle{決定領域の凸性}
+    決定領域は凸集合である．
+
+    \bigskip
+
+    \begin{proof}
+    $x_\mathrm{A},\,x_\mathrm{B}$が共に$\mathcal{C}_k$に分類されているとする．
+    これらの凸結合$\hat{x} := \lambda x_\mathrm{A} + (1 - \lambda) x_\mathrm{B}$について
+    \begin{align*}
+        &(w_k - w_j)'\hat{x} + (w_{k0} - w_{j0}) \\
+        &= \lambda (w_k - w_j)'x_\mathrm{A} + \lambda (w_{k0} - w_{j0}) \\
+        &\qquad + (1 - \lambda) (w_k - w_j)' x_\mathrm{B} + (1 - \lambda) (w_{k0} - w_{j0})
+        >0
+    \end{align*}
+    が成り立つので$\hat{x}$も$\mathcal{C}_k$に分類される．
+    \end{proof}
+\end{frame}
+
+\begin{frame}
+    \frametitle{決定領域の単連結性(1)}
+
+    決定領域$\mathcal{R}_k\,(k = 1,\,\ldots,\,K)$は弧状連結
+    （任意の2点をとったとき，それら結ぶ連続曲線が存在する）であり，
+    更に単連結（ループを連続的に変形して1点に縮められる）である．
+
+    \smallskip
+
+    \begin{figure}
+        \caption{\only<1>{単連結}\only<2>{単連結ではない}}
+        \begin{center}
+            %http://www.texample.net/tikz/examples/homotopy/
+            %http://tex.stackexchange.com/questions/74168/how-can-i-draw-an-egg-using-tikz
+            \begin{tikzpicture}[>=stealth']
+                \def\eggheight{2.5}
+                \path[fill=red!60]
+                plot[domain=-pi:pi,samples=100]
+                ({.78*\eggheight *cos(\x/4 r)*sin(\x r)+0.5},{-\eggheight*(cos(\x r))})
+                -- cycle;
+                \def\out{23}
+                \def\in{65}
+                \def\return{90}
+                \def\midx{2.2}
+                \def\midy{1.5}
+                \node (M) at (\midx,\midy) {};
+                \node [label=below:$p_0$]  (p0) at (-0.5,-1) {$\bullet$};
+                \draw [-] (p0.center) to[in=-\in,out=\out+10]++(0.6 * \midx, 0.7 * \midy)
+                to[out=180-\in,in=\return-1] (p0.center);
+                \draw [->] (p0.center) to[in=-\in,out=\out]++(M)
+                to[out=180-\in,in=\return] (p0.center);
+                \pause
+                \path [draw=none,fill=white] (0.5,-0.12) circle (0.2);
+            \end{tikzpicture}
+        \end{center}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{決定領域の単連結性(2)}
+
+    \begin{proof}
+    凸性から弧状連結であることは明らかである．
+
+    $\mathcal{R}_k$の任意の点$p_0$をとり，
+    $\ell:[0,\,1] \to \mathcal{R}_k$を$p_0$を基点とした$\mathcal{R}_k$内の
+    任意のループとする．
+    $p_0$に留まり続けるループを$\tilde{p}_0$と表すことにする．
+    このとき
+    \begin{align*}
+        H(t,\,s) := s \tilde{p}_0(t) + (1 - s) \ell (t)
+    \end{align*}
+    と定めれば，凸性から任意の$(t,\,s)$で$H(t,\,s) \in \mathcal{R}_k$である．
+    $H$は
+    \begin{gather*}
+        H(0,\,s) = H(1,\,s) = p_0,\\
+        H(t,\,1) = \ell(t),\,H(t,\,1) = \tilde{p}_0(t)
+    \end{gather*}
+    を満たしているので$\ell \simeq \tilde{p}_0$であり，したがって$\mathcal{R}_k$は単連結である．
+    \end{proof}
+\end{frame}
+
+
+\subsection{分類における最小二乗}
+\begin{frame}
+    \frametitle{最適なパラメータを求める（最小二乗法）(1)}
+    まずは二乗和誤差を最小化する方法を使ってみる．
+    識別関数は
+    \begin{align*}
+        y_k (x) = w_k'x + w_{k0},\quad k = 1,\,\ldots,\,K
+    \end{align*}
+    と表されている．これはベクトルを使って
+    \begin{align*}
+        y(x) = \widetilde{W}'\tilde{x}
+    \end{align*}
+    と書ける．ただし，
+    \begin{gather*}
+        \widetilde{W} :=
+        \left(\begin{array}{cccc}
+                w_{10}  & w_{20} & \cdots & w_{K0} \\
+                w_{11}  & w_{21} & \cdots & w_{K1} \\
+                \vdots  & \vdots & \ddots & \vdots \\
+                w_{1D}  & w_{2D} & \cdots & w_{KD}
+        \end{array}\right),\,
+        \tilde{x} :=
+        \left(\begin{array}{c}
+                x_0 \\
+                x_1 \\
+                \vdots \\
+                x_D
+        \end{array}\right),\,x_0 := 1
+    \end{gather*}
+    とした．
+\end{frame}
+
+\begin{frame}
+    \frametitle{二乗和誤差の最小化(1)}
+    学習データ$\{(x_n,\,t_n)\}_{n = 1,\,\ldots,\,N}$が与えられたとして，
+    \begin{align*}
+        \widetilde{X} :=
+        \left(\begin{array}{c}
+            x_1' \\
+            \vdots \\
+            x_N'
+        \end{array}\right),\quad
+        \widetilde{T} :=
+        \left(\begin{array}{c}
+            t_1' \\
+            \vdots \\
+            t_N'
+        \end{array}\right)
+    \end{align*}
+    と定める．このとき二乗和誤差関数は
+    \begin{align*}
+        E_\mathrm{D}(\widetilde{W})
+        &:= \frac{1}{2}\tr ((\widetilde{X}\widetilde{W} - \widetilde{T})'
+        (\widetilde{X}\widetilde{W} - \widetilde{T})) \\
+        &= \frac{1}{2}\| \widetilde{X}\widetilde{W} - \widetilde{T} \|^2
+    \end{align*}
+    である．
+\end{frame}
+
+\begin{frame}
+    \frametitle{二乗和誤差関数の最小化(2)}
+    $E_\mathrm{D}(\widetilde{W})$を微分する．成分ごとに
+    偏微分してもよいがFréchet導関数を求めるほうが簡単である．
+    \begin{align*}
+        &
+        \langle \widetilde{X}(\widetilde{W} + H) - \widetilde{T},
+             \widetilde{X}(\widetilde{W} + H) - \widetilde{T}\rangle
+        -
+        \langle \widetilde{X}\widetilde{W} - \widetilde{T},
+             \widetilde{X}\widetilde{W} - \widetilde{T} \rangle \\
+        &=
+        2 \langle
+            \widetilde{X}\widetilde{W} - \widetilde{T}, \widetilde{X}\widetilde{H}
+        \rangle
+        + \|\widetilde{X}H\|^2 \\
+        &=
+        2 \langle
+        \widetilde{X}'(\widetilde{X}\widetilde{W} - \widetilde{T}), H
+        \rangle
+        + \|\widetilde{X}H\|^2
+    \end{align*}
+    より$DE_\mathrm{D}(\widetilde{W})(H) = \langle \widetilde{X}'(\widetilde{X}\widetilde{W} - \widetilde{T}),H\rangle$である．
+    したがって最小値を与える$\widetilde{W}$は
+    \begin{align*}
+        \widetilde{X}'(\widetilde{X}\widetilde{W} - \widetilde{T}) = O
+    \end{align*}
+    の解である．これを解いて
+    \begin{align*}
+        \widetilde{W} = (X'X)^{-1}\widetilde{X}'T = \widetilde{X}^\dagger T
+    \end{align*}
+    を得る．
+\end{frame}
+
+\begin{frame}
+    \frametitle{最小二乗解の実用性}
+    以下のような問題がある．
+
+    \smallskip
+
+    \begin{wideenumerate}
+        \item 外れ値に敏感である（頑健でない）
+
+            \smallskip
+
+            決定境界から遠く離れた「正しすぎる」予測にペナルティを与えてしまう．
+
+            →7.1.2節で別の誤差関数を紹介
+
+        \item 2値目的変数と，最小二乗法が仮定するガウス分布との相性の悪さ
+
+            \smallskip
+
+            最小二乗法は条件付き確率分布にガウス分布を仮定した場合の
+            最尤法であり，一方2値目的変数ベクトルは
+            明らかにガウス分布からかけ離れているので，
+            最小二乗法が使えないのは当たり前のことである．
+
+            →適切な確率モデルを採用すれば，
+            最小二乗法よりもよい特性を持つ分類法が得られる．
+    \end{wideenumerate}
+\end{frame}
+
+\subsection{フィッシャーの線形判別}
+\begin{frame}
+    \frametitle{フィッシャーの線形判別(1)}
+    線形識別モデルは，$D$次元の入力ベクトルを
+    1次元空間に写すので情報の損失が発生する．
+
+    \bigskip
+
+    損失が起こるのは仕方ないが，
+    $D$次元空間では分離されていたクラスが
+    1次元空間で重なり合ってしまうことは極力避けたい．
+
+    \bigskip
+
+    そこでクラスの平均を結ぶ直線の正射影の長さが最大に
+    なるような$w$をとる．
+
+\end{frame}
+
+
+\begin{frame}
+    \frametitle{フィッシャーの線形判別(2)}
+    $\|w\| = 1,\, m_k := (1 / N_k)\sum_{n \in \mathcal{C}_k}x_n$
+    とすると，正射影の長さ$\ell$は
+    \begin{align*}
+        \ell &= \big|\|m_2 - m_1\|\cos \theta \big|\\
+             &= |w'(m_2 - m_1)|
+    \end{align*}
+    である．Cauchy-Schwarzの不等式より
+    $\ell$は$w \parallelsl (m_2 - m_1)$のとき
+    最大になる．
+
+    \smallskip
+
+    \begin{center}
+        %http://tex.stackexchange.com/questions/80033/draw-the-proper-angle-arc
+        \begin{tikzpicture}[>=stealth']
+            \def\x{4}
+            \def\y{2}
+            \draw [thick,->,blue] (0,0) -- (\x,\y);
+            \node [anchor=south east] at (0,0) {$m_1$};
+            \node [anchor=south] at (\x,\y) {$m_2$};
+            \draw [thick,-] (0,0) -- (\x,0);
+            \draw [thick,->,green] (0,-0.2) -- (1.1,-0.2);
+            \node [anchor=north] at (1.1,-0.3) {$w$};
+            \node [anchor=north] at (1,0.5) {$\theta$};
+            \path [clip] (\x,\y) -- (0,0) -- (\x,0) -- cycle;
+            \node [circle,draw=orange,minimum size=40] at (0,0) (circ) {};
+            \draw [thick,->,blue] (0,0) -- (\x,\y);
+            \draw [thick,-] (0,0) -- (\x,0);
+        \end{tikzpicture}
+    \end{center}
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{フィッシャーの判別基準}
+    クラスの平均が離れたところに射影されても，
+    クラス全体が重なり合うように射影されてしまっては意味がない．
+
+    \bigskip
+
+    同一クラス内にあるデータは射影された後も
+    まとまっていてほしいので
+    \begin{align}
+        s_k^2 := \sum_{n \in \mathcal{C}_k}(w'x_n - w'm_k)^2 \tag{4.24}
+    \end{align}
+    を小さく抑えなければならない．
+
+    \bigskip
+
+    以上の考察をまとめると
+    \begin{align}
+        J(w) := \frac{(w'm_2 - w'm_1)^2}{s_1^2 + s_2^2} \tag{4.25}
+    \end{align}
+    を最大化すればよいことが分かる．
+    $J(w)$はフィッシャーの判別基準と呼ばれる．
+\end{frame}
+
+\begin{frame}
+    \frametitle{フィッシャーの判別基準の最大化(1)}
+    \textbf{クラス間共分散行列}(between-class covariance matrix)
+    \footnote{フィッシャー判別基準に関してぐぐってみたところ
+    どちらかというと“covariance”ではなく“scatter”と呼ばれているほうが多い印象を受けた．}
+    \begin{align}
+        S_\mathrm{B} = (m_2 - m_1)(m_2 - m_1)' \tag{4.27}
+    \end{align}
+    と総\textbf{クラス内共分散行列}(within-class covariance matrix)
+    \begin{align}
+        S_\mathrm{W} = \sum_{n \in \mathcal{C}_1} (x_n - m_1)(x_n - m_1)' +
+        \sum_{n \in \mathcal{C}_2} (x_n - m_2)(x_n - m_2)' \tag{4.28}
+    \end{align}
+    を使って$J(w)$を書き直すと
+    \begin{align}
+        J(w) = \frac{w'S_\mathrm{B}w}{w'S_\mathrm{W}w} \tag{4.26}
+    \end{align}
+    となる\footnote{レイリー商(Rayleigh quotient)の形だ．}．
+\end{frame}
+
+\begin{frame}
+    \frametitle{フィッシャーの判別基準の最大化(2)}
+    $J$を微分すると
+    \begin{align*}
+        DJ(w) = (2 w'S_\mathrm{B}(w'S_\mathrm{W}w)
+        - 2 w'S_\mathrm{B}w(w'S_\mathrm{W}))
+                     \big/(w'S_\mathrm{W}w)^2
+    \end{align*}
+    であるから，$DJ(w)=O$として
+    \begin{align}
+        (w'S_\mathrm{W}w)S_\mathrm{B}w = (w'S_\mathrm{B}w)S_\mathrm{W}w \tag{4.29}
+    \end{align}
+    を解く．
+    向きさえ分かればよいので
+    %argmax J(w) が {λv | λ ∈ R\{0}} の形をしている
+    $w'S_\mathrm{B}w = 1,\,w'S_\mathrm{W}w = 1$となるように$w$を置き換えていくと
+    \begin{align*}
+        S_\mathrm{W}^{-1} S_\mathrm{B}w = w
+    \end{align*}
+    となる．
+    $S_\mathrm{B}w = (m_2 - m_1)((m_2 - m_1)'w) \parallelsl (m_2 - m_1)$より
+    \begin{align}
+        w \parallelsl S_\mathrm{W}^{-1} (m_2 - m_1) \tag{4.30} \label{fisherld}
+    \end{align}
+    を得る．\braref{fisherld}は\textbf{フィッシャーの線形判別}(Fisher%
+    {\addfontfeature{CharacterWidth=Proportional}'}s linear discriminant)と呼ばれる．
+\end{frame}
+
+\subsection{最小二乗との関連}
+\begin{frame}
+    \frametitle{最小二乗との関連(1)}
+    この節では，前節で見たフィッシャーの判別基準が
+    最小二乗の特殊な場合になっていることを示す．
+
+    \bigskip
+
+    この節では目的変数$t$は1-of-Kはなく，
+    $t = N / N_1$で$\mathcal{C}_1$を，
+    $t = - N / N_2$で$\mathcal{C}_2$を表すことにする．
+    \begin{align*}
+        E = \frac{1}{2}\sum_{n = 1}^N (w' x_n + w_0 - t_n)^2
+    \end{align*}
+    $w_0$と$w$について微分して，その導関数を$0$とすると
+    \begin{gather*}
+        \sum_{n = 1}^N (w'x_n + w_0 - t_n) = 0 \tag{4.32} \label{w01}\\
+        \sum_{n = 1}^N (w'x_n + w_0 - t_n)x_n = 0 \tag{4.33} \label{w02}
+    \end{gather*}
+    が得られる．
+\end{frame}
+
+\begin{frame}
+    \frametitle{最小二乗との関連(2)}
+    \braref{w01}からバイアスが
+    \begin{gather}
+        \sum_{n = 1}^N w'x_n + \sum_{n = 1}^N w_0 - \sum_{n = 1}^N t_n = 0 \notag \\
+        w'\left(\sum_{n = 1}^N x_n\right)
+        + N w_0 - N_1\frac{N}{N_1} - N_2 \frac{N}{N_2} = 0 \notag \\
+        w_0 = - w'm \tag{4.34}
+    \end{gather}
+    を満たすことが分かる．ただし
+    \begin{align}
+        m := \frac{1}{N} \sum_{n = 1}^N x_n = \frac{1}{N}(N_1 m_1 + N_2 m_2) \tag{4.36}
+    \end{align}
+    とした．
+\end{frame}
+
+\begin{frame}
+    \frametitle{最小二乗との関連(3)}
+    \braref{w02}を変形すると（演習4.6）
+    \begin{align*}
+        \left(S_\mathrm{W} + \frac{N_1 N_2}{N}S_\mathrm{B} \right)
+        = N (m_1 - m_2) \tag{4.37}
+    \end{align*}
+    となる．
+    $S_\mathrm{B}w = (m_2 - m_1)((m_2 - m_1)'w) \parallelsl (m_2 - m_1)$より
+    \begin{align}
+        w \parallelsl S_\mathrm{W}^{-1}(m_2 - m_1) \tag{4.38}
+    \end{align}
+    である．
+
+    \bigskip
+
+    このように最小二乗から出発して
+    フィッシャーの線形判別を導出することができた．
+
+\end{frame}
+
+\subsection{多クラスにおけるフィッシャーの判別}
+\begin{frame}
+    \frametitle{多クラスにおけるフィッシャーの判別(1)}
+    フィッシャーの線形判別を$K > 2$の場合に一般化する．
+    入力空間の次元を$D > K$とし，$D'$次元の特徴量のベクトル$y = W'x$に変換する．
+    クラス内共分散行列は
+    \begin{align}
+        S_\mathrm{W} := \sum_{k = 1}^K S_k \tag{4.40}
+    \end{align}
+    とする．ここで
+    \begin{gather}
+        S_k := \sum_{n \in \mathcal{C}_k}(x_n - m_k)(x_n - m_k)', \tag{4.41} \\
+        m_k := \frac{1}{N_k}\sum_{n \in \mathcal{C}_k} x_k \tag{4.42}
+    \end{gather}
+    である．
+\end{frame}
+
+\begin{frame}
+    \frametitle{多クラスにおけるフィッシャーの判別(2)}
+    クラス間共分散行列$S_\mathrm{B}$は
+    \begin{align}
+        S_\mathrm{T} := \sum_{k = 1}^K N_k (m_k - m)(m_k - m)' \tag{4.46}
+    \end{align}
+    とする．ここで
+    \begin{align}
+        m := \frac{1}{N}\sum_{n = 1}^N x_n = \frac{1}{N}\sum_{k = 1}^K N_k m_k \tag{4.44}
+    \end{align}
+    である．
+\end{frame}
+
+\begin{frame}
+    \frametitle{多クラスにおけるフィッシャーの判別(2)}
+    $S_\mathrm{W}$と$S_\mathrm{B}$を$D'$次元の特徴空間に射影して
+    \begin{gather*}
+        s_\mathrm{W} = \sum_{k = 1}^K \sum_{n \in \mathcal{C}_k}
+                        (y_n - \mu_k)(y_n - \mu_k)' \tag{4.47} \\
+        s_\mathrm{B} = \sum_{k = 1} N_k (\mu_k - \mu)(\mu_k - \mu)'
+    \end{gather*}
+    とする．
+    ここで
+    \begin{align}
+        \mu_k = \frac{1}{N_k} \sum_{n \in \mathcal{C}_k}y_n,\quad
+        \mu = \frac{1}{N} \sum_{k = 1} N_k \mu_k \tag{4.49}
+    \end{align}
+    である．
+\end{frame}
+
+\begin{frame}
+    \frametitle{多クラスにおけるフィッシャーの判別(3)}
+    2クラスのときと同様，
+    クラス間共分散行列が大きく，クラス内共分散が
+    小さいときに大きくなるスカラーを構成する．
+    そのようなスカラーの1つの例は
+    \begin{align}
+        J(W) &= \tr (s_\mathrm{W}^{-1}s_\mathrm{B}) \tag{4.50} \\
+             &= \tr ((WS_\mathrm{W}W')^{-1}(WS_\mathrm{B}W')) \tag{4.51} \label{J}
+    \end{align}
+    である．
+
+    \bigskip
+
+    \braref{J}の最大化についてはFukunaga(1990)に書かれているらしい\footnote{見てない．}．
+    結論として，最適な$W$は，一般化された固有方程式
+    \begin{align*}
+        S_\mathrm{B}v = \lambda S_\mathrm{W}v
+    \end{align*}
+    を解いて得られる固有ベクトルにより決定される．
+\end{frame}
+
+\begin{frame}
+    \frametitle{フィッシャーの線形判別の制限}
+
+    フィッシャー線形判別の制限について説明する
+    ため$S_\mathrm{B}$の次元を求めておく．
+
+    \bigskip
+
+    ベクトル$m_k - m$の第$i$成分を$c_{ki}$と書く．
+    このとき$S_\mathrm{B}$の第$i$列は
+    \begin{align*}
+        \sum_{k = 1}^K N_k c_{ki} (m_k - m)
+    \end{align*}
+    となるので列空間$C(S_\mathrm{B})$は$m_1 - m, \ldots, m_K - m $で張られる．
+    よって$\rank S_\mathrm{B} = \dim C(S_\mathrm{B}) \leq K$である．
+    更に$m$は$N_k m_k\,(k=1,\ldots,K)$の重心であるから
+    \begin{align*}
+        N_1 (m_1 - m) + \cdots + N_K (m_K - m) = 0
+    \end{align*}
+    %松坂和夫 線型代数 定理2.12
+    となり，$\rank S_\mathrm{B} = \dim C(S_\mathrm{B}) \leq K - 1$が分かる．
+    したがって，$S_\mathrm{W}^{-1}S_\mathrm{B}$の固有空間は高々$K - 1$次元であり，
+    $W$で特徴をたくさん作ったところで$K - 1$個の特徴しか活用できないことになる．
+\end{frame}
+
+\subsection{パーセプトロンアルゴリズム}
+\begin{frame}
+    \frametitle{パーセプトロン}
+    線形識別モデルのもう1つの例として\textbf{パーセプトロン}が挙げられる．
+
+    \bigskip
+
+    2クラスのモデルで入力ベクトル$x$を特徴ベクトル
+    に変換する非線形関数$\phi$を用いて
+    \begin{align}
+        y(x) = f (w' \phi(x)) \tag{4.52} \label{perceptron}
+    \end{align}
+    という形の一般化線形モデルを用いる．ここで$f$は符号関数
+    \begin{align}
+        f(a) :=
+        \begin{cases} \,+1\quad\mathrm{if}\ a \geq 0, \\
+                      \,-1\quad\mathrm{if}\  a < 0
+        \end{cases} \tag{4.53}
+    \end{align}
+    である．
+
+    \bigskip
+
+    パーセプトロンを使う場合は
+    目的変数を$t \in \{0,\,1\}$をとし，
+    $t = +1$を$\mathcal{C}_1$に，
+    $t = -1$を$\mathcal{C}_2$に対応させる．
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{パーセプトロン基準(1)}
+    誤差関数を，誤識別したパターンの総数として最小化することで
+    求められそうである．しかし，これでは誤差関数が$w$の区分的な定数関数に
+    なってしまい簡単なアルゴリズムが構築できない．
+    そこで\textbf{パーセプトロン基準}(perceptron criterion)という誤差関数を考える．
+
+    \bigskip
+
+    パラメータ$w$を
+
+    \smallskip
+
+    \begin{itemize}
+        \item $x_n$がクラス$\mathcal{C}_1$に分類されるならば$w'\phi(x_n) > 0$
+        \item $x_n$がクラス$\mathcal{C}_2$に分類されるならば$w'\phi(x_n) < 0$
+    \end{itemize}
+
+    \smallskip
+
+    となるようにとる．
+    そのような$w$はすべての$n$で$t_nw'\phi(x_n) > 0$を満たす．
+    $w$を求めるため，正しく分類されたパターンに対しては何もせず，
+    誤分類されたパターンに対しては
+    $-t_n w'\phi(x_n)$を最小化することにする．
+\end{frame}
+
+\begin{frame}
+    \frametitle{パーセプトロン基準(2)}
+    パーセプトロン基準は
+    \begin{align}
+        E_\mathrm{P}(w) = - \sum_{n \in \mathcal{M}} t_n w'\phi_n \tag{4.54}
+    \end{align}
+    で与えられる．ここで$\phi_n = \phi(x_n)$であり，
+    $\mathcal{M}$は誤識別された(misclassified)パターン全体の集合である．
+    最適なパラメータの候補$w^{(\tau)}$を以下の式を使って更新していく．
+    \begin{align}
+        w^{(\tau + 1)} &:= w^{(\tau)} - \eta \nabla E_\mathrm{P}(w) \notag \\
+                       &= w^{(\tau)} + \eta t_n \phi_n \tag{4.55} \label{grad}
+    \end{align}
+    $w$を定数倍しても\braref{perceptron}は変化しないので，
+    $\eta = 1$としてよい．
+\end{frame}
+
+\begin{frame}
+    \frametitle{パーセプトロンの収束定理}
+    \braref{grad}の両辺と$-t_n\phi_n$との標準内積をとると
+    \begin{align}
+        - t_n w^{(\tau + 1)}{}'\phi_n
+        = - t_n w^{(\tau)}{}' \phi_n - \|t_n\phi_n\|^2 < - t_n w^{(\tau)}{}'\phi_n
+        \tag{4.56}
+    \end{align}
+    となるので更新により誤差が減少することが分かる．
+
+    \bigskip
+
+    パーセプトロンの収束定理から，
+    学習データ集合が線形分離可能ならばパーセプトロンの学習アルゴリズムは有限回の
+    繰り返しで厳密解（正しく分離できる$w$）に収束することが分かる
+    \footnote{証明は簡単だが省略する．たとえば海野らを参照．}．
+\end{frame}
+
+\begin{frame}
+    \frametitle{パーセプトロンの問題点}
+
+    \begin{wideenumerate}
+        \item パーセプトロン学習アルゴリズムが収束するのに必要な繰り返し回数が多い．
+            →分離できない問題なのか，単に収束が遅いのかの区別がわかりにくい．
+
+        \item 線形分離可能な場合でも，パラメータの初期値やデータの提示順に
+            依存して様々な解に収束してしまう．
+
+        \item 線形分離不可能な場合に収束しない．
+
+        \item 確率的な出力を提供しない．
+
+        \item $K>2$クラスの場合への一般化が容易でない．
+
+    \end{wideenumerate}
+
+\end{frame}
+
+\section{確率的生成モデル}
+
+\begin{frame}
+    \frametitle{確率的生成モデル（2クラス）}
+    尤度$p(x|\mathcal{C}_k)$と
+    事前確率$p(\mathcal{C}_k)$を使って
+    事後確率$p(\mathcal{C}_k|x)$を生成するモデルを考える．
+
+    \bigskip
+
+    クラス$\mathcal{C}_1$に対する事後確率は
+    \begin{align*}
+        p(\mathcal{C}_1|x)
+        &= \frac{p(x|\mathcal{C}_1)p(\mathcal{C}_1)}%
+        {p(x|\mathcal{C}_1)p(\mathcal{C}_1) + p(x|\mathcal{C}_2)p(\mathcal{C}_2)}
+    \end{align*}
+    である．ロジスティックシグモイド関数$\sigma(x) := 1/(1 + \exp(-x))$を使って
+    書き直しておくと便利なので書き直してみると
+    \begin{align}
+        p(\mathcal{C}_1|x) = \sigma(a) \tag{4.57}
+    \end{align}
+    となる．ただし
+    \begin{align}
+        a := \log \frac{p(x|\mathcal{C}_1)p(\mathcal{C}_1)}%
+        {p(x|\mathcal{C}_2)p(\mathcal{C}_2)} \tag{4.58} \label{logistica}
+    \end{align}
+    とした．
+\end{frame}
+
+\begin{frame}
+    \frametitle{確率的生成モデル（多クラス）}
+    $K$クラスの場合，事後確率$p(\mathcal{C}_k|x)$は
+    \begin{align}
+        p(\mathcal{C}_k|x) &= \frac{p(x|\mathcal{C}_k)p(\mathcal{C}_k)}%
+        {\sum_j p(x|\mathcal{C}_j)p(\mathcal{C}_j)} \notag \\
+        &= \frac{\exp(a_k)}{\sum_j \exp(a_j)} \tag{4.62} \label{normalizedexp}
+    \end{align}
+    で与えられる．ただし
+    \begin{align}
+        a_k := \log (p(x|\mathcal{C}_k)p(\mathcal{C}_k)) \tag{4.63} \label{ak}
+    \end{align}
+    とした．\braref{normalizedexp}は\textbf{正規化指数関数}
+    (normalized exponential function)または
+    \textbf{ソフトマックス関数}(softmax function)と呼ばれる．
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{ソフトマックス関数の性質}
+    正規化指数関数はロジスティックシグモイド関数の
+    多変数への一般化と考えられる．
+
+    \bigskip
+
+    またこの関数の重要な性質として，任意の$j \neq k$に対して
+    $a_k \gg a_j$となるような$j$について$p(\mathcal{C}_k|x) \simeq 1$かつ
+    $p(\mathcal{C}_j|x) \simeq 0$となることがある．
+    したがってこの関数を滑らかな最大値関数と捉えられ，
+    そのことがソフトマックス関数と呼ばれる所以になっている．
+
+    \smallskip
+    %https://github.com/rnestler/WibS/blob/master/tikz/sigmoid.tex
+    \begin{figure}
+        \caption{ロジスティックシグモイド関数}
+        \begin{center}
+            \begin{tikzpicture}
+                \begin{axis}[
+                samples=500,
+                domain=-10:10,
+                width=8.3cm, height=5cm,
+                xmin=-10.5, xmax=10.5,
+                ymin=-0.3, ymax=1.5,
+                axis x line=center,
+                axis y line=center,
+                xlabel={$x$},
+                ylabel={$y$},
+                axis line style={->},
+                xtick={-5,0,5},
+                ytick={0,0.5}]
+                \addplot[color=blue,thick] plot (\x,{1/(1+exp((-1)*x))}) node[pos=0.6](a){} ;
+                \node [below right] at (a) {${\displaystyle y=\frac{1}{1+\exp(-x)}}$};
+                \addplot[dashed] plot (\x,{1}) node[pos=0.5](b){};
+                \node [above left] at (b) {$y=1$};
+                \node at (0,0) [anchor=north west]{$O$};
+                \end{axis}
+            \end{tikzpicture}
+        \end{center}
+    \end{figure}
+\end{frame}
+
+\subsection{連続値入力}
+\begin{frame}
+    \frametitle{連続値入力（2クラス）(1)}
+    仮定
+        \begin{enumerate}
+            \item クラスの条件付き確率密度がガウス分布である．
+            \item すべてのクラスが同じ共分散行列を共有する．
+        \end{enumerate}
+
+    \bigskip
+
+    このとき尤度$p(x|\mathcal{C}_k)$は
+    \begin{align}
+        p(x|\mathcal{C}_k) = \frac{1}{(2\pi)^{D/2}}\frac{1}{|\varSigma|^{1/2}}
+        \exp \left( - \frac{1}{2}(x - \mu_k)'\varSigma^{-1}(x - \mu_k)\right)
+        \tag{4.64}
+    \end{align}
+    で与えられる．
+\end{frame}
+
+\begin{frame}
+    \frametitle{連続値入力（2クラス）(2)}
+    クラス$\mathcal{C}_1$の事後確率は
+    \begin{align}
+        &p(\mathcal{C}_1|x) \notag \\
+        &=\sigma\left(
+                \log\frac{\exp\left(-(1/2)(x - \mu_1)'\varSigma^{-1}(x - \mu_1)
+                \right)p(\mathcal{C}_1)}%
+                {\exp\left(-(1/2)(x - \mu_2)'\varSigma^{-1}(x - \mu_2)
+                \right)p(\mathcal{C}_2)}
+            \right) \notag \\
+        &= \sigma\left(
+            \frac{1}{2}(x - \mu_2)'\varSigma^{-1}(x - \mu_2)
+            - \frac{1}{2}(x - \mu_1)'\varSigma^{-1}(x - \mu_1)
+            + \log\frac{\mathcal{C}_1}{\mathcal{C}_2} \right) \notag \\
+        &= \sigma(w'x + w_0) \tag{4.65} \label{sigmawx}
+    \end{align}
+    となる．ここで
+    \begin{gather}
+        w := \varSigma^{-1}(\mu_1 - \mu_2) \tag{4.66} \\
+        w_0 := \frac{1}{2}\mu_2'\varSigma^{-1}\mu_2
+               - \frac{1}{2}\mu_1'\varSigma^{-1}\mu_1
+               + \log \frac{\mathcal{C}_1}{\mathcal{C}_2}\tag{4.67}
+    \end{gather}
+    とした．
+\end{frame}
+
+\begin{frame}
+    \frametitle{連続値入力（多クラス）}
+
+    $K$クラスの場合を考える．このとき事後確率$p(\mathcal{C}_k|x)$は，
+    \begin{gather}
+        a_k(x) := w_k'x + w_{k0}, \tag{4.68} \\
+        w_k := \varSigma^{-1} \mu_k, \tag{4.69} \\
+        w_{k0} := \frac{1}{2}\mu_k'\varSigma^{-1}\mu_k
+        + \log p(\mathcal{C}_k) \tag{4.70}
+    \end{gather}
+    として
+    \begin{align*}
+        p(\mathcal{C}_k|x) = \frac{\exp(a_k)}{\sum_j \exp(a_j)}
+    \end{align*}
+    で与えられる．
+\end{frame}
+
+\begin{frame}
+    \frametitle{連続値入力のベイズ判別における決定境界}
+    決定境界を$P(\mathcal{C}_i|x) \geq P(\mathcal{C}_j|x)$で
+    定めると，\braref{sigmawx}から入力$x$の線形関数になっていることが分かる．
+
+    \bigskip
+
+    共分散行列が共通であるという仮定を外すと，
+    決定境界は$x$の2次関数となる．
+\end{frame}
+
+\begin{frame}
+    \frametitle{最尤解（2クラス）(1)}
+    尤度$p(x|\mathcal{C}_k)$と事前確率$p(\mathcal{C}_k)$を
+    パラメトリックな関数形で表現しておき，
+    パラメータの最尤量を求めることを考える．
+
+    \bigskip
+
+    前節と同じく，各クラスの条件付き確率密度はガウス分布で，
+    共分散行列は共通であると仮定する．
+    またデータ$\{(x_n,\,t_n)\}_{n = 1,\,\ldots,\,N}$が与えられているとする．
+    $t = 1$で$\mathcal{C}_1$を，$t = 0$で$\mathcal{C}_2$を
+    表すことにする．
+
+    \bigskip
+
+    事前確率を$p(\mathcal{C}_1) = \alpha,\,p(\mathcal{C}_2) = 1 - \alpha$とする．
+    このとき，
+    \begin{gather*}
+        p(x_n,\mathcal{C}_1) = p(x_n|\mathcal{C}_1) p(\mathcal{C}_1)
+                               = \alpha \mathcal{N}(x_n|\mu_1,\varSigma), \\
+        p(x_n,\mathcal{C}_2) = p(x_n|\mathcal{C}_2) p(\mathcal{C}_2)
+                               = (1 - \alpha) \mathcal{N}(x_n|\mu_2,\varSigma)
+    \end{gather*}
+    である．
+\end{frame}
+
+\begin{frame}
+    \frametitle{最尤解（2クラス）(2)}
+    尤度は以下のように計算できる．
+    \begin{align}
+        &p(t,X|\alpha,\mu_1,\mu_2,\varSigma) \notag \\
+        &=\prod_{n = 1}^N (\alpha \mathcal{N}(x_n|\mu_1,\varSigma))^{t_n}
+        ((1 - \alpha)\mathcal{N}(x_n|\mu_2,\varSigma))^{1 - t_n} \tag{4.71}
+    \end{align}
+    対数尤度を$\ell(\alpha,\mu,\varSigma)$とすると
+    \begin{align*}
+        \frac{\partial \ell(\alpha,\mu,\varSigma)}{\partial \alpha} =
+        \frac{N_1}{\alpha} - \frac{N - N_1}{1 - \alpha}
+    \end{align*}
+    となるので$\partial \ell / \partial \alpha = 0$として
+    \begin{align}
+        \alpha = \frac{N_1}{N} = \frac{N_1}{N_1 + N_2} \tag{4.73}
+    \end{align}
+    を得る．
+\end{frame}
+
+\begin{frame}
+    \frametitle{最尤解（2クラス）(3)}
+    次に$\mu_1$の最尤量を求める．$\ell$の$\mu_1$に関係する項を取り出すと
+    \begin{align}
+        &\sum_{n = 1}^N t_n \log \mathcal{N}(x_n|\mu_1,\varSigma) \notag \\
+        &= - \frac{1}{2} \sum_{n = 1}^N t_n (x_n - \mu_1)' \varSigma^{-1}(x_n - \mu_1)
+        + \mathrm{const.} \tag{4.74}
+    \end{align}
+    となっているので
+    \begin{align*}
+        D_{\mu_1} \ell(\mu_1) = \sum_{n = 1}^N t_n(x_n - \mu_1)'\varSigma^{-1}
+    \end{align*}
+    である．
+\end{frame}
+
+\begin{frame}
+    \frametitle{最尤解（2クラス）(4)}
+    $D_{\mu_1}\ell(\mu_1) = 0$を解いて
+    \begin{align}
+        \mu_1 = \frac{1}{N_1} \sum_{n = 1}^N t_n x_n \tag{4.75}
+    \end{align}
+    を得る．同様にして
+    \begin{align}
+        \mu_2 = \frac{1}{N_2} \sum_{n = 1}^N (1 - t_n) x_n \tag{4.76}
+    \end{align}
+    も得られる．
+\end{frame}
+
+\begin{frame}
+    \frametitle{最尤解（2クラス）(5)}
+    最後に$\varSigma$の最尤量を求める．
+    $\ell$の$\varSigma$に関係する項を取り出すと
+    \begin{align*}
+        &- \frac{1}{2}\sum_{n = 1}^N t_n \log |\varSigma|
+        - \frac{1}{2} \sum_{n = 1}^N t_n (x_n - \mu_1)' \varSigma^{-1}(x_n - \mu_1)
+        \\
+        &- \frac{1}{2}\sum_{n = 1}^N (1 - t_n) \log |\varSigma|
+        - \frac{1}{2} \sum_{n = 1}^N (1 - t_n) (x_n - \mu_2)' \varSigma^{-1}(x_n - \mu_2)
+        \\
+        &= -\frac{N}{2}\log |\varSigma| \\
+        & - \frac{1}{2}\left\langle \sum_{n \in \mathcal{C}_1} (x_n - \mu_1)(x_n - \mu_1)' +
+        \sum_{n \in \mathcal{C}_2} (x_n - \mu_2)(x_n - \mu_2)',
+        \varSigma^{-1}\right\rangle
+    \end{align*}
+    である．
+\end{frame}
+
+\begin{frame}
+    \frametitle{最尤解（2クラス）(6)}
+    $B := \varSigma^{-1}$で微分して\footnote{$f(X) = \log |X|$の微分についてはスライドの最後の補足を参照．}
+\begin{align*}
+    &D_B \ell (B)(H) \\
+    &= \frac{N}{2}\langle B^{-1}{}', H \rangle \\
+    &- \frac{1}{2}\left\langle \sum_{n \in \mathcal{C}_1} (x_n - \mu_1)(x_n - \mu_1)' + \sum_{n \in \mathcal{C}_2} (x_n - \mu_2)(x_n - \mu_2)',H \right\rangle
+\end{align*}
+となるから，$\varSigma$の最尤量は
+\begin{align*}
+    \varSigma = \frac{1}{N}\left(\sum_{n \in \mathcal{C}_1}
+        (x_n - \mu_1)(x_n - \mu_1)'
+    +\sum_{n \in \mathcal{C}_2} (x_n - \mu_2)(x_n - \mu_2)'\right)
+\end{align*}
+である．
+\end{frame}
+
+\subsection{離散特徴}
+\begin{frame}
+    \frametitle{離散特徴}
+    入力が$x \in \{0,1\}^D$で与えられる場合を考える．
+    一般的な分布は$2^D - 1$個の独立な変数を含んでいるため扱いにくい．
+    そこで各特徴値$x_i$は互いに独立であり，
+    その分布はクラスに依存したパラメータ$\mu_{ki}$によって定まる
+    ベルヌーイ分布に従うと仮定する．すなわち
+    \begin{align}
+        p(x|\mathcal{C}_k) = \prod_{i = 1}^D \mu_{ki}^{x_i}(1 - \mu_{ki})^{1 - x_i}
+        \tag{4.81}
+    \end{align}
+    とする．
+    このとき\braref{ak}に代入して
+    \begin{align}
+        a_k(x) &= \log(p(x|\mathcal{C}_k)p(\mathcal{C}_k)) \notag \\
+               &= \sum_{i = 1}^D (x_i \log \mu_{ki} + (1 - x_i)\log(1 - \mu_{ki}))
+                    + \log p(\mathcal{C}_k) \tag{4.82}
+    \end{align}
+    となる．これは入力$x_i$の線形関数になので，
+    決定境界が超平面になっていることが分かる．
+\end{frame}
+
+\subsection{指数型分布族}
+\begin{frame}
+    \frametitle{指数型分布族(1)}
+    今まで入力がガウス分布の場合，離散値の場合の
+    事後確率を求めてきた．
+    どちらも$K = 2$ならば
+    ロジスティックシグモイド，$K \geq 2$ならば
+    ソフトマックスを活性化関数とする，
+    一般化線形モデルで与えられることが分かった．
+    この結果を尤度$p(x|\mathcal{C}_k)$が指数型分布族の場合に一般化する．
+    \begin{align}
+        p(x|\lambda_k) = h(x)g(\lambda_k)\exp\left(\lambda_k'u(x)\right) \tag{4.83}
+    \end{align}
+    特に$u(x) = x$であるような分布で
+    $x \mapsto x/s$と変数変換を行うと
+    \begin{align}
+        p(x|\lambda_k) = \frac{1}{s}h\left(\frac{x}{s}\right)
+                        g(\lambda_k)\exp\left(\frac{1}{s}\lambda_k'x\right)
+        \tag{4.84}
+    \end{align}
+    となる．
+\end{frame}
+
+\begin{frame}
+    \frametitle{指数型分布族(2)}
+    2クラスのとき，\braref{logistica}の$a$は
+    \begin{align}
+        a(x)
+        &= \log
+        \frac{p(x|\mathcal{C}_1)p(\mathcal{C}_1)}%
+             {p(x|\mathcal{C}_2)p(\mathcal{C}_2)} \notag \\
+             &= \log
+                \left(
+                    \frac{g(\lambda_1)\exp((1/s)\lambda_1'x)p(\mathcal{C}_1)}%
+                         {g(\lambda_2)\exp((1/s)\lambda_2'x)p(\mathcal{C}_2)}
+                \right) \notag \\
+        &= (\lambda_1 - \lambda_2)'x \notag \\
+        &\phantom{=(}+ \log g(\lambda_1) - \log g(\lambda_2)
+         + \log p(\mathcal{C}_1) - \log p(\mathcal{C}_2) \tag{4.85}
+    \end{align}
+    となる．
+    よって$p(\mathcal{C}_1|x) \geq p(\mathcal{C}_2|x)$となる境界は
+    $x$の線形関数になっていることがわかった．
+\end{frame}
+
+\begin{frame}
+    \frametitle{指数型分布族(3)}
+    $K$クラスのときは，
+    \begin{align*}
+        p(\mathcal{C}_k|x)
+        &=
+        \frac{p(x|\mathcal{C}_k)p(\mathcal{C}_k)}%
+             {\sum_j p(x|\mathcal{C}_j)p(\mathcal{C}_j)} \\
+        &=
+        \frac{h(x) g(\lambda_k)\exp(\lambda_k'x)p(\mathcal{C}_k)}%
+             {\sum_j h(x) g(\lambda_j)\exp(\lambda_j'x)p(\mathcal{C}_j)} \\
+        &=
+             \frac{\exp\left(\lambda_k'x + \log g(\lambda_k) + \log p(\mathcal{C}_k)\right)}%
+             {\sum_j \exp\left(\lambda_k'x + \log g(\lambda_k) + \log p(\mathcal{C}_k)\right)}
+    \end{align*}
+    となる．
+    よって$p(\mathcal{C}_i|x) \geq p(\mathcal{C}_j|x)$となる境界は
+    $x$の線形関数になっていることがわかった．
+\end{frame}
+
+\section{確率的識別モデル}
+\begin{frame}
+    \frametitle{確率的識別モデル}
+    以下では，一般化線形モデルの関数形式を陽に仮定し，
+    最尤法を利用してパラメータを決定する方法を扱う．
+    このときに用いられるアルゴリズムとして
+    反復再重み付け最小二乗(iterative reweighted least squares, IRLS)がある．
+\end{frame}
+
+\subsection{固定基底関数}
+\begin{frame}
+    \frametitle{固定基底関数}
+    \begin{wideitemize}
+        \item 入力空間が線形分離不可能であっても，
+            非線形変換$\phi$をうまくとれれば，
+            特徴空間上で線形分離が可能になる．
+
+        \item 一般に$\phi_0(x) = 1$として，
+            $w_0$をバイアスとする．
+
+        \item 非線形変換を行なっても
+            クラス間の重なりは取り除くことができない．
+
+        \item 固定基底関数の限界については3.6節を参照．
+    \end{wideitemize}
+\end{frame}
+
+\subsection{ロジスティック回帰}
+\begin{frame}
+    \frametitle{ロジスティック回帰}
+    識別モデルの例として
+    \textbf{ロジスティック回帰}(logistic regression)と呼ばれる
+    モデルを扱う．名前に「回帰」とあるが，
+    これは回帰よりむしろ分類のためのモデルである．
+
+    \bigskip
+
+    2クラスの場合を考える．
+    事後確率$p(\mathcal{C}_k|\phi)$がロジスティックシグモイド関数で
+    書けたことを思い出して
+    \begin{align}
+        p(\mathcal{C}_1|\phi) = \sigma(w'\phi) \tag{4.87}
+    \end{align}
+    とする．このとき，$p(\mathcal{C}_2|\phi)=1 - p(\mathcal{C}_1|\phi)$である．
+
+    \bigskip
+
+    特徴空間の次元を$M$とすると，
+    最尤法を使う場合，パラメータ数が$O(M^2)$であるのに対し，
+    ロジスティック回帰ならば$M$で済む．
+\end{frame}
+
+\begin{frame}
+    \frametitle{ロジスティック回帰のパラメータ決定(1)}
+    $t_n \in \{0,1\},\,\phi_n%
+    := \phi(x_n),\,y_n := p(\mathcal{C}_1|\phi_n) = \sigma(w'\phi_n)$とする．
+    データ集合$\{(\phi_n,t_n)\}_{n = 1,\ldots,N}$が与えられたとき尤度は
+    \begin{align}
+        p(t|w) &= \prod_{n = 1}^N p(\mathcal{C}_1|\phi_n)^{t_n}
+                                  p(\mathcal{C}_2|\phi_n)^{1 - t_n} \notag \\
+               &= \prod_{n = 1}^N y_n^{t_n} (1 - y_n)^{1 - t_n} \tag{4.89} \label{ptw}
+    \end{align}
+    となる．
+    誤差関数としては\textbf{交差エントロピー誤差関数}
+    (cross-entropy error function)
+    \begin{align}
+        E(w) &:= - \log p(t|w) \notag \\
+             &= -\sum_{n = 1}^N (t_n \log y_n + (1 - t_n) \log (1 - y_n))
+        \tag{4.90}
+    \end{align}
+    を用いる．
+\end{frame}
+
+\begin{frame}
+    \frametitle{ロジスティック回帰のパラメータ決定}
+    交差エントロピー誤差関数の勾配を求めるにあたり，
+    ロジスティックシグモイドの導関数を求めておく．
+    \begin{align}
+        \frac{d\sigma(a)}{da} &= \frac{d}{da}\frac{1}{1 + \exp(-a)}
+                           = -\frac{-\exp (-a)}{(1 + \exp(-a))^2} \notag \\
+                           &= \sigma(a) (1 - \sigma(a)) \tag{4.88}
+    \end{align}
+
+    これを使えば
+    \begin{align}
+        \nabla E(w) &= -\sum_{n = 1}^N
+                        \left(t_n \frac{1}{y_n} y_n (1 - y_n)\phi_n
+                        + (1 - t_n) \frac{1}{1 - y_n}(-y_n)\phi_n\right) \notag \\
+                    &= \sum_{n = 1}^N (y_n - t_n) \phi_n \tag{4.91}
+    \end{align}
+    が得られる．$\nabla E(w) = 0$の解をニュートン法で求めることを考える．
+\end{frame}
+
+\begin{frame}
+    \frametitle{反復再重み付け最小二乗（二乗和誤差）}
+    先に第3章で使った二乗和誤差関数
+    \begin{align*}
+        E(w) = \frac{1}{2}\|t - \varPhi w\|^2
+    \end{align*}
+    にニュートン法をする方法について紹介する．
+    導関数を求めると$DE(w) = (t - \varPhi w)'(-\varPhi) = (\varPhi w - t)'\varPhi$であるから，
+    \begin{gather}
+        \nabla E(w) = \varPhi'\varPhi w - \varPhi' t, \tag{4.93} \\
+        H = D \nabla E(w) = \varPhi'\varPhi \tag{4.94}
+    \end{gather}
+    となる．ゆえに$w$の更新は以下で与えられる．
+    \begin{align}
+        w^{\mathrm{(new)}} &= w^{\mathrm{(old)}} - (\varPhi'\varPhi)^{-1}
+                                (\varPhi' \varPhi w^{\mathrm{(old)}} - \varPhi t) \notag \\
+                            &= (\varPhi'\varPhi)^{-1}\varPhi't \tag{4.95}
+    \end{align}
+    よって二乗和誤差関数に関しては1度の更新で正確な解が求められることが分かる．
+\end{frame}
+
+\begin{frame}
+    \frametitle{反復再重み付け最小二乗（交差エントロピー誤差）(1)}
+    ロジスティック回帰の交差エントロピー誤差関数にニュートン法を適用することを考える．
+    \begin{align}
+        \nabla E(w) = \sum_{n = 1}^N (y_n - t_n) \phi_n = \varPhi'(y - t) \tag{4.96}
+    \end{align}
+    これの導関数を求める．$D\nabla E(w)=\varPhi'Dy$なので
+    $Dy(w)$を求めなくてはならない．
+    成分ごとに偏微分すると
+    \begin{align*}
+        \frac{\partial y_i}{\partial w_j} = \delta_{ij}y_i(1 - y_i)\phi_i(x_j)
+    \end{align*}
+    である．よって$R := (r_{ij}) = \delta_{ij}y_i(1 - y_i)\,(i=1,\ldots,N,\,j = 1,\ldots,N)$とすれば，
+    \begin{align}
+        H = D \nabla E(w) = \varPhi'R\varPhi \tag{4.97}
+    \end{align}
+    となる．
+\end{frame}
+
+\begin{frame}
+    \frametitle{反復再重み付け最小二乗（交差エントロピー誤差）(2)}
+    $H$は正定値である．$v$を非零のベクトルとし，
+    $u := \varPhi v = (u_1 \; \cdots \; u_N)'$とする．
+    $0 < y_n < 1$であるから
+    \begin{align*}
+        v'Hv &= v'\varPhi'R\varPhi v \\
+             &= u'Ru \\
+             &= \sum_{i,j} \delta_{ij}y_i (1 - y_i) u_i u_j \\
+             &= \sum_{i,j} y_i (1 - y_i) u_i^2 > 0
+    \end{align*}
+    である\footnote{$\varPhi \neq O$を仮定した．}．ゆえに$E$は唯一の最小解を持つ．
+\end{frame}
+
+\begin{frame}
+    \frametitle{反復再重み付け最小二乗（交差エントロピー誤差）(3)}
+    よって$w$の更新は以下のようになる．
+    \begin{align}
+        w^{\mathrm{(new)}}
+        &= w^{\mathrm{(old)}} - (\varPhi'R\varPhi)^{-1}\varPhi'(y - t) \notag \\
+        &= (\varPhi'R\varPhi)^{-1}((\varPhi'R\varPhi)w^{\mathrm{(old)}} - \varPhi'(y - t)) \notag \\
+        &= (\varPhi'R\varPhi)^{-1}\varPhi' Rz \tag{4.99}
+    \end{align}
+    ここで
+    \begin{align}
+        z := \varPhi w^{\mathrm{(old)}} - R^{-1}(y - t)
+    \end{align}
+    とした．
+    注意しなければならないのは$R$が$w$に依存していることである．
+    ゆえに更新の度に$R$を計算し直さなければならない．
+    このために反復重み付き最小二乗法と呼ばれているのである．
+\end{frame}
+
+\begin{frame}
+    \frametitle{多クラスロジスティック回帰(1)}
+    多クラスの場合，事後確率$p(\mathcal{C}_k|\phi)$は
+    \begin{align}
+        p(\mathcal{C}_k|\phi) = y_k(\phi) = \frac{\exp(a_k)}{\sum_j \exp (a_j)}
+        \tag{4.104}
+    \end{align}
+    と計算できた．これに最尤法を用いてパラメータ$w$を求める．
+    $\partial y_k/\partial a_j$が必要になるので，これを
+    計算しておく．
+    \begin{align}
+        \frac{\partial y_k}{\partial a_j}
+        &= \frac{\delta_{kj}\exp(a_k)(\sum_i \exp(a_i))-\exp(a_k)\exp(a_j)}
+                {(\sum_i \exp(a_i))^2} \notag \\
+        &= \frac{\exp(a_k)}
+                {(\sum_i \exp(a_i))}
+                \left(\delta_{kj} - \frac{\exp(a_j)}{\sum_i \exp(a_i)} \right)
+                \notag \\
+                &= y_k(\delta_{kj} - y_j) \tag{4.105}
+    \end{align}
+\end{frame}
+
+\begin{frame}
+    \frametitle{多クラスロジスティック回帰(2)}
+    次に尤度を求める．1-of-K表記を使って
+    \begin{align*}
+        t_{nk} = \mathtt{if}\ t_n\ \mathtt{==}\ (0\ \cdots\ 0
+            \ \raisebox{.7pt}{$\stackrel{\substack{k \\ \smallsmile}}{1}$}
+            \ 0\ \cdots\ 0)\ \mathtt{then}\ 1\ \mathtt{else}\ 0
+    \end{align*}
+    と表す．行列$T$を$(n,k)$成分が$t_{nk}$で与えられる行列とすると
+    \begin{align}
+        p(T|w_1,\ldots,w_K)
+        = \prod_{n = 1}^N \prod_{k = 1}^K p(\mathcal{C}_k|\phi_n)^{t_{nk}}
+        = \prod_{n = 1}^N \prod_{k = 1}^K y_{nk}^{t_{nk}}
+        \tag{4.107}
+    \end{align}
+    となる\footnote{これはCategorical distributionという
+        Bernoulli分布の自然な拡張になっている．}．
+    ここで$y_{nk} = y_k(\phi_n)$とした．負の対数をとると
+    \begin{align}
+        E(w_1,\ldots,w_K) = -\log p(T|w_1,\ldots,w_K)
+                          = -\sum_{n = 1}^N \sum_{k = 1}^K t_{nk} \log y_{nk}
+        \tag{4.108}
+    \end{align}
+    となる．
+\end{frame}
+
+\subsection{プロビット回帰}
+\begin{frame}
+    \frametitle{プロビット回帰(1)}
+    クラスの条件付き確率密度が
+    指数型分布族のときを見てきたが，
+    混合ガウス分布のときは今までのように計算できない．
+    そこで別なタイプの識別確率モデルを考える．
+    以下では2クラスの場合のみを扱う．
+
+    \bigskip
+
+    雑音閾値モデル(noisy threshold model)を考える．
+    入力$\phi_n$に対して$a_n := w'\phi_n$を評価し，
+    以下の式にしたがって目的変数を設定する．
+    \begin{align}
+        t_n =
+        \begin{cases}
+            \,1 \quad\mathrm{if}\ a_n \geq \theta, \\
+            \,0 \quad\mathrm{otherwise}
+        \end{cases}
+        \tag{4.112}
+    \end{align}
+    ここで$\theta$は確率的な項で，
+    確率密度関数$g$にしたがっているとする\footnote{個人的には，
+        閾値が確率的に変動すると捉えるよりも，
+        閾値に，入力に含まれる確率的誤差を
+    含めたものが$\theta$と捉えるほうが分かりやすいと思った．}．
+    このとき識別確率が
+    \begin{align}
+        p(t = 1| a) = \int_{-\infty}^a g(u)du \tag{4.113}
+    \end{align}
+    で与えられるものとする．
+\end{frame}
+
+\begin{frame}
+    \frametitle{プロビット回帰(2)}
+    特に$g$が標準ガウス分布にしたがう，
+    すなわち識別確率が
+    \begin{align}
+        \varPhi(a) := \int_{-\infty}^a \frac{1}{\sqrt{2\pi}}\exp\left(-\frac{u^2}{2}\right)du \tag{4.114}
+    \end{align}
+    で与えられるとき，このモデルは\textbf{プロビット回帰}(probit regression)と呼ばれる
+    \footnote{標準正規分布の累積分布関数$\varPhi$の逆関数をプロビット関数と呼ぶ．}．
+
+    \bigskip
+
+    最尤法でプロビット回帰のパラメータを決定できるらしいが省略する．
+\end{frame}
+
+\begin{frame}
+    \frametitle{プロビット回帰(3)}
+
+    \begin{figure}
+        \caption{標準正規分布の累積分布関数のグラフ}
+        \tikzset{
+            declare function={
+                normcdf(\x,\m,\s)=1/(1 + exp(-0.07056*((\x-\m)/\s)^3 - 1.5976*(\x-\m)/\s));
+            }
+        }
+        \begin{center}
+            \begin{tikzpicture}
+                \begin{axis}[
+                samples=500,
+                domain=-5.2:5.2,
+                width=10cm, height=7cm,
+                xmin=-5.5, xmax=5.5,
+                ymin=-0.3, ymax=1.5,
+                axis x line=center,
+                axis y line=center,
+                xlabel={$a$},
+                ylabel={$y$},
+                axis line style={->},
+                xtick={-3,0,3},
+                ytick={0,0.5}]
+                \addplot[thick] plot{normcdf(x,0,1)} node[pos=0.4](cum){};
+                \node [above left] at (cum) {$y=\varPhi(a)$};
+                \addplot[dashed] plot (\x,{1}) node[pos=0.5](b){};
+                \node [above left] at (b) {$y=1$};
+                \node at (0,0) [anchor=north west]{$O$};
+                \end{axis}
+            \end{tikzpicture}
+        \end{center}
+    \end{figure}
+\end{frame}
+
+\subsection{正準連結関数}
+\begin{frame}
+    \frametitle{正準連結関数(1)}
+    今まで何度か
+    \begin{align*}
+        \nabla E (w) = \sum_{n = 1}^N (y_n - t_n) \phi_n
+    \end{align*}
+    という式が出てきた．
+    目的変数$t$の分布が指数型分布族のときに，
+    上の式を一般化した結果が得られることを示す．
+    \begin{align}
+        p(t|\eta,s) = \frac{1}{s}h\left(\frac{t}{s}\right)g(\eta)\exp\left(\frac{\eta t}{s}\right) \tag{4.118}
+    \end{align}
+    $(2.226)$の導出と同様にして
+    \begin{align}
+        y \equiv \mathbb{E}(t|\eta) = - \frac{d}{d\eta}\log g(\eta) \tag{4.119} \label{yequiv}
+    \end{align}
+    が得られる．\braref{yequiv}が$\eta$について解くことができて，
+    $\eta = \psi(y)$と表せると仮定する．
+\end{frame}
+
+\begin{frame}
+    \frametitle{正準連結関数(2)}
+    $f$を非線形関数として$y = f(w'\phi)$というモデルを考える．
+    $f^{-1}$は\textbf{連結関数}(link function)と呼ばれる．
+
+    \bigskip
+
+    対数尤度は
+    \begin{align}
+        \log p (t|\eta,s) &= \sum_{n = 1}^N \log p(t_n|\eta,s) \notag \\
+                          &= \sum_{n = 1}^N \left(\log g(\eta_n) + \frac{\eta_n t_n}{s}\right) + \mathrm{const.} \tag{4.121}
+    \end{align}
+    である．
+\end{frame}
+
+\begin{frame}
+    \frametitle{正準連結関数(3)}
+    対数尤度の勾配は
+    \begin{align}
+        \nabla_w \log p(t|\eta,s)
+        &= \sum_{n = 1}^N \left(\frac{d}{d\eta}_n \log g(\eta_n) + \frac{t_n}{s} \right)\frac{d\eta_n}{dy_n}\frac{dy_n}{da_n}\nabla a_n \notag \\
+        &= \sum_{n = 1}^N \frac{1}{s}(t_n - y_n)\psi'(y_n)f'(a_n)\phi_n \tag{4.122}
+    \end{align}
+    と計算できる．
+
+    \bigskip
+
+    連結関数$f^{-1}=\psi$となるような連結関数をとっておけば，
+    \begin{align}
+        \nabla E(w) = \frac{1}{s}\sum_{n = 1}^N (y_n - t_n) \phi_n \tag{4.124}
+    \end{align}
+    となる．ガウス分布のときは$s=\beta^{-1}$，ロジスティックモデルのときは$s = 1$である．
+\end{frame}
+
+\section{ラプラス近似}
+\begin{frame}
+    \frametitle{1次元のラプラス近似(1)}
+    4.5節でロジスティック回帰のベイズ的な取り扱いをするために
+    必要となる\textbf{ラプラス近似}という手法について説明する．
+
+    \bigskip
+
+    ラプラス近似の目的は，分布$p(z)$が与えられたとき，
+    そのモード$z_0$を中心とするガウス分布で$p(z)$を近似することである．
+    まず1変数の場合を考える．
+    分布$p(z)$を仮定する．
+    \begin{align*}
+        p(z) := \frac{1}{Z}f(z)
+    \end{align*}
+    ここで$Z := \int f(z) dz$は正規化のための定数である．
+\end{frame}
+
+\begin{frame}
+    \frametitle{1次元のラプラス近似(2)}
+    $z_0$を中心として$\log f(z)$をTaylor展開し，2次の項までをとると
+    \begin{align}
+        \log f(z) \simeq \log f(z_0) - \frac{1}{2}A (z - z_0)^2
+        \tag{4.127}
+    \end{align}
+    となる．
+    \begin{align}
+        A = \left.-\frac{d^2}{dz^2}\log f(z)\right|_{z=z_0}(z - z_0)^2
+        \tag{4.128}
+    \end{align}
+    とした．$f$が$z_0$で極大となるのでTaylor展開の1次の項が
+    現れていないことに注意する．
+    指数をとると
+    \begin{align}
+        f(z) \simeq f(z_0)\exp\left(-\frac{A}{2}(z - z_0)^2\right) \tag{4.129}
+    \end{align}
+    である．
+\end{frame}
+
+\begin{frame}
+    \frametitle{1次元のラプラス近似(3)}
+    正規化して$p$を近似する分布
+    \begin{align}
+        q(z) := \left(\frac{A}{2\pi}\right)^{1/2}\exp\left(-\frac{A}{2}(z - z_0)^2\right)
+        \tag{4.130}
+    \end{align}
+    が得られる．
+
+    \smallskip
+
+    \begin{figure}
+        \caption{ラプラス近似}
+        \begin{center}
+            \begin{tikzpicture}
+                \begin{axis}[
+                samples=500,
+                domain=-5:5,
+                width=8cm, height=5cm,
+                xmin=-6, xmax=6,
+                ymin=-0.1, ymax=0.5,
+                axis x line=center,
+                axis y line=none,
+                xlabel={$x$},
+                axis line style={->},
+                ticks=none]
+                \addplot[color=blue,thick] plot (\x, {0.35*exp(-(x*x)/2)/(1 + exp(-20*x-4))});
+                \addplot[dashed,color=green,thick] plot (\x, {(1/sqrt(2*pi)) * exp(-(x*x)/2)});
+                \draw[dashed] (0,-0.05) -- (0,0.5);
+                \node at (0,0) [anchor=north west]{$z_0$};
+                \end{axis}
+            \end{tikzpicture}
+        \end{center}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{多次元のラプラス近似(1)}
+    $M$次元空間上の分布$p(z) = f(z)/Z$を近似する．
+    1次元の場合と同様に
+    \begin{align}
+        \log f(z) \simeq \log f(z_0) - \frac{1}{2}(z-z_0)'A(z-z_0) \tag{4.131}
+    \end{align}
+    とできる．$A$は$\log f(z)$の$z_0$におけるヘッセ行列を$-1$倍したものである．
+    両辺の指数をとると
+    \begin{align}
+        f(z) \simeq f(z_0)\exp\left(-\frac{1}{2}(z - z_0)'A(z - z_0) \right) \tag{4.133}
+    \end{align}
+    となる．正規化して
+    \begin{align}
+        q(z) &= \frac{|A|^{1/2}}%
+        {(2\pi)^{M/2}}\exp\left(-\frac{1}{2}(z - z_0)'A(z - z_0)\right) \notag \\
+        &= \mathcal{N}(z|z_0,A^{-1}) \tag{4.134}
+    \end{align}
+    を得る．
+\end{frame}
+
+\subsection{モデルの比較とBIC}
+\begin{frame}
+    \frametitle{モデルの比較とBIC}
+    分布$p(z)$を近似したときと同様にして，正規化係数$Z$は
+    \begin{align}
+        Z &= \int f(z)dz \notag \\
+          &\simeq f(z_0) \int \exp\left(-\frac{1}{2}(z - z_0)'A(z - z_0)\right) dz \notag \\
+          &= f(z_0) \frac{(2\pi)^{M/2}}{|A|^{1/2}} \tag{4.135} \label{Z}
+    \end{align}
+    と近似できる．
+    ただし$A := - D_z^2 (\log f)(z_0)$である．
+\end{frame}
+
+\begin{frame}
+    \frametitle{モデルの比較とBIC}
+    モデルエビデンスは
+    \begin{align}
+        p(\mathcal{D}) = \int p(D|\theta)p(\theta)d\theta \tag{4.136}
+    \end{align}
+    で与えられる\footnote{$\mathcal{M}$の条件付けを省略した．}．
+    $f(\theta) = p(\mathcal{D}|\theta)p(\theta),\,Z = p(\mathcal{D})$として，\braref{Z}を適用すると
+    \begin{align}
+        p(\mathcal{D}) \simeq f(\theta_\mathrm{MAP})\frac{(2\pi)^{M/2}}{|A|^{1/2}} \label{ME} \tag{ME}
+    \end{align}
+    となる．ただし
+    \begin{align*}
+        A := - D_\theta^2 (\log f) (\theta_\mathrm{MAP}) = - D_\theta^2 (p(\mathcal{D}|\theta)p(\theta))(\theta_\mathrm{MAP})
+    \end{align*}
+    である．
+\end{frame}
+
+\begin{frame}
+    \frametitle{モデルの比較とBIC}
+    \braref{ME}の両辺の対数をとって
+    \begin{align}
+        \log p(\mathcal{D}) &\simeq \log p(\mathcal{D}|\theta_\mathrm{MAP}) \notag \\
+                            &+ \overbrace{\log p(\theta_\mathrm{MAP}) + \frac{M}{2}\log (2\pi) - \frac{1}{2}\log |A|}^{\text{オッカム係数(Occam factor)と呼ばれる．}} \tag{4.137}
+    \end{align}
+    を得る．
+
+    \bigskip
+
+    もしも事前確率$p(\theta)$がガウス分布で，
+    ヘッセ行列が非退化\footnote{この仮定が満たされていないことが多い．}ならば，
+    \begin{align}
+        \log p(\mathcal{D}) \simeq \log p(\mathcal{D}|\theta_\mathrm{MAP}) - \frac{1}{2}M \log N \tag{4.139} \label{BIC}
+    \end{align}
+    と近似できる．\braref{BIC}は\textbf{ベイズ情報量基準}(Bayesian Information Criterion, BIC)，
+    あるいは\textbf{シュワルツ基準}(Schwarz criterion)と呼ばれる．
+    $(1.73)$のAICと比較して，BICはモデルの複雑さに，より重いペナルティーを科している．
+\end{frame}
+
+\section{ベイズロジスティック回帰}
+\subsection{予測分布}
+\begin{frame}
+    \frametitle{ベイズロジスティック回帰のラプラス近似}
+    ロジスティック回帰モデルをベイズ的に扱いたい．
+    しかしそれを厳密に行うのは困難である．
+    そこでラプラス近似を使って計算を行う方法を考える．
+    事後分布をガウス分布で表現することがこの節での目標である．
+
+    \bigskip
+
+    事後分布がガウス分布ならば，事前分布もガウス分布とするのが自然である．
+    そこで事前分布を
+    \begin{align}
+        p(w) = \mathcal{N}(w|m_0,S_0) \tag{4.140} \label{NwmS}
+    \end{align}
+    とする．\braref{ptw}と\braref{NwmS}を用いると
+    事後確率の対数は
+    \begin{align}
+        \log p(w|t) =& \log p(w)p(t|w) + \mathrm{const.} \notag \\
+                    =& -\frac{1}{2}(w - m_0)'S_0(w - m_0) \notag \\
+                     & -\sum_{n = 1}^N (t_n \log y_n + (1 - t_n) \log (1 - y_n)) + \mathrm{const.} \tag{4.142}
+    \end{align}
+    と計算できる．
+\end{frame}
+
+\begin{frame}
+    \frametitle{ラプラス近似}
+    事後確率を最大化して最大事後確率解$w_\mathrm{MAP}$を求める．
+    共分散行列は
+    \begin{align}
+        S_N^{-1} &= - D_w^2 \log p(w|t)(w_\mathrm{MAP}) \notag \\
+                 &= S_0^{-1} + \varPhi'R\varPhi \tag{4.143}
+    \end{align}
+    で与えられる．
+    よって事後確率分布のガウス分布による近似
+    \begin{align}
+        q(w) = \mathcal{N}(w|w_\mathrm{MAP},S_N) \tag{4.144}
+    \end{align}
+    を得る．
+\end{frame}
+
+\begin{frame}
+    \frametitle{予測分布(1)}
+    前節で事後確率$p(w|t)$のガウス分布表現が得られた．
+    最後に行うのは，
+    新しく特徴ベクトル$\phi(x)$が与えられたときに，
+    予測分布$p(\mathcal{C}_1|\phi,t)$と$p(\mathcal{C}_2|\phi,t)$を求めることである．
+
+    \bigskip
+
+    前節の結果$p(w|t)=q(w)$を用いると，$\mathcal{C}_1$に対する予測分布は
+    \begin{align}
+        p(\mathcal{C}_1|\phi,t) &= \int p(\mathcal{C}_1|\phi,w)p(w|t)dw \notag \\
+                                &\simeq \int \sigma(w'\phi)q(w)dw \tag{4.145}
+    \end{align}
+    と書ける．
+    このとき$\mathcal{C}_2$に対する予測分布は$p(\mathcal{C}_2|\phi,t) = 1 - p(\mathcal{C}_1|\phi,t)$で与えられる．
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{予測分布(2)}
+    $\hat{\phi}:=\phi/\|\phi\|$として
+    $V$と$N$をそれぞれ
+    \begin{gather*}
+        V := \{v \in \mathbb{R}^N;\; v'\phi =0 \},
+        N := \{a\hat{\phi};\;a \in \mathbb{R}\}
+    \end{gather*}
+    と定義する．
+    このとき任意の$w$は$v \in V$と$a\hat{\phi}\in N$を用いて
+    $w = v + a\hat{\phi}$と一意に表すことができる．
+    よって
+    \begin{align}
+        p(\mathcal{C}_1|t)
+        &\simeq \int\int \sigma(a) (p(v|a)p(a))dvda \notag \\
+        &= \int \sigma(a)p(a) \left(\int p(v|a) dv\right)da \notag \\
+        &= \int \sigma(a)\mathcal{N}(a|\mu_a,\sigma_2^a)da \label{pc1t}
+        \tag{4.151}
+    \end{align}
+    と計算できる．
+\end{frame}
+
+\begin{frame}
+    \frametitle{予測分布(3)}
+    $\mu_a,\,\sigma_a^2$はそれぞれ
+    \begin{gather*}
+        \mu_a := \mathbb{E}(w'\phi) = \mathbb{E}(w)'\phi = w_\mathrm{MAP}'\phi,\\
+        \sigma_a := \var(w'\phi) = \phi'\var(w)\phi = \phi' S_N \phi
+    \end{gather*}
+    である．
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{予測分布(4)}
+    \braref{pc1t}のままでは計算が進められないので
+    $\sigma(a)$を標準正規分布の累積分布関数$\varPhi(a)$を用いて近似する．
+    $y = \sigma(a)$と$y = \varPhi(\lambda a)$の原点における
+    傾きが一致するような$\lambda$を求める．
+
+    \bigskip
+
+    $u(a) := \lambda a$とすると
+    \begin{align*}
+        \left.\frac{d\varPhi(u(a))}{da}\right|_{a=0} =
+        \left.\frac{du}{da}
+        \frac{d}{du}
+        \int_{-\infty}^u \frac{e^{-\theta^2/2}}{\sqrt{2\pi}}d\theta \right|_{a = 0}
+        =
+        \left.\frac{\lambda e^{-u^2/2}}{\sqrt{2\pi}}\right|_{a = 0}
+        = \frac{\lambda}{\sqrt{2\pi}}
+    \end{align*}
+    であり，一方
+    \begin{align*}
+        \left.\frac{d\sigma}{da}\right|_{a = 0} = \sigma(0)(1-\sigma(0)) = \frac{1}{4}
+    \end{align*}
+    であるから，$\lambda = \sqrt{\pi/8}$がわかる．
+\end{frame}
+
+\begin{frame}
+    \frametitle{$\varPhi$による$\sigma$の近似}
+    赤い実線が標準正規分布の累積分布関数で，青い破線がロジスティックシグモイド関数である．
+
+    \smallskip
+
+    \tikzset{
+        declare function={
+            normcdf(\x,\m,\s)=1/(1 + exp(-0.07056*((\x-\m)/\s)^3 - 1.5976*(\x-\m)/\s));
+        }
+    }
+    \begin{center}
+        \begin{tikzpicture}
+            \begin{axis}[
+            samples=500,
+            domain=-10:10,
+            width=10cm, height=7cm,
+            xmin=-10.5, xmax=10.5,
+            ymin=-0.3, ymax=1.5,
+            axis x line=center,
+            axis y line=center,
+            xlabel={$x$},
+            ylabel={$y$},
+            axis line style={->},
+            xtick={-5,0,5},
+            ytick={0,0.5}]
+            \addplot[color=red,thick] plot{normcdf(0.626657*x,0,1)} node[pos=0.4](cum){};
+            \addplot[color=blue,thick,dashed] plot (\x,{1/(1+exp((-1)*x))}) node[pos=0.6](a){} ;
+            \node [color=blue,below right] at (a) {${\displaystyle y=\frac{1}{1+\exp(-x)}}$};
+            \node [color=red,above left] at (cum) {${\displaystyle y=\varPhi\left(\sqrt{\frac{\pi}{8}}x\right)}$};
+            \addplot[dashed] plot (\x,{1}) node[pos=0.5](b){};
+            \node [above left] at (b) {$y=1$};
+            \node at (0,0) [anchor=north west]{$O$};
+            \end{axis}
+        \end{tikzpicture}
+    \end{center}
+\end{frame}
+
+\begin{frame}
+    \frametitle{予測分布(5)}
+    $\sigma$を$\varPhi$で近似することで次の性質（演習4.26）を使うことができる．
+    \begin{align}
+        \int \varPhi(\lambda a)\mathcal{N}(a|\mu,\sigma^2)da
+        =\varPhi\left(\frac{\mu}{\sqrt{\lambda^{-2}+\sigma^2}}\right)
+        \tag{4.152}
+    \end{align}
+    これを使うと
+    \begin{align*}
+        p(\mathcal{C}_1|t)
+        &\simeq \int \varPhi(\lambda a)\mathcal{N}(a|\mu_a,\sigma_a^2)da \\
+        &= \varPhi\left(\frac{\mu_a}{\sqrt{\lambda^{-2} + \sigma_a^2}}\right) \\
+        &\simeq \sigma\left(\frac{\mu_a}{\sqrt{1 + \pi \sigma_a^2 / 8}}\right)
+    \end{align*}
+    を得る．
+\end{frame}
+
+\begin{frame}
+    \frametitle{2次形式のFréchet導関数}
+    $f(x) := x'Ax$とすると$D_x f(x)(h) = x'(A + A')h$である．
+
+    \bigskip
+
+    \begin{proof}
+    $h'Ax$はスカラーで$h'Ax = (h'Ax)' = x'A'h$を満たすので
+    \begin{align*}
+        (x + h)'A(x + h) - x'Ax &= x'Ah + h'Ax + h'Ah \\
+                                &= x'(A + A')h + h'Ah
+    \end{align*}
+    が成り立つ．Cauchy-Schwarzの不等式と，作用素ノルムの性質から
+    \begin{align*}
+        |(x + h)'A(x + h) - x'Ax - x'(A + A')h | &\leq  |h'Ah| \\
+        &\leq \|h\|\|Ah\| \\
+        &\leq \|h\|\|A\|\|h\|
+    \end{align*}
+    である．よって任意の$\varepsilon > 0$に対して，
+    $\|h\| \leq \varepsilon/\|A\|$とすれば$D_x f(x)(h)=x(A + A')h$であることが分かる．
+    \end{proof}
+\end{frame}
+
+\section{補足: log|X|のFréchet導関数}
+\begin{frame}
+    \frametitle{$\log |X|$の導関数(1)}
+    $X$を$N \times N$の実対称正定値行列とする．このとき$f(X) := \log |X|$と定めると
+    $D_Xf(X)(H) = \langle X^{-1}, H \rangle$である．
+
+    \bigskip
+
+    %雪江線形代数定理8.6.2 実対称行列ならば固有値は実数
+    %初歩から学べる線形代数 正定値→行列式が正
+    %DIFFERENTIAL CALCULUS, TENSOR PRODUCTS AND THE IMPORTANCE OF NOTATION
+    %  JONATHAN H. MANTON
+    %https://jmanton.wordpress.com/tag/frechet-derivative/
+    %Convex Optimization p.641
+    %  Stephen Boyd, Lieven Vandenberghe
+    %X^{-1}Hは対称とは限らないので固有値が実数とは限らない
+    %Mantonのほうは複素対数関数使ってないような気がするけど実際使ってるはず
+    %Xの固有値が実数ならXHの固有値も実数になるように摂動させられる？
+    %別に複素対数関数を避ける積極的な理由もないんだけど多値関数はなんとなくいや
+    \textbf{証明}{\hskip\labelsep}$X$を$H$を変化させたときの$f$の変化量は
+    \begin{align*}
+        f(X + H) - f(X) &= \log |X(I +  X^{-1}H)| - \log |X| \\
+                        &= \log |I + X^{-1}H|
+    \end{align*}
+    と計算できる．
+    $X^{-1}H$のジョルダン標準形を$J$，変換行列を$P$とする．
+    また$Y := X^{-1}H$の固有値を$\lambda_i\,(i = 1,\ldots,n)$とする．
+    このとき
+    \begin{align*}
+        \log | I + X^{-1}H| &= \log |P^{-1}(I + J)P|
+                            = \log |I + J| \\
+                            &= \log \left(\prod_{i = 1}^N (1 + \lambda_i) \right)
+                            = \sum_{i = 1}^N \log (1 + \lambda_i)
+    \end{align*}
+    である．
+\end{frame}
+
+\begin{frame}
+    \frametitle{$\log |X|$の導関数(2)}
+    $h \in \mathbb{C} \mapsto \log (1 + h)$について，
+    どのような$\varepsilon > 0$をとっても
+    ある$\delta > 0$が存在して，$|h| < \delta$ならば
+    \begin{align*}
+        \log (1 + h) \leq h + \frac{\varepsilon}{N\|X^{-1}\|} |h|
+    \end{align*}
+    とできる．
+    したがって$\|H\| < \delta /\|X^{-1}\|$ととれば
+    $\max_i |\lambda_i| < \delta$なので
+    \footnote{一般に行列$A$の任意の固有値$\lambda \neq 0$と対応する固有ベクトル$x$について
+    \begin{align*}
+        \|A\| = \frac{\|A\|\|x\|}{\|x\|} \geq \frac{\|Ax\|}{\|x\|} = \frac{\|\lambda x\|}{\|x\|} \geq |\lambda|
+    \end{align*}
+    が成り立つ．すなわちスペクトル半径$\rho(A) := \max_i |\lambda_i|$と行列のノルムの間に不等式$\rho(A) \leq \|A\|$が成り立つ．}
+    \begin{align*}
+        \sum_{i = 1}^N \log (1 + \lambda_i) &= \sum_{i = 1}^n \lambda_i + \frac{\varepsilon}{N\|X^{-1}\|} \left(\sum_{i = 1}^N |\lambda_i|\right) \\
+                                            &\leq \tr (X^{-1}H) + \varepsilon \|H\|
+    \end{align*}
+    となる．
+\end{frame}
+
+\begin{frame}
+    \frametitle{$\log |X|$の導関数(3)}
+    ゆえに$f(X) = \log |X|$のFréchet導関数は
+    \begin{align*}
+        D_{X}f(X)(H) = \tr(X^{-1}H) = \langle X^{-1}{}',H\rangle
+    \end{align*}
+    である．\hfill\rule{5pt}{10pt}
+
+    \bigskip
+
+    証明にあたり\cite{mantonsblog}と\cite{manton2012}を
+    参考にした．
+\end{frame}
+
+
+\section{参考文献}
+\begin{frame}
+    \frametitle{参考文献}
+    %\setbeamertemplate{bibliography item}{\insertbiblabel}
+    \bibliographystyle{apalike}
+    \bibliography{PRML4}
+\end{frame}
+\end{document}
