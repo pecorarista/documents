@@ -1,3 +1,4 @@
+%Get images from http://research.microsoft.com/en-us/um/people/cmbishop/PRML/webfigs.htm
 \documentclass[10pt,%
 hyperref={unicode}]{beamer}
 \usepackage{lmodern}
@@ -272,18 +273,7 @@ hyperref={unicode}]{beamer}
     \smallskip
 
     \begin{center}
-        \begin{tikzpicture}[scale=0.5]
-            \draw[thick,red] (-2,-2) -- (6,6);
-            \draw[thick,red] (1,6) -- (7,-3);
-            \node at (3,5) {$?$};
-            \node at (0.5,3) {$\mathcal{R}_1$};
-            \node at (2.8,1) {$\mathcal{R}_3$};
-            \node at (4.7,2.7) {$\mathcal{R}_2$};
-            \draw[<->,thick] (-1,1) node[anchor=south] {$\mathcal{C}_1$}
-            -- (1,-1) node[anchor=north] {$\mathrm{not}\ \mathcal{C}_1$};
-            \draw[<->,thick] (3.8,-1) node[anchor=north] {$\mathrm{not}\ \mathcal{C}_2$}
-            -- (6.2,0.6) node[anchor=south] {$\mathcal{C}_2$};
-        \end{tikzpicture}
+        \includegraphics[scale=0.9]{Figure4-2a.pdf}
     \end{center}
 \end{frame}
 
@@ -299,42 +289,7 @@ hyperref={unicode}]{beamer}
     \smallskip
 
     \begin{center}
-        \begin{tikzpicture}[scale=0.5]
-            \def\x{-2}
-            \def\y{2.95}
-            \draw[thick,red] (\x,\x) -- (\y,\y);
-            \draw[thick,dotted,red] (\y,\y) -- (6,6);
-            \def\t{1.83}
-            \def\z{1 + \t * 2}
-            \def\u{6 - \t * 3}
-            \draw[thick,red] (0,7.5) -- (\z,\u);
-            \draw[thick,dotted,red] (\z,\u) -- (7,-3);
-            \def\s{0.39}
-            \def\v{-2.5 + \s * 9.5}
-            \def\w{2 - \s * 2}
-            \def\ss{1.1}
-            \def\vv{-2.5 + \ss * 9.5}
-            \def\ww{2 - \ss * 2}
-            \draw[thick,dotted,red] (-2.5,2) -- (\v,\w);
-            \draw[thick,red] (\v,\w) -- (\vv,\ww);
-            \node at (3,1.5) {$?$};
-            \node at (0.5,3) {$\mathcal{R}_1$};
-            \node at (2.8,0) {$\mathcal{R}_2$};
-            \node at (4.7,2.7) {$\mathcal{R}_3$};
-            \draw[<->,thick] (-1,1) node[anchor=east] {$\mathcal{C}_1$}
-            -- (1,-1) node[anchor=north] {$\mathcal{C}_2$};
-            \def\a{3.8}
-            \def\b{-6}
-            \draw[<->,thick] (3.8 - \a,-1 - \b) node[anchor=north east] {$\mathcal{C}_1$}
-            -- (6.2 - \a,0.6 - \b) node[anchor=south west] {$\mathcal{C}_3$};
-            \def\d{0.3}
-            \def\e{7}
-            \def\f{-1.5}
-            \def\k{\e + \d * 2}
-            \def\l{\f + \d * 9.5}
-            \draw[<->,thick] (\e,\f) node[anchor=north] {$\mathcal{C}_2$}
-            -- (\k,\l) node[anchor=south] {$\mathcal{C}_3$};
-        \end{tikzpicture}
+        \includegraphics[scale=0.9]{Figure4-2b.pdf}
     \end{center}
 \end{frame}
 
@@ -371,25 +326,7 @@ hyperref={unicode}]{beamer}
     \bigskip
 
     \begin{center}
-        \begin{tikzpicture}[scale=0.7]
-            \def\x{-1}
-            \def\y{7}
-            \def\z{-1}
-            \def\u{-1}
-            \def\v{3}
-            \def\w{-1}
-            \def\s{0.3}
-            \def\t{2}
-            \def\k{2}
-            \def\a{0}
-            \def\b{0}
-            \draw[thick,red] (\a, \b) -- (\s * \x, \s * \y);
-            \draw[thick,red] (\a, \b) -- (\t * \z, \t * \u);
-            \draw[thick,red] (\a, \b) -- (\k * \v, \k * \w);
-            \node at (\a - 1.3, \b + 0.5) {$\mathcal{R}_i$};
-            \node at (\a + 0.5, \b - 1.3) {$\mathcal{R}_j$};
-            \node at (\a + 1,\b + 1) {$\mathcal{R}_k$};
-        \end{tikzpicture}
+        \includegraphics{Figure4-3.pdf}
     \end{center}
 \end{frame}
 
@@ -419,32 +356,26 @@ hyperref={unicode}]{beamer}
     （任意の2点をとったとき，それら結ぶ連続曲線が存在する）であり，
     更に単連結（ループを連続的に変形して1点に縮められる）である．
 
-    \smallskip
+    \bigskip
 
     \begin{figure}
-        \caption{\only<1>{単連結}\only<2>{単連結ではない}}
+        \caption{単連結ではない}
         \begin{center}
-            %http://www.texample.net/tikz/examples/homotopy/
-            %http://tex.stackexchange.com/questions/74168/how-can-i-draw-an-egg-using-tikz
-            \begin{tikzpicture}[>=stealth']
-                \def\eggheight{2.5}
-                \path[fill=red!60]
-                plot[domain=-pi:pi,samples=100]
-                ({.78*\eggheight *cos(\x/4 r)*sin(\x r)+0.5},{-\eggheight*(cos(\x r))})
-                -- cycle;
-                \def\out{23}
-                \def\in{65}
-                \def\return{90}
-                \def\midx{2.2}
-                \def\midy{1.5}
-                \node (M) at (\midx,\midy) {};
-                \node [label=below:$p_0$]  (p0) at (-0.5,-1) {$\bullet$};
-                \draw [-] (p0.center) to[in=-\in,out=\out+10]++(0.6 * \midx, 0.7 * \midy)
-                to[out=180-\in,in=\return-1] (p0.center);
-                \draw [->] (p0.center) to[in=-\in,out=\out]++(M)
-                to[out=180-\in,in=\return] (p0.center);
-                \pause
-                \path [draw=none,fill=white] (0.5,-0.12) circle (0.2);
+            \begin{tikzpicture}
+                \draw (0,3) ellipse (3.5 and 1.5);
+                \begin{scope}[yshift=4]
+                    \clip (-3,3) -- (-1.8,3) -- (-1.8,3.7) -- (1.8,3.7) -- (1.8,3) -- (3,3) -- (3,0) -- (-3,0) -- cycle;
+                    \draw[clip] (0,3.5) ellipse (2.25 and 1);
+                    \draw (0,2.5) ellipse (1.7 and 0.7);
+                \end{scope}
+                \node[fill,circle,inner sep=1pt] (b) at (0,2.3) {};
+                \node at (-0.2,2.1) {$b$};
+                \node at (-2.2, 3.3) {$\ell$};
+                \begin{scope}
+                    \draw (b) to[out=180,in=-150] (-2.7,3.5) to[out=30,in=180] (0,3.35);
+                    \draw[dotted] (0,3.35) to[out=0,in=175] (1.4,4.35);
+                    \draw (1.4,4.35) to[out=-5,in=90] (2.5,3) to[out=-90,in=0,looseness=.8] (b);
+                \end{scope}
             \end{tikzpicture}
         \end{center}
     \end{figure}
@@ -653,11 +584,33 @@ hyperref={unicode}]{beamer}
 \end{frame}
 
 \begin{frame}
-    \frametitle{フィッシャーの判別基準}
+    \frametitle{フィッシャーの判別基準(1)}
     クラスの平均が離れたところに射影されても，
     クラス全体が重なり合うように射影されてしまっては意味がない．
 
     \bigskip
+
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+            \begin{center}
+                \includegraphics[width=\textwidth]{Figure4-6a.pdf}
+            \end{center}
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \begin{center}
+                \includegraphics[width=\textwidth]{Figure4-6b.pdf}
+            \end{center}
+        \end{column}
+    \end{columns}
+
+    \bigskip
+
+    右の図のようになってほしい．
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{フィッシャーの判別基準(2)}
 
     同一クラス内にあるデータは射影された後も
     まとまっていてほしいので
@@ -1364,7 +1317,7 @@ hyperref={unicode}]{beamer}
 
 \subsection{固定基底関数}
 \begin{frame}
-    \frametitle{固定基底関数}
+    \frametitle{固定基底関数(1)}
     \begin{wideitemize}
         \item 入力空間が線形分離不可能であっても，
             非線形変換$\phi$をうまくとれれば，
@@ -1378,6 +1331,24 @@ hyperref={unicode}]{beamer}
 
         \item 固定基底関数の限界については3.6節を参照．
     \end{wideitemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{固定基底関数(2)}
+
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+            \begin{center}
+                \includegraphics[width=\textwidth]{Figure4-12a.pdf}
+            \end{center}
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \begin{center}
+                \includegraphics[width=\textwidth]{Figure4-12b.pdf}
+            \end{center}
+        \end{column}
+    \end{columns}
+
 \end{frame}
 
 \subsection{ロジスティック回帰}
@@ -1641,7 +1612,7 @@ hyperref={unicode}]{beamer}
                 axis line style={->},
                 xtick={-3,0,3},
                 ytick={0,0.5}]
-                \addplot[thick] plot{normcdf(x,0,1)} node[pos=0.4](cum){};
+                \addplot[red,thick] plot{normcdf(x,0,1)} node[pos=0.4](cum){};
                 \node [above left] at (cum) {$y=\varPhi(a)$};
                 \addplot[dashed] plot (\x,{1}) node[pos=0.5](b){};
                 \node [above left] at (b) {$y=1$};
@@ -1760,24 +1731,7 @@ hyperref={unicode}]{beamer}
     \begin{figure}
         \caption{ラプラス近似}
         \begin{center}
-            \begin{tikzpicture}
-                \begin{axis}[
-                samples=500,
-                domain=-5:5,
-                width=8cm, height=5cm,
-                xmin=-6, xmax=6,
-                ymin=-0.1, ymax=0.5,
-                axis x line=center,
-                axis y line=none,
-                xlabel={$x$},
-                axis line style={->},
-                ticks=none]
-                \addplot[color=blue,thick] plot (\x, {0.35*exp(-(x*x)/2)/(1 + exp(-20*x-4))});
-                \addplot[dashed,color=green,thick] plot (\x, {(1/sqrt(2*pi)) * exp(-(x*x)/2)});
-                \draw[dashed] (0,-0.05) -- (0,0.5);
-                \node at (0,0) [anchor=north west]{$z_0$};
-                \end{axis}
-            \end{tikzpicture}
+            \includegraphics[scale=0.9]{Figure4-14a.pdf}
         \end{center}
     \end{figure}
 \end{frame}
@@ -1921,12 +1875,15 @@ hyperref={unicode}]{beamer}
     $\hat{\phi}:=\phi/\|\phi\|$として
     $V$と$N$をそれぞれ
     \begin{gather*}
-        V := \{v \in \mathbb{R}^N;\; v'\phi =0 \},
+        V := \{v \in \mathbb{R}^N;\; v'\phi =0 \},\;
         N := \{a\hat{\phi};\;a \in \mathbb{R}\}
     \end{gather*}
     と定義する．
     このとき任意の$w$は$v \in V$と$a\hat{\phi}\in N$を用いて
-    $w = v + a\hat{\phi}$と一意に表すことができる．
+    $w = v + a\hat{\phi}$と一意に表すことができる（ベクトル空間の直交分解）．
+
+    \bigskip
+
     よって
     \begin{align}
         p(\mathcal{C}_1|t)
@@ -2127,7 +2084,6 @@ hyperref={unicode}]{beamer}
     証明にあたり\cite{mantonsblog}と\cite{manton2012}を
     参考にした．
 \end{frame}
-
 
 \section{参考文献}
 \begin{frame}
