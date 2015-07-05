@@ -1612,7 +1612,7 @@ hyperref={unicode}]{beamer}
                 axis line style={->},
                 xtick={-3,0,3},
                 ytick={0,0.5}]
-                \addplot[red,thick] plot{normcdf(x,0,1)} node[pos=0.4](cum){};
+                \addplot[color=red,thick] plot{normcdf(x,0,1)} node[pos=0.4](cum){};
                 \node [above left] at (cum) {$y=\varPhi(a)$};
                 \addplot[dashed] plot (\x,{1}) node[pos=0.5](b){};
                 \node [above left] at (b) {$y=1$};
@@ -1887,7 +1887,7 @@ hyperref={unicode}]{beamer}
     よって
     \begin{align}
         p(\mathcal{C}_1|t)
-        &\simeq \int\int \sigma(a) (p(v|a)p(a))dvda \notag \\
+        &\simeq \iint \sigma(a) (p(v|a)p(a))dvda \notag \\
         &= \int \sigma(a)p(a) \left(\int p(v|a) dv\right)da \notag \\
         &= \int \sigma(a)\mathcal{N}(a|\mu_a,\sigma_2^a)da \label{pc1t}
         \tag{4.151}
