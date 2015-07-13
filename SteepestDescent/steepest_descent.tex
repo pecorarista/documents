@@ -1,0 +1,322 @@
+\documentclass[10pt,hyperref={unicode}]{beamer}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,accents,mathrsfs}
+\usepackage{datetime}
+\usepackage[noenc,safe]{tipa}
+\usepackage{luatextra}
+\usepackage{luatexja-otf}
+\usepackage{luatexja-fontspec}
+\usepackage[hiragino-pron,deluxe]{luatexja-preset}
+\usepackage{polyglossia}
+\setmainlanguage{english}
+\setotherlanguage{russian}
+\usepackage{tikz}
+\usepackage{tikz-3dplot}
+\usepackage{pgf}
+\usepackage{pgfplots}
+\usetikzlibrary{arrows,quotes,angles}
+\usepackage{scrextend}
+\usepackage{natbib}
+\deffootnote[10pt]{10pt}{10pt}{\makebox[10pt][l]{\thefootnotemark\hspace{10pt}}}
+\usetheme{default}
+\usecolortheme{metropolis}
+\usefonttheme{professionalfonts}
+\setmainjfont[BoldFont=Hiragino Kaku Gothic ProN W6,Ligatures=TeX]%
+{Hiragino Kaku Gothic ProN W3}
+\setsansfont[BoldFont=Hiragino Kaku Gothic ProN W6,Ligatures=TeX]{Hiragino Kaku Gothic ProN W3}
+%\setmonofont{DejaVu Sans Mono}
+\newfontfamily\ipafont[]{CMU Sans Serif}
+\DeclareMathOperator*{\aff}{aff}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\epi}{epi}
+\DeclareMathOperator*{\id}{id}
+\DeclareMathOperator*{\rank}{rank}
+\DeclareMathOperator*{\ri}{ri}
+\DeclareMathOperator*{\sgn}{sgn}
+\DeclareMathOperator*{\tr}{tr}
+\DeclareMathOperator*{\var}{var}
+\DeclareMathOperator*{\dom}{dom}
+\newcommand\dottedcircle{%
+\begin{pgfpicture}
+\pgfsetlinewidth{0.25ex}
+\pgfsetroundcap
+\pgfsetdash{{0cm}{2pt}{0cm}{2pt}}{0cm}
+\pgfcircle{\pgfpointorigin}{0.75ex}
+\pgfusepath{stroke}
+\pgfsetbaseline{-0.75ex}
+\end{pgfpicture}%
+}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{itemize/enumerate subbody begin}{\vspace{1em}}
+\setbeamertemplate{caption}{\raggedright\insertcaption\par}
+\definecolor{mDarkTeal}{HTML}{23373b}
+\setbeamercolor{block title}{use=structure,fg=white,bg=mDarkTeal}
+\setbeamercolor{block body}{use=structure,fg=black,bg=gray!20!white}
+\newenvironment{wideitemize}{\itemize\addtolength{\itemsep}{1em}}{\enditemize}
+\newenvironment{wideenumerate}{\enumerate\addtolength{\itemsep}{1em}}{\endenumerate}
+\addtobeamertemplate{navigation symbols}{}{%
+\usebeamerfont{footline}%
+\usebeamercolor[fg]{footline}%
+\hspace{1em}%
+\insertframenumber/\inserttotalframenumber
+}
+\makeatletter\def\tagform@#1{\maketag@@@{{\fontfamily{cmr}\selectfont(#1)}\@@italiccorr}}\makeatother
+\newcommand{\braref}[1]{{\fontfamily{cmr}\selectfont (\ref{#1})}}
+\makeatletter\renewenvironment{proof}{\par\pushQED{\qed}\normalfont\topsep6\p@\@plus6\p@\relax\trivlist\item[\hskip\labelsep{\bfseries 証明}\hskip\labelsep]\ignorespaces}{\popQED\endtrivlist\@endpefalse}\makeatother
+\newcommand{\parentheses}[1]{\left(#1\right)}
+\newcommand{\leftopenrightclose}[1]{\left(\left.#1\right]\right.}
+\newcommand{\braces}[1]{\left\{#1\right\}}
+\newcommand{\brackets}[1]{\left[#1\right]}
+\newcommand{\anglebrackets}[1]{\left\langle#1\right\rangle}
+\newcommand{\norm}[1]{\left\|#1\right\|}
+\newcommand{\absolute}[1]{\left|#1\right|}
+\renewcommand{\qedsymbol}{\rule{5pt}{10pt}}
+\pgfplotsset{%
+width=5cm,
+compat=newest,
+xlabel near ticks,
+ylabel near ticks
+}
+\title{最急降下法}
+\institute{総合研究大学院大学 博士前期1年\newline\newline\texttt{miyazawa-a@nii.ac.jp}}
+\author{宮澤　彬}
+\date{\today}
+\begin{document}
+\begin{frame}
+\maketitle
+\end{frame}
+
+\begin{frame}
+\frametitle{最急降下法}
+
+関数の停留点（特に極小点）を，解析的に求めること難しい場合にどのように求めればよいか．
+接線の傾きが負である点から，$0$に近づく方向に移動していけばよさそうである．
+
+\bigskip
+
+\begin{center}
+    \begin{tikzpicture}[scale=0.9]
+        \draw (0,0) node[below left] {$O$};
+        \draw[->] (-0.5,0) -- (7,0) node[below left] {$x$};
+        \draw[->] (0,-1) -- (0,4) node[below left] {$y$};
+        \draw[color=red] plot [domain=-0.25:5] (\x,{((\x-3)^2)/4 + 0.5)});
+        \draw[color=blue] plot [domain=1.25:2.25] (\x,{(-0.625*(\x-1.75)+((1.75-3)^2)/4 + 0.5)});
+        \draw[color=blue] plot [domain=0:1] (\x,{(-1.25*(\x-0.5)+((0.5-3)^2)/4 + 0.5)});
+        \draw[color=blue] plot [domain=2.5:3.5] (\x,0.5);
+        \draw (5.6,2) node {$y=f\parentheses{x}$};
+        \draw (4.8,0.375) node {$\nabla f\parentheses{x_\infty} = 0$};
+        \draw[dotted] (0.5,2.0625) -- (0.5,0) node[below] {$x_0$};
+        \draw[dotted] (1.75,0.890625) -- (1.75,0) node[below] {$x_k$};
+        \draw[dotted] (3,0.5) -- (3,0) node[below] {$x_\infty$};
+    \end{tikzpicture}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{Armijo条件}
+$0 < \xi_1 < 1$であるような定数$\xi_1$に対して，
+\begin{align*}
+    f\parentheses{x_k + \alpha d_k} \leq f \parentheses{x_k} + \xi_1 \alpha \nabla f\parentheses{x_k}\cdot d_k
+\end{align*}
+を満たす$\alpha > 0$を選ぶ．この条件を\textbf{Armijo条件}\footnote[frame]{スペイン語読みをするならばおそらく\begin{ipafont}\textipa{/ar\textprimstress mixo/}\end{ipafont}．}という．
+
+\smallskip
+
+\begin{center}
+    \begin{tikzpicture}[scale=0.9]
+        \draw (0,0) node[below left] {$O$};
+        \draw[->] (-0.5,0) -- (7,0) node[below left] {$x$};
+        \draw[->] (0,-1.5) -- (0,4) node[below left] {$y$};
+        \draw[color=red] plot [domain=-0.25:5] (\x,{((\x-3)^2)/4 + 0.5)});
+        \draw[color=red,thick] plot [domain=0.5:3.5] (\x,{((\x-3)^2)/4 + 0.5)});
+        \draw[color=blue] plot [domain=-0.25:3] (\x,{(-1.25*(\x-0.5)+((0.5-3)^2)/4 + 0.5)});
+        \draw[color=blue] plot [domain=-0.25:4] (\x,{(-0.5*(\x-0.5)+((0.5-3)^2)/4 + 0.5)});
+        \draw (6.8,0.375) node {$y = f\parentheses{x_k} + \xi_1 \alpha \nabla f\parentheses{x_k}\cdot d_k$};
+        \draw (5.6,-1) node {$y = f\parentheses{x_k} + \alpha \nabla f\parentheses{x_k}\cdot d_k$};
+        \draw (5.6,2) node {$y=f\parentheses{x}$};
+        \draw[dotted] (0.5,2.0625) -- (0.5,0) node[below] {$x_k$};
+        \draw[dotted] (3.5,0.5625) -- (3.5,0);
+        \draw[thick] (0.5,0) -- (3.5,0) node[below] {$x_k + \alpha d_k$};
+    \end{tikzpicture}
+\end{center}
+
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Wolfe条件}
+$0 < \xi_1 < \xi_2 < 1$であるような$\xi_1,\,\xi_2$に対して
+\begin{align*}
+    \xi_2 \nabla f\parentheses{x_k}\cdot d_k \leq \nabla f \parentheses{x_k + \alpha d_k}\cdot d_k
+\end{align*}
+を満たす$\alpha > 0$を選ぶ．この条件を\textbf{曲率条件}(curvature condition)と呼ぶ．この条件とArmijo条件を合わせて\textbf{Wolfe条件}と呼ぶ．
+
+\smallskip
+
+\begin{center}
+    \begin{tikzpicture}[scale=0.9]
+        \draw (0,0) node[below left] {$O$};
+        \draw[->] (-0.5,0) -- (7,0) node[below left] {$x$};
+        \draw[->] (0,-1) -- (0,4) node[below left] {$y$};
+        \draw[color=red] plot [domain=-0.25:5] (\x,{((\x-3)^2)/4 + 0.5)});
+        \draw[color=blue] plot [domain=-0.5:1.5] (\x,{(-1.25*(\x-0.5)+((0.5-3)^2)/4 + 0.5)});
+        \draw[color=blue] plot [domain=-0.5:1.5] (\x,{(-0.5*(\x-0.5)+((0.5-3)^2)/4 + 0.5)});
+        \draw[color=blue] plot [domain=1:3] (\x,{(-0.5*(\x-2)+((2-3)^2)/4 + 0.5)});
+        \draw (2.5,1.6) node {$\xi_2 \nabla f\parentheses{x_k}$};
+        \draw (1.27,0.45) node {$\nabla f\parentheses{x_k}$};
+        \draw (5.6,2) node {$y=f\parentheses{x}$};
+        \draw[dotted] (0.5,2.0625) -- (0.5,0) node[below] {$x_k$};
+        \draw[dotted] (2,0.75) -- (2,0) node[below] {$x_k + \alpha d_k$};
+        \draw[thick] (2,0) -- (7,0);
+    \end{tikzpicture}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{Zoutendijk条件}
+\textbf{定理}{\hskip\labelsep}目的関数$f\parentheses{x}$は下に有界で，
+かつ，初期点$x_0$における準位集合
+$\braces{x\;;\; f\parentheses{x} \leq f\parentheses{x_0}}$における
+を含む開集合$U$において連続的微分可能であるとする．
+また勾配$\nabla f\parentheses{x}$は$U$でLipschitz連続であるとする．
+すなわち，ある正定数$L$が存在して，任意の$x,\,y \in U$に対して
+\begin{align*}
+    \norm{\nabla f\parentheses{x} - \nabla f\parentheses{y}} \leq L \norm{x - y}
+\end{align*}
+が成り立つとする．
+
+\bigskip
+
+このとき$x_{k + 1} = x_k + \alpha_k d_k$を以下の条件を満たすようにとる．
+\begin{itemize}
+    \item 各$\alpha_k$がWolfe条件を満たす．
+    \item 各$d_k$が降下方向である．すなわち$\nabla f\parentheses{x_k} \cdot d_k < 0$を満たす．
+\end{itemize}
+すると点列$\parentheses{x_k}_k$について
+\begin{align*}
+    \sum_{k = 0}^\infty \parentheses{\frac{\nabla f \parentheses{x_k}\cdot d_k}{\norm{d_k}}}^2 < \infty
+\end{align*}
+が成り立つ．
+\end{frame}
+
+\begin{frame}
+\frametitle{Zoutendijk条件}
+\textbf{証明}{\hskip\labelsep}曲率条件と$x_{k + 1} = x_k + \alpha_k d_k$から
+\begin{gather*}
+    \xi_2 \nabla f\parentheses{x_k}\cdot d_k \leq \nabla f \parentheses{x_{k + 1}}\cdot d_k\\
+    \parentheses{\xi_2 - 1} \nabla f\parentheses{x_k}\cdot d_k \leq \parentheses{\nabla f \parentheses{x_{k + 1}} - \nabla f\parentheses{x_k}}\cdot d_k
+\end{gather*}
+が成り立つ．
+Lipschitz条件より
+\begin{align*}
+    \parentheses{\nabla f \parentheses{x_{k + 1}} - \nabla f\parentheses{x_k}}\cdot d_k
+    &\leq \left\|\nabla f \parentheses{x_{k + 1}} - \nabla f\parentheses{x_k}\right\|\left\| d_k\right\| \\
+    &\leq L\left\| x_{k + 1} -x_k \right\|\left\| d_k\right\| \\
+    &\leq \alpha_k L\left\|d_k\right\|^2
+\end{align*}
+が成り立つ．これらから
+\begin{align*}
+    \alpha_k
+    &\geq \frac{\parentheses{\nabla f \parentheses{x_{k + 1}} - \nabla f\parentheses{x_k}}\cdot d_k}{L\left\|d_k\right\|^2} \\
+    &\geq \frac{\xi_2 - 1}{L}\frac{\nabla f\parentheses{x_k}\cdot d_k}{\left\|d_k\right\|^2}
+\end{align*}
+を得る．
+\end{frame}
+
+\begin{frame}
+\frametitle{Zoutendijk条件}
+得られた$\alpha_k$をArmijo条件に代入して
+\begin{align*}
+    f\parentheses{x_{k + 1}} &\leq f \parentheses{x_k} + \xi_1 \alpha_k \nabla f\parentheses{x_k}\cdot d_k \\
+                             &\leq f \parentheses{x_k} - \frac{\xi_1\parentheses{1 - \xi_2}}{L}\frac{\parentheses{\nabla f\parentheses{x_k}\cdot d_k}^2}{\left\|d_k\right\|^2}
+\end{align*}
+となる．ここで$k = 0$から$m$までの和をとると
+\begin{gather*}
+    \sum_{k = 0}^m \parentheses{f\parentheses{x_{k + 1}} - f \parentheses{x_k}}
+    \leq - \sum_{k = 0}^m \frac{\xi_1\parentheses{1 - \xi_2}}{L} \frac{\parentheses{\nabla f\parentheses{x_k}\cdot d_k}^2}{\left\|d_k\right\|^2} \\
+    f\parentheses{x_{m + 1}} - f \parentheses{x_0}
+    \leq - \frac{\xi_1\parentheses{1 - \xi_2}}{L}\sum_{k = 0}^m \frac{\parentheses{\nabla f\parentheses{x_k}\cdot d_k}^2}{\left\|d_k\right\|^2}
+\end{gather*}
+を得る．
+\end{frame}
+
+\begin{frame}
+\frametitle{Zoutendijk条件}
+上式の右辺は$m$が増加するにつれて単調に減少する．また$f$は下に有界であると仮定していたので
+\begin{align}
+    \sum_{k = 0}^\infty \frac{\parentheses{\nabla f \parentheses{x_k} \cdot d_k}^2}{\left\|d_k\right\|^2} < \infty \tag{Zoutendijk} \label{Zoutendijk}
+\end{align}
+を得る．\hfill \rule{5pt}{10pt}
+
+\bigskip
+
+上の\braref{Zoutendijk}を\textbf{Zoutendijk条件}\footnote[frame]{オランダ語読みをするならばおそらく\begin{ipafont}\textipa{/\textprimstress zAut@ndAIk/}\end{ipafont}．}と呼ぶ．
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Zoutendijk条件}
+Zoutendijk条件が成り立つとする．このとき
+$S := \sum_{k = 0}^\infty \parentheses{\nabla f \parentheses{x_k} \cdot d_k}^2/\norm{d_k}^2$は
+ある有限の値である．Cauchy-Schwarzの不等式から，任意の自然数$m$について
+\begin{align*}
+    \parentheses{\sum_{k = 0}^m \frac{\absolute{\nabla f \parentheses{x_k} \cdot d_k}}{\left\|d_k\right\|}}^2 \leq
+    \sum_{k = 0}^m \frac{\parentheses{\nabla f \parentheses{x_k} \cdot d_k}^2}{\left\|d_k\right\|^2} \leq S
+\end{align*}
+が成り立つ．ゆえに
+\begin{align*}
+    \sum_{k = 0}^\infty \frac{\absolute{\nabla f \parentheses{x_k} \cdot d_k}}{\left\|d_k\right\|} \leq \sqrt{S}
+\end{align*}
+となり，この級数は収束することが分かる．したがって
+\begin{align*}
+    \frac{\absolute{\nabla f \parentheses{x_k} \cdot d_k}}{\left\|d_k\right\|} \to 0 \ \parentheses{k \to \infty}
+\end{align*}
+となる．
+\end{frame}
+
+\begin{frame}
+\frametitle{最急降下法の大域収束性}
+特に$d_k = - \nabla f\parentheses{x_k}$をとる．
+この$d_k$は$\nabla f\parentheses{x_k} \cdot d_k = - \norm{f\parentheses{x_k}}^2 < 0$を満たすので，
+降下方向である．さらに先に示した結果から，
+\begin{align*}
+    \frac{\absolute{\nabla f \parentheses{x_k} \cdot d_k}}{\norm{d_k}} = \norm{f\parentheses{x_k}}  \to 0 \ \parentheses{k \to \infty}
+\end{align*}
+を満たす．
+
+\bigskip
+
+Cauchy-Schwarzの不等式における等号成立条件から，
+$\norm{d_k}$を固定して考えたとき，
+この$d_k$は$\nabla f\parentheses{x_k} \cdot d_k$
+を最小にするものである．
+つまり最も急に減少させるものである．
+そのため$d_k = - \nabla f\parentheses{x_k}$とする
+方法を\textbf{最急降下法}(steepest descent method)と呼ぶ．
+\end{frame}
+
+%\bibliographystyle{apalike}
+\begin{frame}
+\frametitle{参考文献・おわりに}
+主に以下を参考にした．
+
+\bigskip
+
+\begin{itemize}
+    \item 矢部博, 新・工科系の数学「工学基礎　最適化とその応用」,
+        数理工学社, 2006.
+\end{itemize}
+
+\bigskip
+
+また，このスライドのソースコードは
+\href{https://github.com/pecorarista/documents}{https://github.com/pecorarista/documents}にある．
+%@book{yabe2006,
+%  title={工学基礎最適化とその応用},
+%  series={新・工科系の数学},
+%  author={矢部博},
+%  year={2006},
+%  publisher={数理工学社}
+%}
+\end{frame}
+\end{document}
