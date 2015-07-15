@@ -170,7 +170,7 @@ hyperref={unicode}]{beamer}
     \bigskip
     %この本も結構詳しい Murphy, Kevin P. Machine learning: a probabilistic perspective. MIT press, 2012.
     %Section 8.6
-    これらの比較は1.5.4で詳しく扱った\footnote{\cite{murphy2012}の8.6も詳しい．}．
+    これらの比較は1.5.4で詳しく扱った\footnote[frame]{\cite{murphy2012}の8.6も詳しい．}．
 \end{frame}
 
 \begin{frame}
@@ -632,7 +632,7 @@ hyperref={unicode}]{beamer}
 \begin{frame}
     \frametitle{フィッシャーの判別基準の最大化(1)}
     \textbf{クラス間共分散行列}(between-class covariance matrix)
-    \footnote{フィッシャー判別基準に関してぐぐってみたところ
+    \footnote[frame]{フィッシャー判別基準に関してぐぐってみたところ
     どちらかというと“covariance”ではなく“scatter”と呼ばれているほうが多い印象を受けた．}
     \begin{align}
         S_\mathrm{B} = (m_2 - m_1)(m_2 - m_1)' \tag{4.27}
@@ -646,7 +646,7 @@ hyperref={unicode}]{beamer}
     \begin{align}
         J(w) = \frac{w'S_\mathrm{B}w}{w'S_\mathrm{W}w} \tag{4.26}
     \end{align}
-    となる\footnote{レイリー商(Rayleigh quotient)の形だ．}．
+    となる\footnote[frame]{レイリー商(Rayleigh quotient)の形だ．}．
 \end{frame}
 
 \begin{frame}
@@ -797,7 +797,7 @@ hyperref={unicode}]{beamer}
 
     \bigskip
 
-    \braref{J}の最大化についてはFukunaga(1990)に書かれているらしい\footnote{見てない．}．
+    \braref{J}の最大化についてはFukunaga(1990)に書かれているらしい\footnote[frame]{見てない．}．
     結論として，最適な$W$は，一般化された固有方程式
     \begin{align*}
         S_\mathrm{B}v = \lambda S_\mathrm{W}v
@@ -919,7 +919,7 @@ hyperref={unicode}]{beamer}
     パーセプトロンの収束定理から，
     学習データ集合が線形分離可能ならばパーセプトロンの学習アルゴリズムは有限回の
     繰り返しで厳密解（正しく分離できる$w$）に収束することが分かる
-    \footnote{証明は簡単だが省略する．たとえば海野ら(2015)を参照．}．\nocite{unno2015}
+    \footnote[frame]{証明は簡単だが省略する．たとえば海野ら(2015)を参照．}．\nocite{unno2015}
 \end{frame}
 
 \begin{frame}
@@ -1203,7 +1203,7 @@ hyperref={unicode}]{beamer}
 
 \begin{frame}
     \frametitle{最尤解（2クラス）(6)}
-    $B := \varSigma^{-1}$で微分して\footnote{$f(X) = \log |X|$の微分についてはスライドの最後の補足を参照．}
+    $B := \varSigma^{-1}$で微分して\footnote[frame]{$f(X) = \log |X|$の微分についてはスライドの最後の補足を参照．}
 \begin{align*}
     &D_B \ell (B)(H) \\
     &= \frac{N}{2}\langle B^{-1}{}', H \rangle \\
@@ -1468,7 +1468,7 @@ hyperref={unicode}]{beamer}
              &= \sum_{i,j} \delta_{ij}y_i (1 - y_i) u_i u_j \\
              &= \sum_{i,j} y_i (1 - y_i) u_i^2 > 0
     \end{align*}
-    である\footnote{$\varPhi \neq O$を仮定した．}．ゆえに$E$は唯一の最小解を持つ．
+    である\footnote[frame]{$\varPhi \neq O$を仮定した．}．ゆえに$E$は唯一の最小解を持つ．
 \end{frame}
 
 \begin{frame}
@@ -1527,7 +1527,7 @@ hyperref={unicode}]{beamer}
         = \prod_{n = 1}^N \prod_{k = 1}^K y_{nk}^{t_{nk}}
         \tag{4.107}
     \end{align}
-    となる\footnote{これはCategorical distributionという
+    となる\footnote[frame]{これはCategorical distributionという
         Bernoulli分布の自然な拡張になっている．}．
     ここで$y_{nk} = y_k(\phi_n)$とした．負の対数をとると
     \begin{align}
@@ -1561,7 +1561,7 @@ hyperref={unicode}]{beamer}
         \tag{4.112}
     \end{align}
     ここで$\theta$は確率的な項で，
-    確率密度関数$g$にしたがっているとする\footnote{個人的には，
+    確率密度関数$g$にしたがっているとする\footnote[frame]{個人的には，
         閾値が確率的に変動すると捉えるよりも，
         閾値に，入力に含まれる確率的誤差を
     含めたものが$\theta$と捉えるほうが分かりやすいと思った．}．
@@ -1580,7 +1580,7 @@ hyperref={unicode}]{beamer}
         \varPhi(a) := \int_{-\infty}^a \frac{1}{\sqrt{2\pi}}\exp\left(-\frac{u^2}{2}\right)du \tag{4.114}
     \end{align}
     で与えられるとき，このモデルは\textbf{プロビット回帰}(probit regression)と呼ばれる
-    \footnote{標準正規分布の累積分布関数$\varPhi$の逆関数をプロビット関数と呼ぶ．}．
+    \footnote[frame]{標準正規分布の累積分布関数$\varPhi$の逆関数をプロビット関数と呼ぶ．}．
 
     \bigskip
 
@@ -1776,7 +1776,7 @@ hyperref={unicode}]{beamer}
     \begin{align}
         p(\mathcal{D}) = \int p(D|\theta)p(\theta)d\theta \tag{4.136}
     \end{align}
-    で与えられる\footnote{$\mathcal{M}$の条件付けを省略した．}．
+    で与えられる\footnote[frame]{$\mathcal{M}$の条件付けを省略した．}．
     $f(\theta) = p(\mathcal{D}|\theta)p(\theta),\,Z = p(\mathcal{D})$として，\braref{Z}を適用すると
     \begin{align}
         p(\mathcal{D}) \simeq f(\theta_\mathrm{MAP})\frac{(2\pi)^{M/2}}{|A|^{1/2}} \label{ME} \tag{ME}
@@ -1800,7 +1800,7 @@ hyperref={unicode}]{beamer}
     \bigskip
 
     もしも事前確率$p(\theta)$がガウス分布で，
-    ヘッセ行列が非退化\footnote{この仮定が満たされていないことが多い．}ならば，
+    ヘッセ行列が非退化\footnote[frame]{この仮定が満たされていないことが多い．}ならば，
     \begin{align}
         \log p(\mathcal{D}) \simeq \log p(\mathcal{D}|\theta_\mathrm{MAP}) - \frac{1}{2}M \log N \tag{4.139} \label{BIC}
     \end{align}
@@ -2058,8 +2058,7 @@ hyperref={unicode}]{beamer}
     \end{align*}
     とできる．
     したがって$\|H\| < \delta /\|X^{-1}\|$ととれば
-    $\max_i |\lambda_i| < \delta$なので
-    \footnote{一般に行列$A$の任意の固有値$\lambda \neq 0$と対応する固有ベクトル$x$について
+    $\max_i |\lambda_i| < \delta$なので\footnote[frame]{一般に行列$A$の任意の固有値$\lambda \neq 0$と対応する固有ベクトル$x$について
     \begin{align*}
         \|A\| = \frac{\|A\|\|x\|}{\|x\|} \geq \frac{\|Ax\|}{\|x\|} = \frac{\|\lambda x\|}{\|x\|} \geq |\lambda|
     \end{align*}
