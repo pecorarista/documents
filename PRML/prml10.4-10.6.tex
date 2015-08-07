@@ -1,0 +1,1710 @@
+\documentclass[10pt,hyperref={unicode}]{beamer}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,accents,mathrsfs,bm}
+\usepackage{datetime}
+\usepackage[noenc,safe]{tipa}
+\usepackage{luatextra}
+\usepackage{luatexja-otf}
+\usepackage{luatexja-fontspec}
+\usepackage[hiragino-pron,deluxe]{luatexja-preset}
+\usepackage{polyglossia}
+\setmainlanguage{english}
+\setotherlanguage{russian}
+\usepackage{listings}
+\usepackage{tikz}
+\usepackage{tikz-3dplot}
+\usepackage{pgf}
+\usepackage{pgfplots}
+\usetikzlibrary{arrows,quotes,angles}
+\usepackage{scrextend}
+\usepackage{natbib}
+\deffootnote[10pt]{10pt}{10pt}{\makebox[10pt][l]{\thefootnotemark\hspace{10pt}}}
+\usetheme{default}
+\usecolortheme{metropolis}
+\usefonttheme{professionalfonts}
+\setmainjfont[BoldFont=Hiragino Kaku Gothic ProN W6,Ligatures=TeX]%
+{Hiragino Kaku Gothic ProN W3}
+\setsansfont[BoldFont=Hiragino Kaku Gothic ProN W6,Ligatures=TeX]{Hiragino Kaku Gothic ProN W3}
+%\setmonofont{DejaVu Sans Mono}
+\newfontfamily\ipafont[]{CMU Serif}
+\DeclareMathOperator*{\aff}{aff}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\epi}{epi}
+\DeclareMathOperator*{\id}{id}
+\DeclareMathOperator*{\rank}{rank}
+\DeclareMathOperator*{\ri}{ri}
+\DeclareMathOperator*{\sgn}{sgn}
+\DeclareMathOperator*{\tr}{tr}
+\DeclareMathOperator*{\var}{var}
+\DeclareMathOperator*{\dom}{dom}
+\DeclareMathOperator*{\KL}{KL}
+\DeclareMathOperator*{\GammaDistribution}{Gamma}
+\newcommand\dottedcircle{%
+\begin{pgfpicture}
+\pgfsetlinewidth{0.25ex}
+\pgfsetroundcap
+\pgfsetdash{{0cm}{2pt}{0cm}{2pt}}{0cm}
+\pgfcircle{\pgfpointorigin}{0.75ex}
+\pgfusepath{stroke}
+\pgfsetbaseline{-0.75ex}
+\end{pgfpicture}%
+}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{itemize/enumerate subbody begin}{\vspace{1em}}
+\setbeamertemplate{caption}{\raggedright\insertcaption\par}
+\definecolor{mDarkTeal}{HTML}{23373b}
+\setbeamercolor{block title}{use=structure,fg=white,bg=mDarkTeal}
+\setbeamercolor{block body}{use=structure,fg=black,bg=gray!20!white}
+\newenvironment{wideitemize}{\itemize\addtolength{\itemsep}{1em}}{\enditemize}
+\newenvironment{wideenumerate}{\enumerate\addtolength{\itemsep}{1em}}{\endenumerate}
+\addtobeamertemplate{navigation symbols}{}{%
+\usebeamerfont{footline}%
+\usebeamercolor[fg]{footline}%
+\hspace{1em}%
+\insertframenumber/\inserttotalframenumber
+}
+\makeatletter\def\tagform@#1{\maketag@@@{{\fontfamily{cmr}\selectfont(#1)}\@@italiccorr}}\makeatother
+\newcommand{\paref}[1]{{\fontfamily{cmr}\selectfont (\ref{#1})}}
+\makeatletter\renewenvironment{proof}{\par\pushQED{\qed}\normalfont\topsep6\p@\@plus6\p@\relax\trivlist\item[\hskip\labelsep{\bfseries 証明}\hskip\labelsep]\ignorespaces}{\popQED\endtrivlist\@endpefalse}\makeatother
+\newcommand{\absolute}[1]{\left|#1\right|}
+\newcommand{\parentheses}[1]{\left(#1\right)}
+\newcommand{\leftopenrightclose}[1]{\left(\left.#1\right]\right.}
+\newcommand{\leftcloserightopen}[1]{\left[\left.#1\right)\right.}
+\newcommand{\braces}[1]{\left\{#1\right\}}
+\newcommand{\brackets}[1]{\left[#1\right]}
+\newcommand{\anglebrackets}[1]{\left\langle#1\right\rangle}
+\newcommand{\norm}[1]{\left\|#1\right\|}
+\newcommand{\const}{\mathrm{const.}}
+\renewcommand{\qedsymbol}{\rule{5pt}{10pt}}
+\newcommand{\energy}{\mathcal{L}}
+%\newcommand{\energy}{F}
+\pgfplotsset{%
+width=5cm,
+compat=newest,
+xlabel near ticks,
+ylabel near ticks
+}
+\lstset{%
+basicstyle=\ttfamily
+}
+\title{PRML 10.4 - 10.6}
+\institute{総合研究大学院大学 博士前期1年\newline\newline\texttt{miyazawa-a@nii.ac.jp}}
+\author{宮澤　彬}
+\date{\today}
+\begin{document}
+\setlength{\jot}{1.5\jot}
+\nocite{bishop2008}
+\begin{frame}
+\maketitle
+\end{frame}
+
+
+\section{はじめに}
+
+\begin{frame}
+    \frametitle{はじめに}
+    \begin{wideitemize}
+        \item このスライドの{\LuaLaTeX}のソースコードは
+            \href{https://github.com/pecorarista/documents}{\texttt{https://github.com/pecorarista/documents}}に
+            あります．
+        \item 教科書とは若干異なる表記をしている場合があります．
+        \item 10.4.1と10.7は間に合いませんでした．
+    \end{wideitemize}
+\end{frame}
+
+\section{指数型分布族}
+
+\begin{frame}
+\frametitle{潜在変数とパラメータ}
+今までモデルの中で観測値(observed variable)と隠れ変数(hidden variable)を区別してきた．これからは更に以下のような区別を導入する．
+
+\bigskip
+
+\begin{wideitemize}
+    \item \textbf{潜在変数}(latent variable) $Z$
+
+        観測値集合の大きさに従って数が増える（\textbf{外延的変数}）
+
+        例：ガウス混合モデルのインジケータ変数$z_{kn}$
+
+    \item \textbf{パラメータ}(parameter) $\theta$
+
+        観測値集合の大きさに関わらず数が固定（\textbf{内包的変数}）
+
+        例：ガウス混合モデルの平均$\mu_k$，精度$\varLambda_k$，混合比$\pi_k$
+\end{wideitemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{指数型分布族}
+独立に同分布に従うデータの集合$X := \braces{x_1,\ldots,x_N}$と
+それに対応する潜在変数の集合$Z := \braces{z_1,\ldots,z_N}$が
+あるとする．
+これらの同時分布が自然パラメータ$\eta$を
+使った以下の指数型分布族で表せるとする．
+\begin{align*}
+    p\parentheses{X,Z|\eta} = \prod_{n = 1}^N h\parentheses{x_n,z_n}g\parentheses{\eta}\exp\parentheses{\eta'u\parentheses{x_n,z_n}}. \tag{10.113}
+\end{align*}
+また$\eta$は共役事前分布
+\begin{align*}
+    p\parentheses{\eta|\nu_0,\chi_0} = f\parentheses{\nu_0,\chi_0}g\parentheses{\eta}^{\nu_0}\exp\parentheses{\nu_0\eta'\chi_0}
+\end{align*}
+に従うものとする．
+\end{frame}
+
+\begin{frame}
+\frametitle{指数型分布族について復習}
+第2.4節で指数型分布族とその共役事前分布について学んだ．
+次のような形をした指数型確率分布
+\begin{align}
+    p\parentheses{x|\eta}
+    = h\parentheses{x}g\parentheses{\eta}\exp\parentheses{\eta'u\parentheses{x}} \tag{2.194}
+\end{align}
+について
+\begin{align}
+    p\parentheses{\eta | \chi, \nu}
+    = f\parentheses{\chi, \nu} g\parentheses{\eta}^\nu \exp \parentheses{\nu \eta' \chi} \tag{2.229}
+\end{align}
+という形の共役事前分布が存在する．
+データ$\mathrm{X} = \braces{x_1,\ldots,x_n}$が与えられたとき，尤度は
+\begin{align}
+    p\parentheses{X|\eta}
+    = \parentheses{\prod_{n = 1}^N h\parentheses{x_n}} g\parentheses{\eta}^N \exp\parentheses{\eta'\sum_{n = 1}^N u\parentheses{x_n}} \tag{2.227}
+\end{align}
+となる．
+\end{frame}
+
+\begin{frame}
+\frametitle{指数型分布族について復習}
+事後分布は
+\begin{align}
+    p\parentheses{\eta | X,\chi,\nu}
+    & \propto p\parentheses{X | \eta} p\parentheses{\eta| \chi, \nu} \notag \\
+    & \propto g\parentheses{\eta}^{\nu + N} \exp \parentheses{\eta' \parentheses{\sum_{n =1}^N u\parentheses{x_n} + \nu \chi}} \tag{2.230}
+\end{align}
+と計算できる．この式から，事前分布のパラメータ$\nu$は，有効な事前の仮想観測値の数と解釈できる．
+ただし，仮想観測値では，十分統計量$u\parentheses{x}$の代わりに，$\chi$が与えられる．
+\end{frame}
+
+\begin{frame}
+\frametitle{指数型分布族の変分近似}
+指数型分布族を変分分布近似することを考える．
+これまでと同様に，
+周辺分布の対数$\log p\parentheses{X}$を
+\begin{gather*}
+    \log p\parentheses{X} = \energy\parentheses{q} + \KL\parentheses{q\|p}, \\
+    \energy\parentheses{q} = \int q\parentheses{Z,\eta}
+    \log \parentheses{\frac{p\parentheses{X,Z |\eta}p\parentheses{\eta}}{q\parentheses{Z,\eta}}} \parentheses{d{\eta}dZ}, \\
+    \KL\parentheses{q \| p} = - \int q\parentheses{Z,\eta}
+    \log \parentheses{\frac{p\parentheses{Z|X, \eta}p\parentheses{\eta}}{q\parentheses{Z,\eta}}} \parentheses{d{\eta}dZ}
+\end{gather*}
+と分解し，$\energy$を$q$について最大化する．
+\end{frame}
+
+\begin{frame}
+\frametitle{KLタイバージェンスの最小化}
+$f$と$g$を確率密度関数とする．
+区間$\parentheses{0,\infty}$において$\log x \leq x - 1$が成り立つ．
+ここで$x := f/g$とすると$f \log g - f \log f \leq g - f$となる．
+積分の線型性と単調性から
+\begin{align*}
+    \int_X f \log g d\mu - \int_X f \log f d\mu \leq \int_X g d\mu - \int_X f d\mu
+\end{align*}
+が成り立つ．確率密度関数の性質から$\int_X f d\mu = \int_X g d\mu = 1$なので
+\begin{align*}
+    \int_X f \log g d\mu \leq \int_X f \log f d\mu
+\end{align*}
+を得る．
+ほとんど確実に$f = g$のとき上式の等号が成り立つ．
+また等号が成り立つのはそのときに限る．\nocite{bogachev2007measure}
+\end{frame}
+
+\begin{frame}
+\frametitle{KLタイバージェンスの最小化の補足}
+$\brackets{0,\infty}$値$\mathfrak{M}$-可測関数$f$について
+$\int_X f\parentheses{x}\mu\parentheses{dx} = 0$が成り立つならば，
+$\mu\parentheses{\braces{x \in X\;;\; f\parentheses{x} \neq 0}} = 0$が成り立つ．
+
+\bigskip
+
+\textbf{証明}\hskip\labelsep$E_n := \braces{x \in X\;;\; f\parentheses{x} \geq 1/n}$とおくと
+\begin{align*}
+    \bigcup_{n = 1}^\infty E_n = \braces{x \in X \;;\; f\parentheses{x} > 0}
+\end{align*}
+である．仮定$\int_X f\parentheses{x}\mu\parentheses{dx} =0$と$f\parentheses{x} \geq 0$から，任意の$n$について
+\begin{align*}
+    0 = \int_X f\parentheses{x}\mu\parentheses{dx}
+    \geq \int_{E_n}f\parentheses{x}\mu\parentheses{dx}
+    \geq \frac{1}{n}\mu\parentheses{E_n} \geq 0
+\end{align*}
+となる．すなわち各$n$で$\mu\parentheses{E_n} = 0$が成り立つ．ゆえに測度の性質から
+\begin{align*}
+    \mu\parentheses{\bigcup_{n = 1}^\infty E_n} \leq \sum_{n = 1}^\infty \mu \parentheses{E_n} = 0
+\end{align*}
+であることが分かる．
+\hfill\rule{5pt}{10pt}
+\end{frame}
+
+\begin{frame}
+\frametitle{指数型分布族の変分近似}
+$\energy$の最大化に戻る．
+
+\bigskip
+
+計算を進めるため，変分分布が潜在変数とパラメータで分けられる，
+すなわち$q\parentheses{Z, \eta} = q\parentheses{Z}q\parentheses{\eta}$と分解できると仮定する．
+\begin{align*}
+    \energy\parentheses{q}
+    &= \int q\parentheses{Z,\eta} \log \parentheses{%
+            p \parentheses{X,Z|\eta}p \parentheses{\eta}
+        }\parentheses{d\eta dZ} \\
+    &\phantom{=}\ - \int q\parentheses{Z,\eta}\log q\parentheses{Z,\eta}\parentheses{d\eta dZ} \\
+    &= \int q\parentheses{Z} \parentheses{%
+            \int q\parentheses{\eta} \log p \parentheses{X,Z|\eta}d\eta
+        }dZ \\
+    &\phantom{=}\ -\int q\parentheses{Z} \log q \parentheses{Z} dZ \\
+    &\phantom{=}\ -\int q\parentheses{\eta} \parentheses{\log q \parentheses{\eta} - \log p\parentheses{\eta}}d\eta
+\end{align*}
+\end{frame}
+
+\begin{frame}
+\frametitle{指数型分布族の変分近似}
+したがって最適な$q\parentheses{Z}$は
+\begin{align}
+    \log q^\star\parentheses{Z}
+    &= \int q\parentheses{\eta} \log p \parentheses{X,Z|\eta}d\eta + \const \notag \\
+    &= \mathbb{E}_\eta \brackets{\log p\parentheses{X,Z|\eta}} + \const \notag \\
+    &= \sum_{n = 1}^N \parentheses{\log h\parentheses{x_n, z_n} + \mathbb{E}\brackets{\eta'}u\parentheses{x_n,z_n}} + \const \tag{10.115}
+\end{align}
+を満たさなければならない．この式の右辺に注目すると，各$n$ごとに独立な項の和に分解できるので
+$q^\star\parentheses{Z} = \prod_{n = 1}^N q^\star \parentheses{z_n}$
+となる．よって指数をとって
+\begin{align*}
+    q^\star\parentheses{z_n} = h\parentheses{x_n,z_n}g\parentheses{\mathbb{E}\brackets{\eta}}\exp\parentheses{\mathbb{E}\brackets{\eta'}u\parentheses{x_n,z_n}}
+    \tag{10.116}
+\end{align*}
+を得る．ただし$g\parentheses{\mathbb{E}\brackets{\eta}}$は
+正則化のため，指数型分布族の標準的な形に合わせて付加したものである．
+\end{frame}
+
+\begin{frame}
+\frametitle{指数型分布族の変分近似}
+次に$q\parentheses{\eta}$について最大化する．$\energy$は
+\begin{align*}
+    \energy\parentheses{q}
+    &= \int q\parentheses{\eta} \parentheses{%
+            \int q\parentheses{Z} \log p \parentheses{X,Z|\eta}dZ
+        }d\eta \\
+    &\phantom{=}\ -\int q\parentheses{Z} \log q \parentheses{Z} dZ \\
+    &\phantom{=}\ -\int q\parentheses{\eta} \parentheses{\log q \parentheses{\eta} - \log p \parentheses{\eta}}d\eta
+\end{align*}
+と表せるので
+\begin{align*}
+    \log q^\star\parentheses{\eta}
+    &= \log p\parentheses{\eta | \nu_0,\chi_0} + \mathbb{E}_{Z}\brackets{\log p \parentheses{X, Z | \eta}} + \const \tag{10.117} \\
+    &= \nu_0 \log g \parentheses{\eta} + \nu_0 \eta' \chi_0 \\
+    &\phantom{=}\ + \sum_{n = 1}^N \parentheses{\log g \parentheses{\eta} + \eta' \mathbb{E}_{z_n}\brackets{u\parentheses{x_n, z_n}}} + \const \tag{10.118}
+\end{align*}
+となる．
+\end{frame}
+
+\begin{frame}
+\frametitle{指数型分布族の変分近似}
+指数をとって
+\begin{align}
+    q^\star\parentheses{\eta}
+    &= f\parentheses{\nu_N,\chi_N}g\parentheses{\eta}^{\nu_N}\exp\parentheses{\nu_N \eta' \chi_N} \tag{10.119}
+\end{align}
+を得る．ただし，
+\begin{gather}
+    \nu_N = \nu_0 + N \tag{10.120} \\
+    \nu_N\chi_N = \nu_0 \chi_0 + \sum_{n = 1}^N \mathbb{E}_{z_n}\brackets{u\parentheses{x_n, z_n}} \tag{10.121}
+\end{gather}
+とした．
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{指数型分布族の変分近似}
+$q^\star\parentheses{z_n}$と$q^\star\parentheses{\eta}$の解には相互に依存関係があるので，
+二段階の繰り返しで解く．
+
+\bigskip
+
+\textbf{変分Eステップ}
+\begin{lstlisting}[mathescape,escapeinside={(*}{*)},aboveskip={0pt},lineskip={10pt}]
+    $q\parentheses{z_n} \leftarrow h\parentheses{x_n,z_n}g\parentheses{\mathbb{E}\brackets{\eta}}\exp\parentheses{\mathbb{E}\brackets{\eta'}u\parentheses{x_n,z_n}}$
+    $q\parentheses{\eta} \leftarrow f\parentheses{\nu_N,\chi_N}g\parentheses{\eta}^{\nu_N}\exp\parentheses{\nu_N\eta'\chi_N}$
+        where
+            ${\displaystyle \mu_n \leftarrow \mathbb{E}_{z_n}\brackets{u\parentheses{x_n,z_n}} = \int q\parentheses{z_n}u\parentheses{x_n,z_n}dz_n}$
+            ${\displaystyle \nu_N \chi_N \leftarrow \nu_0 \chi_0 + \sum_{n = 1}^N \mu_n}$
+\end{lstlisting}
+
+\smallskip
+
+\textbf{変分Mステップ}
+\begin{lstlisting}[mathescape]
+    ${\displaystyle \eta \leftarrow \mathbb{E}\brackets{\eta} = \int q \parentheses{\eta}\eta d\eta}$
+\end{lstlisting}
+
+\end{frame}
+
+\section{局所的変分推論}
+\begin{frame}
+\frametitle{局所的変分推論}
+10.1節や10.2節では，事後分布の近似を直接求めた．
+
+\bigskip
+
+10.5節と10.6節では各変数の上からあるいは下から近似を使う方法を学ぶ．
+
+\end{frame}
+
+\begin{frame}
+\frametitle{凸関数の下限の表示}
+関数$f\parentheses{x} = \exp\parentheses{-x}$の
+点$\parentheses{\xi,f\parentheses{\xi}}$における接線の方程式を求めると
+\begin{align}
+    y\parentheses{x} = -\exp\parentheses{-\xi}\parentheses{x - \xi} + \exp\parentheses{-\xi} \tag{10.126}
+\end{align}
+である．
+
+\smallskip
+
+\begin{center}
+    \includegraphics{Figure10-10a.pdf}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{凸関数の下限の表示}
+ここで$\eta := -\exp\parentheses{-\xi}$とすると
+$\xi = -\log \parentheses{-\eta}$なので
+\begin{align}
+    y\parentheses{x,\eta} = \eta x - \eta + \eta\log\parentheses{-\eta} \tag{10.127}
+\end{align}
+である．凸関数の性質から，$f$の接線はグラフの下にくるので\footnote[frame]{%
+任意の$\lambda \in \parentheses{0,1}$をとると
+\begin{gather*}
+f\parentheses{\lambda x + \parentheses{1 - \lambda}\xi} \leq \lambda f\parentheses{x} + \parentheses{1 - \lambda}f\parentheses{\xi}\\
+\frac{f\parentheses{\lambda x + \parentheses{1 - \lambda}\xi} - f\parentheses{\xi}}{\lambda} \leq f\parentheses{x} - f\parentheses{\xi}
+\end{gather*}
+が成り立つ．よって$\lambda \to +0$として
+\begin{align*}
+    \nabla f\parentheses{x} \cdot \parentheses{x - \xi} \leq f\parentheses{x} - f\parentheses{\xi}
+\end{align*}
+を得る．
+}，
+\begin{align}
+    f\parentheses{x} = \max_\eta \braces{\eta x  - \eta + \eta \log\parentheses{- \eta}} \tag{10.128}
+\end{align}
+と表せる．
+\end{frame}
+
+\begin{frame}
+\frametitle{凸関数の下限の表示}
+新たなパラメータ$\eta$を導入するという代償は払ったが，
+一次関数による下から近似$y\parentheses{x,\eta}$を得た．
+
+\smallskip
+
+\begin{center}
+    \includegraphics{Figure10-10b.pdf}
+\end{center}
+
+\smallskip
+
+これは一般に\textbf{凸双対性}の理論で説明されることである．
+\end{frame}
+
+\begin{frame}
+\frametitle{共役関数}
+$X$をBanach空間とし，$X^*$を$X$の共役空間\footnote[frame]{$X$上の有界線型汎関数全体が作る線型空間．}
+とする．
+このとき
+%proper\footnote[frame]{%
+%関数$f : S \to \leftopenrightclose{-\infty,+\infty}$が\textbf{proper}であるとは，$f\parentheses{x} < + \infty$となる$x \in S$が存在することをいう．}
+%な
+関数
+$f:X \to \brackets{-\infty,+\infty}$に対し，$f^*: X^* \to \brackets{-\infty,+\infty}$を
+\begin{align*}
+    f^*\parentheses{\phi} &:= \sup \braces{\phi\parentheses{x} - f\parentheses{x} \;;\; x \in X}
+\end{align*}
+で定め，$f$の\textbf{共役関数}(conjugate function)や\textbf{Fenchel双対}(Fenchel conjugate)\footnote[frame]{Werner Fenchel \begin{ipafont}\textipa{/{(de) {\textprimstress}vE\;Rn5 \textprimstress}fEn\c{c}@l/}\end{ipafont} (1905 - 1988)}\nocite{borwein2010convex}などと呼ばれる．
+
+\bigskip
+
+また$f$の\textbf{双共役関数}(biconjugate function) $f^{**}: X \to \brackets{-\infty,+\infty}$を
+\begin{align*}
+    f^{**}\parentheses{x} := \sup \braces{\phi(x) - f^*\parentheses{\phi} \;;\; \phi \in X^*}
+\end{align*}
+と呼ぶ．
+
+\end{frame}
+
+\begin{frame}
+\frametitle{共役関数}
+共役関数は非凸関数についても考えることができるが，
+多くの場合はproper\footnote[frame]{関数$f:X\to\leftopenrightclose{-\infty,\infty}$が\textbf{proper}であるとは$\dom f = \braces{x \in X\;;\; f\parentheses{x} < \infty}$が空でないということである．つまり$\infty$にべったり張り付かないということ．}な凸関数の共役関数を
+考える．
+
+\bigskip
+
+凹関数については共役関数の定義において$\sup$を$\inf$に置き換えた
+\textbf{凹共役関数}(concave conjugate function)を考える．
+\begin{align*}
+    f_*\parentheses{\phi} := \inf \braces{\phi\parentheses{x} - f\parentheses{x} \;;\; x \in X}.
+\end{align*}
+\textbf{凹双共役関数}(concave biconjugate function)も同様に考えられる．
+\begin{align*}
+    f_{**}\parentheses{x} := \inf \braces{\phi\parentheses{x} - f_*\parentheses{\phi} \;;\; \phi \in X^*}.
+\end{align*}
+\end{frame}
+
+\begin{frame}
+\frametitle{共役関数}
+
+\begin{align*}
+    f^*\parentheses{\eta} = \sup \braces{\eta x - f\parentheses{x} \;;\; x \in \mathbb{R}}
+\end{align*}
+
+\smallskip
+
+\begin{center}
+    \begin{tikzpicture}
+        \draw (0,0) node[below right] {$O$};
+        \draw[->] (-0.5,0) -- (6.5,0) node[below left] {$x$};
+        \draw[->] (0,-1.5) -- (0,4) node[below left] {$y$};
+        \draw[color=red,thick] (1,0.75) -- (1,3.7) node {};
+        \draw[color=red,thick] plot [domain=1:5.3] (\x,{((\x-2)^2)/4 + 0.5)});
+        \draw (4.2,3) node {$y = f\parentheses{x}$};
+        \draw[color=blue,thick] plot [domain=-0.25:5.5] (\x,{0.5*\x});
+        \draw (5.7,2.3) node {$y = \eta x$};
+        \draw (4,1.5) node[below right] {$\eta x - f\parentheses{x}$};
+        \draw[dotted,thick] (4,2) -- (4,1.5) node[below] {};
+    \end{tikzpicture}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{共役関数}
+
+\begin{align*}
+    f^*\parentheses{\eta} = \sup \braces{\eta x - f\parentheses{x} \;;\; x \in \mathbb{R}}
+\end{align*}
+
+\smallskip
+
+\begin{center}
+    \begin{tikzpicture}
+        \draw (0,0) node[below right] {$O$};
+        \draw[->] (-0.5,0) -- (6.5,0) node[below left] {$x$};
+        \draw[->] (0,-1.5) -- (0,4) node[below left] {$y$};
+        \draw[color=red,thick] (1,0.75) -- (1,3.7) node {};
+        \draw[color=red,thick] plot [domain=1:5.3] (\x,{((\x-2)^2)/4 + 0.5)});
+        \draw (4.2,3) node {$y = f\parentheses{x}$};
+        \draw[color=blue,thick] plot [domain=-0.25:5.5] (\x,{0.5*\x});
+        \draw (5.7,2.3) node {$y = \eta x$};
+        \draw[color=blue,dotted,thick] plot [domain=-0.25:5.5] (\x,{0.5*\x - 0.75});
+        \draw (3,0.75) node[below right] {$f^*\parentheses{\eta} = \eta \bar{x} - f\parentheses{\bar{x}}$};
+        \draw[dotted,thick] (3,1.5) -- (3,0.75) node {};
+        \draw[dotted] (3,0.75) -- (3,0) node[below] {$\bar{x}$};
+    \end{tikzpicture}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{共役関数}
+例として$f\parentheses{x} := \exp \parentheses{-x}$の共役関数$f^*\parentheses{\eta} = \sup_{x}\braces{\eta x - f\parentheses{x}}$を陽に求めてみる．
+$\braces{\cdot}$の中を$x$で微分して$0$と置くと
+\begin{gather*}
+    \eta + \exp \parentheses{-x} = 0 \\
+    x = - \log \parentheses{-\eta}
+\end{gather*}
+となる．したがって$f^*\parentheses{x} = \eta - \eta \log \parentheses{-\eta}$を得る．
+
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+            \begin{center}
+                \includegraphics[width=0.8\textwidth]{Figure10-10a.pdf}
+            \end{center}
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \begin{center}
+                \includegraphics[width=0.8\textwidth]{Figure10-10b.pdf}
+            \end{center}
+        \end{column}
+    \end{columns}
+
+
+\end{frame}
+
+\begin{frame}
+\frametitle{共役関数}
+
+次に双共役関数$f^{**}\parentheses{x} = \sup_\eta \braces{\eta x - f^*\parentheses{\eta}}$を陽に求めてみる．
+$\braces{\cdot}$の中を$\eta$で微分して$0$と置くと
+\begin{gather*}
+    \frac{d}{d\eta} \parentheses{\eta x - \eta + \eta \log \parentheses{-\eta}} = 0 \\
+    x - 1 + \log \parentheses{-\eta} + 1 = 0 \\
+    \eta = - \exp \parentheses{-x}
+\end{gather*}
+となる．
+ゆえに
+\begin{align*}
+    f^{**}\parentheses{x}
+    &= - \exp \parentheses{-x}x + \exp \parentheses{-x} + \exp \parentheses{-x} \parentheses{-x} \\
+    &= \exp \parentheses{-x} \\
+    &= f\parentheses{x}
+\end{align*}
+を得る．つまり$f = f^{**}$が成り立つ．これはFenchel変換によって情報が失われていないということである．
+
+\bigskip
+
+一般に$f$をproperで下半連続な
+凸関数とすると$f = f^{**}$が成り立つ．
+\end{frame}
+
+\begin{frame}
+\frametitle{ロジスティックシグモイド関数}
+次にパターン認識でよく現れるロジスティックシグモイドの共役関数を求める．
+\begin{align}
+    \sigma\parentheses{x} = \frac{1}{1 + \exp \parentheses{-x}} \tag{10.134}
+\end{align}
+これは凸でも凹でもないが，対数をとると凹になる．$u(x) := \log \sigma \parentheses{x}$とする．
+
+\begin{gather*}
+    u\parentheses{x} = -\log\parentheses{1 + e^{-x}} \\
+    \frac{d}{dx}u\parentheses{x}
+    = -\frac{-e^{-x}}{1 + e^{-x}}
+    = \frac{1}{e^x + 1} > 0 \\
+    \frac{d^2}{dx^2}u\parentheses{x}
+    = -\frac{e^x}{\parentheses{e^x + 1}^2} < 0
+\end{gather*}
+\end{frame}
+
+\begin{frame}
+\frametitle{共役関数}
+\begin{center}
+    \begin{tikzpicture}
+        \draw (0,0) node[above right] {$O$};
+        \draw[->] (-3.5,0) -- (3.5,0) node[below left] {$x$};
+        \draw[->] (0,-4) -- (0,1.5) node[below left] {$y$};
+        \draw[color=red,thick] plot [domain=-3:3] (\x,{-ln(1 + exp(-\x))});
+        \draw (0.25,-0.75) node[below right] {$y = -\log\parentheses{1+e^{-x}}$};
+        \draw (0,{-ln(2)}) node[above left] {$-\log 2$};
+    \end{tikzpicture}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{ロジスティックシグモイド関数の上からの評価}
+関数$u$は凹なので，凹共役$u_*\parentheses{\eta} = \inf_x \braces{\eta x - u\parentheses{x}}$を考える．
+$\braces{\cdot}$の中を$x$で微分して$0$と置くと
+\begin{gather*}
+    \eta = \frac{1}{e^x + 1} \\
+    x = \log \parentheses{1-\eta} - \log \eta
+\end{gather*}
+となる．したがって
+\begin{align*}
+    u_*\parentheses{\eta} &= \eta \log \parentheses{1-\eta} - \eta \log \eta + \log \parentheses{1 + \frac{\eta}{1 - \eta}} \\
+                          &= - \eta \log \eta - \parentheses{1 - \eta} \log \parentheses{1-\eta}
+\end{align*}
+を得る．これは2値エントロピー関数になっている．
+\end{frame}
+
+\begin{frame}
+\frametitle{2値エントロピー関数}
+
+\begin{center}
+    \begin{tikzpicture}
+        \def\r{3}
+        \begin{axis}[%
+            domain=-0.2:1.5,
+            width=10.5cm, height=6cm,
+            xmin=-0.2, xmax=1.8,
+            ymin=-1.6, ymax=3.5,
+            axis x line=center,
+            axis y line=center,
+            xlabel={$\eta$},
+            ylabel={$y$},
+            axis line style={->},
+            xtick={0,1},
+            ytick={0}]
+        \addplot[thick,color=red,domain=0:1,samples=1000]
+        {((- x) * ln(x) - (1 - x) * ln(1 - x)) * \r};
+        \node at (0,0) [anchor=north east]{$O$};
+        \draw[dotted] (0.5,{(-1) * ln(0.5) * \r}) -- (0.5,0) node[below] {${\displaystyle \frac{1}{2}}$};
+        \draw[dotted] (0.5,{(-1) * ln(0.5) * \r}) -- (0,{(-1) * ln(0.5) * \r}) node[left] {$\log2$};
+        \draw (0.4,\r + 0.1) node[below right] {$y = - \eta \log \eta - \parentheses{1 - \eta}\log \parentheses{1 - \eta}$};
+    \end{axis}
+    \end{tikzpicture}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{ロジスティックシグモイド関数の上からの評価}
+凹共役$u_*\parentheses{\eta}$を使えば$u\parentheses{x} = \log \sigma \parentheses{x}$を
+\begin{align}
+    \log \sigma \parentheses{x} \leq \eta x - u_*\parentheses{\eta} \tag{10.136}
+\end{align}
+と上から抑えられる．指数をとって
+\begin{align}
+    \sigma \parentheses{x} \leq \exp\parentheses{\eta x - u_*\parentheses{\eta}} \tag{10.136}
+\end{align}
+となる．
+\end{frame}
+
+\begin{frame}
+\frametitle{ロジスティックシグモイド関数の上からの評価}
+今までの計算によって，私達はロジスティックシグモイド関数の上からの評価を得た．
+\begin{align*}
+    \sigma \parentheses{x} \leq \exp\parentheses{\eta x + \eta \log \eta + \parentheses{1 - \eta} \log \parentheses{1-\eta}}
+\end{align*}
+
+\smallskip
+
+\begin{center}
+    \includegraphics{Figure10-12a.pdf}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{ロジスティックシグモイド関数の下からの評価}
+下からの評価を得るため，まず$u$を少し変形しておく．
+\begin{align*}
+    u\parentheses{x}
+    &= -\log\parentheses{1 + e^{-x}} \\
+    &= -\log\parentheses{e^{-x/2}\parentheses{e^{x/2} + e^{-x/2}}} \\
+    &= \frac{x}{2} - \log\parentheses{2\cosh\frac{x}{2}}
+\end{align*}
+右辺の第2項に着目する．
+ここで$v := x^2$，
+$f\parentheses{v} := - \log\parentheses{2\cosh\parentheses{\sqrt{v}/2}}$と置いて
+解析を進める．
+\end{frame}
+
+\begin{frame}
+\frametitle{ロジスティックシグモイド関数の下からの評価}
+いま定義した$f\parentheses{v} = - \log\parentheses{2\cosh\parentheses{\sqrt{v}/2}}$は凸関数である．
+\begin{align*}
+    \frac{df}{dv}\parentheses{v}
+    &= -\frac{2\sinh\parentheses{\sqrt{v}/2}}{2\cosh\parentheses{\sqrt{v}/2}}\frac{1}{4\sqrt{v}} \\
+    &= -\frac{1}{4\sqrt{v}}\tanh\frac{\sqrt{v}}{2}
+\end{align*}
+\begin{align*}
+    \frac{d^2f}{dv^2}\parentheses{v}
+    &= -\frac{1}{8v\sqrt{v}} \tanh\frac{\sqrt{v}}{2}
+    +\frac{1}{4\sqrt{v}}\frac{1}{\cosh^2\parentheses{\sqrt{v}/2}}\frac{1}{4\sqrt{v}} \\
+    &= \frac{1}{16v\sqrt{v}\cosh^2\parentheses{\sqrt{v}/2}}\parentheses{2\sinh\frac{\sqrt{v}}{2}\cosh\frac{\sqrt{v}}{2} - \sqrt{v}} \\
+    &= \frac{\sinh \sqrt{v} - \sqrt{v}}{16v\sqrt{v}\cosh^2\parentheses{\sqrt{v}/2}} \geq 0
+\end{align*}
+\end{frame}
+
+\begin{frame}
+\frametitle{ロジスティックシグモイド関数の下からの評価}
+念のため$g\parentheses{v} := \sinh \sqrt{v} - \sqrt{v}$が$v \geq 0$の範囲で非負であることを確認する．
+導関数は
+\begin{align*}
+    \frac{dg}{dv}\parentheses{x} = \frac{\cosh \sqrt{v} - 1}{2\sqrt{v}} \geq 0
+\end{align*}
+であり，$\sinh 0 - 0 = 0$であるから，確かにこの範囲では$g\parentheses{v} \geq 0$が成り立つ．
+
+\smallskip
+
+\begin{center}
+    \begin{tikzpicture}
+        \begin{axis}[%
+            domain=-1:5,
+            width=10.5cm, height=5.5cm,
+            xmin=-1, xmax=5,
+            ymin=-1.2, ymax=4,
+            axis x line=center,
+            axis y line=center,
+            xlabel={$v$},
+            ylabel={$y$},
+            axis line style={->},
+            xtick={0},
+            ytick={0}]
+        \addplot[thick,color=red,domain=0:4.5,samples=50]
+        {sinh(sqrt(x)) - sqrt(x)};
+        \node at (0,0) [anchor=north east]{$O$};
+        \draw (2,2) node[above] {$y = \sinh\sqrt{v} - \sqrt{v}$};
+    \end{axis}
+    \end{tikzpicture}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{ロジスティックシグモイド関数の下からの評価}
+凸関数の性質から接線がグラフの下にくるので
+\begin{gather*}
+    f\parentheses{v} \geq f\parentheses{\xi^2} + \frac{df}{dv}\parentheses{\xi^2}\parentheses{v - \xi^2} \\
+    f\parentheses{x^2} - f\parentheses{\xi^2} \geq -\frac{1}{4\xi}\tanh\frac{\xi}{2}\parentheses{x^2 - \xi^2}
+\end{gather*}
+が成り立つ．
+教科書に合わせて$\lambda\parentheses{\xi} := \parentheses{4\xi}^{-1}\tanh\parentheses{\xi/2}$と置く．上式を使うと
+\begin{align*}
+    \log\sigma\parentheses{x} - \log\sigma\parentheses{\xi}
+    &= \frac{x}{2} + f\parentheses{x^2} - \parentheses{\frac{\xi}{2} + f\parentheses{\xi^2}} \\
+    &\geq \frac{x - \xi}{2} - \lambda\parentheses{\xi}\parentheses{x^2 - \xi^2}
+\end{align*}
+であり，両辺の指数をとって以下を得る．
+\begin{align}
+    \sigma\parentheses{x}
+    \geq \sigma\parentheses{\xi}\exp\parentheses{\frac{x - \xi}{2} - \lambda\parentheses{\xi}\parentheses{x^2 - \xi^2}}. \tag{10.144} \label{inf}
+\end{align}
+\end{frame}
+
+\begin{frame}
+\frametitle{ロジスティックシグモイド関数の下からの評価}
+今までの計算によって，私達はロジスティックシグモイド関数の下からの評価を得た．
+\begin{align*}
+    \sigma\parentheses{x} \geq \sigma\parentheses{\xi}\exp\parentheses{\frac{x - \xi}{2} - \lambda\parentheses{\xi}\parentheses{x^2 - \xi^2}}
+\end{align*}
+
+\smallskip
+
+\begin{center}
+    \includegraphics{Figure10-12b.pdf}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{どうやって使うのか}
+得られた不等式を積分計算に使ってみる．
+ロジスティックシグモイド関数$\sigma$と
+ガウス確率密度$p$について以下の積分
+\begin{align}
+    I = \int \sigma\parentheses{a}p\parentheses{a}da \tag{10.145} \label{sigmoidgauss}
+\end{align}
+を計算したいとする．
+こういった計算は予測分布を求めるときに必要になる．
+不等式$\sigma\parentheses{a} \geq f\parentheses{a,\xi}$が成り立っているとすると
+\paref{sigmoidgauss}は
+\begin{align}
+    I \geq \int f\parentheses{a,\xi}p\parentheses{a}da = F\parentheses{\xi} \tag{10.146}
+\end{align}
+と評価できる．もし$F$を最大化できれば
+$I$の良い近似になる．
+\end{frame}
+
+\section{変分ロジスティック回帰}
+\begin{frame}
+\frametitle{変分事後分布}
+ロジスティック回帰モデルに変分近似を使ってみる．
+目的変数は$t \in \braces{0,1}$とし，表記を簡単にするため$a = w'\phi$とする．
+このとき尤度は
+\begin{align}
+    p\parentheses{t|w}
+    &= \sigma\parentheses{a}^t\parentheses{1 - \sigma\parentheses{a}}^{1-t}\notag \\
+    &= \parentheses{\frac{1}{1 + e^{-a}}}^t \parentheses{1 - \frac{1}{1 + e^{-a}}}^{1 - t} \notag \\
+    &= \parentheses{\frac{\frac{1}{1 + e^{-a}}}{1 - \frac{1}{1 + e^{-a}}}}^t \parentheses{1 - \frac{1}{1 + e^{-a}}}\notag \\
+    &= e^{at} \frac{e^{-a}}{1 + e^{-a}} = e^{at}\sigma\parentheses{-a} \tag{10.148}
+\end{align}
+となる．
+\end{frame}
+
+\begin{frame}
+\frametitle{変分事後分布}
+前の節で計算した下限を使って評価する．
+\paref{inf}により
+\begin{align}
+    p\parentheses{t|w}
+    &= e^{at}\sigma\parentheses{-a} \notag \\
+    &\geq e^{at} \sigma\parentheses{\xi}\exp\parentheses{-\frac{a + \xi}{2} - \lambda\parentheses{\xi}\parentheses{a^2 - \xi^2}} \tag{10.151}
+\end{align}
+となる．
+\end{frame}
+
+\begin{frame}
+\frametitle{変分事後分布}
+したがって観測値の系列$\bm{\mathsf{t}}$が得られたとき
+\begin{align}
+    p\parentheses{\bm{\mathsf{t}},w}
+    &= p\parentheses{\bm{\mathsf{t}}|w}p\parentheses{w} \notag \\
+    &= p\parentheses{w} \prod_{n = 1}^N p\parentheses{t_n|w} \notag \\
+    &\geq p\parentheses{w} h\parentheses{w,\xi}, \tag{10.152}
+\end{align}
+ただし
+\begin{align}
+    h\parentheses{w,\xi} &:= \prod_{n = 1}^N \sigma\parentheses{\xi_n}\exp\left( w'\phi_n t_n -\frac{w'\phi_n + \xi_n}{2}\right. \notag \\
+                         &\phantom{:=}\ \left. \vphantom{\frac{w'\phi_n + \xi_n}{2}}
+    - \lambda\parentheses{\xi_n}\parentheses{\parentheses{w'\phi_n}^2 - \xi_n^2}\right) \tag{10.153} \label{h}
+\end{align}
+となる．
+\end{frame}
+
+\begin{frame}
+\frametitle{変分事後分布}
+\paref{h}の対数をとると
+\begin{align}
+    \log\parentheses{p\parentheses{\bm{\mathsf{t}}|w}p\parentheses{w}}
+    &\geq \log p\parentheses{w} + \log h\parentheses{w,\xi} \notag \\
+    &= \log p\parentheses{w} + \sum_{n = 1}^N \left(\vphantom{\frac{w'\phi_n + \xi_n}{2}}  \log \sigma\parentheses{\xi_n} + w'\phi_n t_n \right. \notag \\
+    &\phantom{\geq}\ \left.   - \frac{w'\phi_n + \xi_n}{2}  - \lambda \parentheses{\xi_n}\parentheses{\parentheses{w'\phi_n}^2 - \xi_n^2}\right) \tag{10.154}
+\end{align}
+となる．右辺に事前分布$p\parentheses{w} = \mathcal{N}\parentheses{w|m_0,S_0}$を代入すると
+\begin{align}
+    &- \parentheses{w - m_0}'S_0^{-1}\parentheses{w - m_0} \notag \\
+    &\phantom{-}\ + \sum_{n = 1}^N \parentheses{w'\phi_n\parentheses{t_n - \frac{1}{2}}
+      - \lambda\parentheses{\xi_n}w'\parentheses{\phi_n\phi_n'}w} + \const \tag{10.155} \label{g}
+\end{align}
+となる．
+\end{frame}
+
+\begin{frame}
+\frametitle{変分事後分布}
+\paref{g}の形から，変分事後分布$q\parentheses{w}$\footnote[frame]{$q\parentheses{w}$は同時確率$p\parentheses{\bm{\mathsf{t}},w} = p\parentheses{\bm{\mathsf{t}}|w}p\parentheses{w}$を近似するもので，結果として事後分布$p\parentheses{w|\bm{\mathsf{t}}}$を近似するものになるのだった．}は適当なガウス分布$\mathcal{N}\parentheses{w|m_N,S_N}$で表せることが分かる．
+2次の項に着目すると精度は
+\begin{align*}
+    S_N^{-1} = S_0^{-1} + 2 \sum_{n = 1}^N \lambda\parentheses{\xi_n} \phi_n \phi_n'
+\end{align*}
+と分かる．1次の項に着目すると平均$m_N$は
+\begin{align*}
+    m_N = S_N\parentheses{S_0^{-1}m_0 + \sum_{n = 1}^N \parentheses{t_n - \frac{1}{2}}\phi_n}
+\end{align*}
+である．つまり$q\parentheses{w} = \mathcal{N}\parentheses{w|m_N,S_N}$である．
+
+\bigskip
+
+こうして私達はラプラス近似のように事後分布のガウス分布近似を得た．
+今回はさらに変分パラメータ$\braces{\xi_n}_n$が加わって柔軟になっているため，
+より高い精度が期待できる．
+\end{frame}
+
+\subsection{変分パラメータの最適化}
+\begin{frame}
+\frametitle{変分パラメータの最適化}
+変分事後分布が$q\parentheses{w} = \mathcal{N}\parentheses{w|m_N,S_N}$となることは分かった．平均$m_N$と分散$S_N$はどちらも$\xi$に依存しているので，$\xi$の最適化を考えなければならない．いつも通り周辺尤度の下からの近似を考えよう．
+\begin{align}
+    \log p\parentheses{\bm{\mathsf{t}}}
+    &= \log \int p\parentheses{\bm{\mathsf{t}}|w}p\parentheses{w}dw \notag \\
+    &\geq \log \int h\parentheses{w,\xi}p\parentheses{w}dw = \energy\parentheses{\xi} \tag{10.159}
+\end{align}
+
+\bigskip
+
+この後の方法には二通りある．
+\begin{enumerate}
+    \item $w$を潜在変数とみなしてEMアルゴリズムを使う．
+    \item $w$に対する積分を計算し，$\xi$を直接最大化する．
+\end{enumerate}
+
+\bigskip
+
+まずは一つ目のEMアルゴリズムを使う方法から見ていく．
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{変分パラメータの最適化（EMアルゴリズム）}
+Mステップの導出については次ページ以降で説明する．
+
+\bigskip
+
+\textbf{Eステップ}
+\begin{lstlisting}[mathescape,lineskip={5pt}]
+    $q\parentheses{w} \leftarrow \mathcal{N}\parentheses{w|m_N,S_N}$
+    where
+        ${\displaystyle S_N^{-1} \leftarrow S_0^{-1} + 2 \sum_{n = 1}^N \lambda\parentheses{\xi_n}\phi_n\phi_n'}$
+        ${\displaystyle m_N \leftarrow S_N\parentheses{S_0^{-1}m_0 + \sum_{n = 1}^N\parentheses{t_n - \frac{1}{2}}\phi_n}}$
+\end{lstlisting}
+
+\smallskip
+
+\textbf{Mステップ}
+\begin{lstlisting}[mathescape,lineskip={5pt}]
+    $\xi_n^2 \leftarrow \phi_n'\mathbb{E}\brackets{ww'}\phi_n = \phi_n'\parentheses{S_N + m_Nm_N'}\phi_n$
+\end{lstlisting}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{変分パラメータの最適化（EMアルゴリズム）}
+Mステップでは$\xi$の新しい値を求めるため，
+Eステップで計算した事後分布$q\parentheses{w}$を使って
+\begin{align*}
+    Q\parentheses{\xi,\xi^{\mathrm{old}}}
+    &:= \mathbb{E}\brackets{\log\parentheses{h\parentheses{w,\xi}p\parentheses{w}}} \\
+    &= \int q\parentheses{w} \log \parentheses{h\parentheses{w,\xi}p\parentheses{w}}dw
+\end{align*}
+を計算する．$\xi_n$に依存する項のみに着目すると
+\begin{align}
+    Q\parentheses{\xi,\xi^{\mathrm{old}}}
+    &= \sum_{n = 1}^N \parentheses{\log \sigma\parentheses{\xi_n} - \frac{\xi_n}{2} - \lambda\parentheses{\xi_n}
+            \parentheses{\phi_n'\mathbb{E}\brackets{ww'}\phi_n - \xi_n^2}} \notag \\
+    &\phantom{=}\ + \mathrm{const.} \tag{10.161}
+\end{align}
+となる．
+\end{frame}
+
+\begin{frame}
+\frametitle{変分パラメータの最適化（EMアルゴリズム）}
+以下を計算する．
+\begin{align*}
+    \frac{d}{d\xi_n}\parentheses{\log \sigma\parentheses{\xi_n} - \frac{\xi_n}{2} - \lambda\parentheses{\xi_n}
+            \parentheses{\phi_n'\mathbb{E}\brackets{ww'}\phi_n - \xi_n^2}}.
+\end{align*}
+ロジスティックシグモイド関数の微分の公式
+\begin{align}
+    \frac{d\sigma}{da} = \sigma\parentheses{1 - \sigma} \tag{4.88}
+\end{align}
+を使うと
+\begin{align*}
+    \frac{d}{d\xi}\log \parentheses{\sigma\parentheses{\xi}}
+    = \frac{\sigma\parentheses{\xi}\parentheses{1 - \sigma\parentheses{\xi}}}{\sigma\parentheses{\xi}}
+    = 1 - \sigma\parentheses{\xi}
+\end{align*}
+が成り立つ．
+\end{frame}
+
+\begin{frame}
+\frametitle{変分パラメータの最適化（EMアルゴリズム）}
+また$\lambda\parentheses{\xi}$については以下のように変形できる．
+\begin{align}
+    \lambda\parentheses{\xi} &= \frac{1}{4\xi} \tanh \frac{\xi}{2} \notag \\
+                             &= \frac{1}{4\xi} \frac{e^{\xi/2} - e^{-\xi/2}}{e^{\xi/2} + e^{-\xi/2}} \notag \\
+                             &= \frac{1}{4\xi} \frac{1 - e^{-\xi}}{1 + e^{-\xi}} \notag \\
+                             &= \frac{2}{4\xi} \parentheses{\frac{1}{1 + e^{-\xi}} - \frac{1/2 + e^{-\xi}/2}{1 + e^{-\xi}}} \notag \\
+                             &= \frac{1}{2\xi} \parentheses{\sigma\parentheses{\xi} - \frac{1}{2}}. \tag{10.150}
+\end{align}
+\end{frame}
+
+\begin{frame}
+\frametitle{変分パラメータの最適化（EMアルゴリズム）}
+よって
+\begin{align*}
+    &\frac{d}{d\xi_n}\parentheses{\log \sigma\parentheses{\xi_n} - \frac{\xi_n}{2} - \lambda\parentheses{\xi_n}
+        \parentheses{\phi_n'\mathbb{E}\brackets{ww'}\phi_n - \xi_n^2}} \\
+    &= 1 - \sigma\parentheses{\xi_n} - \frac{1}{2} + \frac{d\lambda}{d\xi_n}\parentheses{\xi_n}\parentheses{\phi_n'\mathbb{E}\brackets{ww'}\phi_n - \xi_n^2}
+        + \sigma\parentheses{\xi_n} - \frac{1}{2} \\
+    &= \frac{d\lambda}{d\xi_n}\parentheses{\xi_n}\parentheses{\phi_n'\mathbb{E}\brackets{ww'}\phi_n - \xi_n^2}
+\end{align*}
+となる．停留条件を求めたいので
+\begin{align}
+    \frac{d\lambda}{d\xi_n}\parentheses{\xi_n}\parentheses{\phi_n'\mathbb{E}\brackets{ww'}\phi_n - \xi_n^2} = 0 \tag{10.162}
+\end{align}
+とする．
+\end{frame}
+
+\begin{frame}
+\frametitle{$y = \lambda\parentheses{\xi}$のグラフ}
+\begin{center}
+    \begin{tikzpicture}
+        \def\r{10}
+        \begin{axis}[%
+            domain=-5:5,
+            width=10.5cm, height=6cm,
+            xmin=-5, xmax=5,
+            ymin=-1.6, ymax=3.5,
+            axis x line=center,
+            axis y line=center,
+            xlabel={$\xi$},
+            ylabel={$y$},
+            axis line style={->},
+            xtick={-1,0,1},
+            ytick={0}]
+        \addplot[thick,color=red,domain=-4.5:4.5,samples=50]
+        {(1/x) * ((1/(1 + exp(-x))) - 0.5) * \r};
+        \node at (0,0) [anchor=north east]{$O$};
+        \draw (2,0.25 * \r) node[above] {$y = \lambda\parentheses{\xi}$};
+    \end{axis}
+    \end{tikzpicture}
+\end{center}
+
+\begin{align*}
+    \lambda\parentheses{0}
+    &= \lim_{\xi \to 0}\frac{\sigma\parentheses{\xi} - \sigma\parentheses{0}}{\xi - 0}
+    = \left.\frac{d\sigma}{d\xi}\right|_{\xi = 0} \\
+    &= \sigma\parentheses{0}\parentheses{1 - \sigma\parentheses{0}} = \frac{1}{4}
+\end{align*}
+\end{frame}
+
+\begin{frame}
+\frametitle{$y = \parentheses{d\lambda/d\xi}\parentheses{\xi}$のグラフ}
+\begin{center}
+    \begin{tikzpicture}
+        \def\r{70}
+        \begin{axis}[%
+            domain=-10:10,
+            width=10.5cm, height=6cm,
+            xmin=-10.5, xmax=10.5,
+            ymin=-5, ymax=5,
+            axis x line=center,
+            axis y line=center,
+            xlabel={$\xi$},
+            ylabel={$y$},
+            axis line style={->},
+            xtick={0},
+            ytick={0}]
+        \addplot[thick,color=red,domain=-10:10,samples=81]
+        {(((-1)/(x * x)) * ((1/(1 + exp(-x))) - 0.5) + (1/x) * ((1/(1 + exp(-x))) * (1 - (1/(1 + exp(-x)))))) * \r};
+        \node at (0,0) [anchor=north east]{$O$};
+        \draw (2,0.25 * \r) node[above] {$y = \lambda\parentheses{\xi}$};
+    \end{axis}
+    \end{tikzpicture}
+\end{center}
+
+\begin{align*}
+    \frac{d\lambda}{d\xi}\parentheses{\xi}
+    &=-\frac{1}{\xi^2}\parentheses{\sigma\parentheses{\xi} - \frac{1}{2}}
+    -\frac{1}{\xi}\sigma\parentheses{\xi}\parentheses{1-\sigma\parentheses{\xi}}
+\end{align*}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{変分パラメータの最適化（EMアルゴリズム）}
+$\xi \neq 0$の範囲では$\parentheses{d\lambda/d\xi}\parentheses{\xi} \neq 0$なので
+\begin{align*}
+    \parentheses{\xi_n^{\mathrm{new}}}^2 = \phi_n'\mathbb{E}\brackets{ww'}\phi_n
+\end{align*}
+となる．分散の定義，期待値の性質と$q\parentheses{w} = \mathcal{N}\parentheses{w|m_N,S_N}$より
+\begin{align*}
+    S_N &= \mathbb{E}\brackets{\parentheses{w - m_N}\parentheses{w - m_N}'} \\
+        &= \mathbb{E}\brackets{ww'} - m_N\mathbb{E}\brackets{w}' - \mathbb{E}\brackets{w}m_N' + m_N m_N' \\
+        &= \mathbb{E}\brackets{ww'} - m_N m_N'
+\end{align*}
+であるから
+\begin{align}
+    \parentheses{\xi_n^{\mathrm{new}}}^2 = \phi_n'\parentheses{S_N + m_N m_N'}\phi_n \tag{10.163}
+\end{align}
+を得る．
+\end{frame}
+
+\begin{frame}
+\frametitle{変分パラメータの最適化（直接計算）}
+二つ目の方法は，$\energy\parentheses{\xi}$を計算する方法である．
+計算で求められた$\energy$の式を$\xi$で微分することにより，$\energy$を最大化するような$\xi$を求めるのである．
+\begin{align*}
+    \energy\parentheses{\xi}
+    &= \sum_{n = 1}^N
+        \parentheses{%
+            \log\sigma\parentheses{\xi_n}
+            - \frac{\xi_n}{2}
+            + \lambda\parentheses{\xi_n}\xi_n^2
+        } \\
+    &\phantom{=}\ +\log \int
+        \frac{dw}{\parentheses{%
+            2\pi}^m\sqrt{\absolute{S_0}}
+        }
+        \exp\parentheses{%
+            -\frac{1}{2}\parentheses{w - m_0}' S_0^{-1} \parentheses{w - m_0}
+        }\\
+    &\phantom{=+}\ \exp\parentheses{%
+            w'\parentheses{%
+                \sum_{n = 1}^N \parentheses{t_n - \frac{1}{2}}\phi_n
+            }
+            -w'\parentheses{%
+                \sum_{n = 1}^N \lambda\parentheses{\xi_n}\phi_n\phi_n'
+            }w
+        }
+\end{align*}
+\end{frame}
+
+\begin{frame}
+\frametitle{変分パラメータの最適化（直接計算）}
+積分記号の中の指数関数の引数に着目すると
+\begin{align*}
+    &-\frac{1}{2}w'S_0^{-1}w
+    + w'\parentheses{%
+        m_0S_0^{-1} +
+        \sum_{n = 1}^N \parentheses{t_n - \frac{1}{2}}\phi_n
+    }\\
+    &\phantom{-}- \frac{1}{2}m_0S_0^{-1}m_0
+    - w'\parentheses{\sum_{n = 1}^N \lambda\parentheses{\xi_n}\phi_n\phi_n'}w
+    \\
+    &=-\frac{1}{2}w'S_0^{-1}w
+    + w'S_N^{-1}m_N
+    - \frac{1}{2}m_0'S_0^{-1}m_0
+    - \frac{1}{2}w'\parentheses{S_N^{-1} - S_0^{-1}}w \\
+    &= -\frac{1}{2}\parentheses{w - m_N}'S_N^{-1}\parentheses{w - m_N}
+    + \frac{1}{2}m_N'S_N^{-1}m_N - \frac{1}{2}m_0'S_0^{-1}m_0
+\end{align*}
+\end{frame}
+
+\begin{frame}
+\frametitle{変分パラメータの最適化（直接計算）}
+\begin{align}
+    \energy\parentheses{\xi}
+    &= \sum_{n = 1}^N
+        \parentheses{%
+            \log\sigma\parentheses{\xi_n}
+            - \frac{\xi_n}{2}
+            + \lambda\parentheses{\xi_n}\xi_n^2
+        } \notag \\
+    &\phantom{=}\ + \log \int \sqrt{\frac{\absolute{S_N}}{\absolute{S_0}}}\frac{1}{\sqrt{\absolute{S_N}}}\exp\parentheses{-\frac{1}{2}\parentheses{w - m_N}'S_N^{-1}\parentheses{w - m_N}} \notag \\
+    &\phantom{=+\log\int}\ \exp\parentheses{\frac{1}{2}m_N'S_N^{-1}m_N - \frac{1}{2}m_0'S_0^{-1}m_0} dw \notag \\
+    &= \frac{1}{2}\log\frac{\absolute{S_N}}{\absolute{S_0}}
+        + \frac{1}{2}m_N'S_N^{-1}m_N - \frac{1}{2}m_0'S_0^{-1}m_0 \notag \\
+    &\phantom{=}\ + \sum_{n = 1}^N
+        \parentheses{%
+            \log\sigma\parentheses{\xi_n}
+            - \frac{\xi_n}{2}
+            + \lambda\parentheses{\xi_n}\xi_n^2
+        } \tag{10.164} \label{lxi}
+\end{align}
+\end{frame}
+
+\begin{frame}
+\frametitle{変分パラメータの最適化（直接計算）}
+\paref{lxi}の各項の$\xi_n$についての導関数を計算しておこう．
+まず$\log \absolute{S_N}$を$\xi_n$で微分することを考える．
+公式$\parentheses{d/dt}\absolute{A\parentheses{t}} = \tr \parentheses{A^{-1}\parentheses{t}\dot{A}\parentheses{t}}$を使う．
+\begin{align*}
+    \frac{\partial}{\partial \xi_n} \log \absolute{S_N}
+    &= -\frac{\partial}{\partial \xi_n} \log \absolute{S_N^{-1}} \\
+    &= -\tr\parentheses{S_N\frac{\partial S_N^{-1}}{\partial \xi_n}} \\
+    &= -\tr\parentheses{S_N\parentheses{2\frac{d\lambda}{d\xi_n}\parentheses{\xi_n}\phi_n\phi'}}
+\end{align*}
+対称行列の跡に関する公式$x'Ax = \tr \parentheses{Axx'}$を使って次を得る．
+\begin{align*}
+    \frac{\partial}{\partial \xi_n} \log \absolute{S_N}
+    = -2 \frac{d\lambda}{d\xi_n}\parentheses{\xi_n}\phi_n'S_N \phi_n.
+\end{align*}
+公式の導出に関しては，このスライドの補足\ref{sec:det}と補足\ref{sec:trace}を参照．
+\end{frame}
+
+\begin{frame}
+\frametitle{変分パラメータの最適化（直接計算）}
+次に$m_N'S_N^{-1}m_N$を$\xi_n$で微分する．$m_N = S_Nv_N$と置く．
+$(\mathrm{C}.21)$の公式$\partial A^{-1}/\partial x = -A^{-1}(\partial A/\partial x)A^{-1}$などを使って
+\begin{align*}
+    \frac{\partial}{\partial \xi_n}\parentheses{m_N'S_N^{-1}m_N}
+    &= \frac{\partial}{\partial \xi_n}\parentheses{v_N' S_N' S_N^{-1}S_N v_N} \\
+    &= v_N'\parentheses{\frac{\partial S_N}{\partial \xi_n}}'v_N \\
+    &= - v_N'S_N'\frac{\partial S_N^{-1}}{\partial \xi_n}S_Nv_N \\
+    &= - 2\frac{d\lambda}{d\xi_n}\parentheses{\xi_n}m_N'\parentheses{\phi_n\phi_n'}m_N \\
+    &= - 2\frac{d\lambda}{d\xi_n}\parentheses{\xi_n}\phi_n'm_Nm_N'\phi_n
+\end{align*}
+を得る．
+\end{frame}
+
+\begin{frame}
+\frametitle{変分パラメータの最適化（直接計算）}
+最後に総和記号の中を$\xi_n$で微分する．
+\begin{align*}
+    &\frac{d}{d\xi_n}
+        \parentheses{%
+            \log\sigma\parentheses{\xi_n}
+            - \frac{\xi_n}{2}
+            + \lambda\parentheses{\xi_n}\xi_n^2
+        } \\
+    &= 1 - \sigma\parentheses{\xi_n} - \frac{1}{2} + \frac{d\lambda}{d\xi_n}\parentheses{\xi_n}\xi_n^2 + 2\lambda\parentheses{\xi_n}\xi_n \\
+    &= \frac{1}{2} - \sigma\parentheses{\xi_n} + \frac{d\lambda}{d\xi_n}
+            \parentheses{\xi_n}\xi_n^2 + \parentheses{\sigma\parentheses{\xi_n} - \frac{1}{2}} \\
+    &= \frac{d\lambda}{d\xi_n}\parentheses{\xi_n}\xi_n^2
+\end{align*}
+\end{frame}
+
+\begin{frame}
+\frametitle{変分パラメータの最適化（直接計算）}
+以上の結果から$\partial \energy/\partial \xi_n = 0$と置くと
+\begin{gather*}
+    \frac{d\lambda}{d\xi_n}
+    \parentheses{\xi_n}
+    \parentheses{%
+        \xi_n^2
+        - \phi_n'S_N \phi_n
+        - \phi_n'm_Nm_N'\phi_n
+    }
+    = 0 \\
+    \frac{d\lambda}{d\xi_n}
+    \parentheses{\xi_n}
+    \parentheses{%
+        \xi_n^2
+        - \phi_n'
+        \parentheses{S_N + m_Nm_N'}\phi_n
+    }
+    = 0
+\end{gather*}
+となり，EMアルゴリズムと全く同じ結果になる．
+\end{frame}
+
+\subsection{超パラメータの推論}
+\begin{frame}
+\frametitle{超パラメータの推論}
+ベイズロジスティック回帰モデルにおいて
+今まで$w$を定める超パラメータ$\alpha$は既知の定数としてきたが，
+$\alpha$もデータから推測できたらうれしい．
+以下でその方法を説明する．
+
+\bigskip
+
+$w$の事前分布として，以下の等方ガウス分布を仮定する\footnote[frame]{$w$の次元が$M$であるという記述が見つけられなかったけど多分それであってるはず．}．
+\begin{align}
+    p\parentheses{w|\alpha}
+    &= \mathcal{N}\parentheses{w\left|0,\alpha^{-1}I\right.} \tag{10.165} \label{pwa} \\
+    &= \frac{1}{\parentheses{2\pi}^{M/2}\absolute{\alpha^{-1}I}^{1/2}} \exp\parentheses{-\frac{\alpha}{2}w'w} \notag \\
+    &= \parentheses{\frac{\alpha}{2\pi}}^{M/2} \exp\parentheses{-\frac{\alpha}{2}w'w} \notag
+\end{align}
+\end{frame}
+
+\begin{frame}
+\frametitle{超パラメータの推論}
+共役超事前分布$p\parentheses{\alpha}$はガンマ分布
+\begin{align}
+    p\parentheses{\alpha}
+    &= \GammaDistribution\parentheses{\alpha|a_0,b_0} \tag{10.166} \label{palpha} \\
+    &= \frac{1}{\varGamma\parentheses{a_0}}b_0^{a_0}\alpha^{a_0 - 1}e^{-b_0\alpha} \notag
+\end{align}
+とする．
+
+\bigskip
+
+このモデルの周辺尤度は
+\begin{align}
+    p\parentheses{\bm{\mathsf{t}}} = \iint p\parentheses{w,\alpha,\bm{\mathsf{t}}}dwd\alpha \tag{10.167}
+\end{align}
+である．ただし
+\begin{align}
+    p\parentheses{w,\alpha,\bm{\mathsf{t}}} = p\parentheses{\bm{\mathsf{t}}|w}p\parentheses{w|\alpha}p\parentheses{\alpha} \tag{10.168}
+\end{align}
+である．
+\end{frame}
+
+\begin{frame}
+\frametitle{超パラメータの推論}
+いつも通り周辺尤度の対数$\log p\parentheses{\bm{\mathsf{t}}}$を以下のように分解する．
+\begin{align*}
+    \log p\parentheses{\bm{\mathsf{t}}} = \energy\parentheses{q} + \KL\parentheses{q\|p}. \tag{10.169}
+\end{align*}
+ここで
+\begin{gather}
+    \energy\parentheses{q}
+    = \iint q\parentheses{w,\alpha}
+    \log\parentheses{%
+        \frac{p\parentheses{w,\alpha,\bm{\mathsf{t}}}}{q\parentheses{w,\alpha}}
+    }
+    dwd\alpha \tag{10.170} \\
+    \KL\parentheses{q\|p}
+    = -\iint q\parentheses{w,\alpha}
+    \log\parentheses{%
+        \frac{p\parentheses{w,\alpha|\bm{\mathsf{t}}}}{q\parentheses{w,\alpha}}
+    }
+    dwd\alpha \tag{10.171}
+\end{gather}
+である．このままでは$\energy$の最大化の計算が進められないので，
+またいつものように下から近似する．
+\begin{align}
+    \log p\parentheses{\bm{\mathsf{t}}}
+    &\geq \energy\parentheses{q} \geq \widetilde{\energy}\parentheses{q,\xi} \notag \\
+    &= \iint q\parentheses{w,\alpha}\log\parentheses{\frac{h\parentheses{w,\xi}p\parentheses{w|\alpha}p\parentheses{\alpha}}{q\parentheses{w,\alpha}}}dwd\alpha
+    \tag{10.172}
+\end{align}
+\end{frame}
+
+\begin{frame}
+\frametitle{超パラメータの推論}
+変分分布がパラメータと超パラメータに分解できると仮定しよう．
+\begin{align}
+    q\parentheses{w, \alpha} = q\parentheses{w}q\parentheses{\alpha} \tag{10.173}
+\end{align}
+これで$\energy$の最大化に取り組むことができる．
+\begin{align*}
+    \energy\parentheses{q}
+    &= \iint q\parentheses{w}q\parentheses{\alpha} \log \parentheses{h\parentheses{w,\xi}p\parentheses{w|\alpha}p\parentheses{\alpha}} d\alpha dw \\
+    &\phantom{=}\ -\int q\parentheses{w}\parentheses{\int q\parentheses{\alpha} \log\parentheses{q\parentheses{w}q\parentheses{\alpha}} d\alpha} dw \\
+    &= \int q\parentheses{w}\parentheses{\int q\parentheses{\alpha} \log \parentheses{h\parentheses{w,\xi}p\parentheses{w|\alpha}p\parentheses{\alpha}} d\alpha} dw \\
+    &\phantom{=}\ -\int q\parentheses{w} \log q\parentheses{w} dw
+            -\int q\parentheses{\alpha} \log q\parentheses{\alpha} d\alpha
+\end{align*}
+\end{frame}
+
+\begin{frame}
+\frametitle{超パラメータの推論}
+KLダイバージェンスの最小化条件を使って
+\begin{align*}
+    \log q\parentheses{w}
+    &= \int q\parentheses{\alpha} \log \parentheses{h\parentheses{w,\xi}p\parentheses{w|\alpha}p\parentheses{\alpha}} d\alpha + \const \\
+    &= \log h\parentheses{w,\xi} + \mathbb{E}_\alpha \brackets{\log p\parentheses{w|\alpha}} + \const
+\end{align*}
+となる．$\log h\parentheses{w,\xi}$に\paref{h}を，
+$\log p\parentheses{w|\alpha}$に\paref{pwa}を代入して次式を得る．
+\setlength{\fboxsep}{2pt}
+\begin{align*}
+    \log q\parentheses{w}
+    &= -\frac{\mathbb{E}\brackets{\alpha}}{2}w'w \\
+    &\phantom{=}\ + \sum_{n = 1}^N \parentheses{\parentheses{t_n - \frac{1}{2}}w'\phi_n - \lambda\parentheses{\xi_n}w'\phi_n\phi'w} + \const
+\end{align*}
+これは$w$の二次関数なので$q\parentheses{w}$はガウス分布であることが分かる．
+\end{frame}
+
+\begin{frame}
+\frametitle{超パラメータの推論}
+したがって$q\parentheses{w} = \mathcal{N}\parentheses{w|\mu_N, \varSigma_N}$とすれば
+\begin{gather}
+    \varSigma_{N}^{-1} = \mathbb{E}\brackets{\alpha}I + 2 \sum_{n = 1}^N \lambda\parentheses{\xi_n}\phi_n\phi_n', \tag{10.176} \\
+    \varSigma_{N}^{-1} \mu_N = \sum_{n = 1}^N \parentheses{t_n - \frac{1}{2}\phi_n} \tag{10.175}
+\end{gather}
+が成り立つ．
+\end{frame}
+
+\begin{frame}
+\frametitle{超パラメータの推論}
+次に$\alpha$の変分分布について計算する．
+$\energy$は以下のように変形できる．
+\begin{align*}
+    \energy\parentheses{q}
+    &= \int q\parentheses{\alpha}\parentheses{\log p\parentheses{\alpha} + \int q\parentheses{w} \log p\parentheses{w|\alpha} dw} d\alpha \\
+    &\phantom{=}\ -\int q\parentheses{\alpha} \log q\parentheses{\alpha} d\alpha + \const
+\end{align*}
+よってKLダイバージェンスの最小化条件を使って
+\begin{align*}
+    \log q\parentheses{\alpha} = \mathbb{E}_w \brackets{\log p\parentheses{w|\alpha}} + \log p\parentheses{\alpha} + \const
+\end{align*}
+となる．
+\end{frame}
+
+\begin{frame}
+\frametitle{超パラメータの推論}
+$\log p\parentheses{w|\alpha}$に\paref{pwa}を，$\log p\parentheses{\alpha}$に\paref{palpha}を代入して
+\begin{align*}
+    \log q\parentheses{\alpha}
+    &= \frac{M}{2}\log \alpha - \frac{\alpha}{2}\mathbb{E}\brackets{w'w} +\parentheses{a_0 - 1}\log \alpha - b_0\alpha + \const \\
+    &= \parentheses{\frac{M}{2} + a_0 - 1}\log \alpha - \parentheses{b_0 + \frac{1}{2}\mathbb{E}\brackets{w'w}}\alpha + \const
+\end{align*}
+を得る．これはガンマ分布の対数の形になっているので
+\begin{gather}
+    a_N := a_0 + \frac{M}{2}, \tag{10.178} \\
+    b_N := b_0 + \frac{1}{2}\mathbb{E}\brackets{w'w} \tag{10.179}
+\end{gather}
+と置くと
+\begin{align}
+    q\parentheses{\alpha} &= \GammaDistribution\parentheses{\alpha | a_N,b_N} = \frac{1}{\varGamma\parentheses{a_N}}a_N^{b_N}\alpha^{a_N - 1}e^{-b_N\alpha} \tag{10.177}
+\end{align}
+となる．
+\end{frame}
+
+\begin{frame}
+\frametitle{超パラメータの推論}
+最後に$\xi$の推定を行う方法を考える．
+$\widetilde{\energy}\parentheses{q,\xi}$の$\xi$に関連する項に着目すると
+\begin{align*}
+    \energy\parentheses{q}
+    &= \iint q\parentheses{w}q\parentheses{\alpha} \log h\parentheses{w,\xi} d\alpha dw + \const \\
+    &= \iint q\parentheses{w} \log h\parentheses{w,\xi} dw + \const
+\end{align*}
+となる．これは
+と同じ形なので前の結果から
+\begin{align}
+    \parentheses{\xi_n^{\mathrm{new}}}^2 = \phi_n'\parentheses{\varSigma_N + \mu_N\mu_N'}\phi_n \tag{10.181}
+\end{align}
+以上で$q\parentheses{w},\,q\parentheses{\alpha},\,\xi$を再推定する方程式が得られた．
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%
+%%%%% appendix %%%%%
+%%%%%%%%%%%%%%%%%%%%
+\section{補足}
+\subsection{補足1: 行列式の微分}
+\label{sec:det}
+\begin{frame}
+\frametitle{行列式の微分}
+行列式の微分の公式を導く．
+$A$を$n$次正則行列とし，その各行を$a_i\,\parentheses{i = 1,\ldots,n}$と表す．
+\begin{align*}
+    &\frac{d}{dt}\absolute{A\parentheses{t}} \\
+    &= \lim_{t \to 0}\frac{1}{t}\parentheses{%
+        \absolute{%
+            \begin{array}{c}
+                a_1\parentheses{t + h} \\
+                a_2\parentheses{t + h} \\
+                \vdots \\
+                a_n\parentheses{t + h}
+            \end{array}
+        }
+        -
+        \absolute{%
+            \begin{array}{c}
+                a_1\parentheses{t} \\
+                a_2\parentheses{t} \\
+                \vdots \\
+                a_n\parentheses{t}
+            \end{array}
+        }
+    } \\
+    &= \lim_{t \to 0}\frac{1}{t}\parentheses{%
+        \absolute{%
+            \begin{array}{c}
+                a_1\parentheses{t + h} \\
+                a_2\parentheses{t + h} \\
+                \vdots \\
+                a_n\parentheses{t + h}
+            \end{array}
+        }
+        -
+        \absolute{%
+            \begin{array}{c}
+                a_1\parentheses{t} \\
+                a_2\parentheses{t + h} \\
+                \vdots \\
+                a_n\parentheses{t + h}
+            \end{array}
+        }
+        +
+        \absolute{%
+            \begin{array}{c}
+                a_1\parentheses{t} \\
+                a_2\parentheses{t + h} \\
+                \vdots \\
+                a_n\parentheses{t + h}
+            \end{array}
+        }
+        -
+        \absolute{%
+            \begin{array}{c}
+                a_1\parentheses{t} \\
+                a_2\parentheses{t} \\
+                \vdots \\
+                a_n\parentheses{t}
+            \end{array}
+        }
+    }
+\end{align*}
+\end{frame}
+
+\begin{frame}
+\frametitle{行列式の微分}
+\begin{align*}
+    &= \lim_{t \to 0}\frac{1}{t}
+    \parentheses{%
+        \absolute{%
+            \begin{array}{c}
+                a_1\parentheses{t + h} - a_1\parentheses{t} \\
+                a_2\parentheses{t + h} \\
+                \vdots \\
+                a_n\parentheses{t + h}
+            \end{array}
+        }
+    } \\
+    &\phantom{=}\ + \lim_{t \to 0}\frac{1}{t}
+    \parentheses{%
+        \absolute{%
+            \begin{array}{c}
+                a_1\parentheses{t} \\
+                a_2\parentheses{t + h} \\
+                \vdots \\
+                a_n\parentheses{t + h}
+            \end{array}
+        }
+        -
+        \absolute{%
+            \begin{array}{c}
+                a_1\parentheses{t} \\
+                a_2\parentheses{t} \\
+                \vdots \\
+                a_n\parentheses{t}
+            \end{array}
+        }
+    } \\
+    &= \absolute{%
+            \begin{array}{c}
+                \dot{a}_1\parentheses{t} \\
+                a_2\parentheses{t} \\
+                \vdots \\
+                a_n\parentheses{t}
+            \end{array}
+    } + \lim_{t \to 0}\frac{1}{t}
+    \parentheses{%
+        \absolute{%
+            \begin{array}{c}
+                a_1\parentheses{t} \\
+                a_2\parentheses{t + h} \\
+                \vdots \\
+                a_n\parentheses{t + h}
+            \end{array}
+        }
+        -
+        \absolute{%
+            \begin{array}{c}
+                a_1\parentheses{t} \\
+                a_2\parentheses{t} \\
+                \vdots \\
+                a_n\parentheses{t}
+            \end{array}
+        }
+    }
+\end{align*}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{行列式の微分}
+\begin{align*}
+    &= \absolute{%
+            \begin{array}{c}
+                \dot{a}_1\parentheses{t} \\
+                a_2\parentheses{t} \\
+                \vdots \\
+                a_n\parentheses{t}
+            \end{array}
+    } + \lim_{t \to 0}\frac{1}{t}
+    \parentheses{%
+        \absolute{%
+            \begin{array}{c}
+                a_1\parentheses{t} \\
+                a_2\parentheses{t + h} \\
+                \vdots \\
+                a_n\parentheses{t + h}
+            \end{array}
+        }
+        -
+        \absolute{%
+            \begin{array}{c}
+                a_1\parentheses{t} \\
+                a_2\parentheses{t} \\
+                \vdots \\
+                a_n\parentheses{t + h}
+            \end{array}
+        }
+    } \\
+    &\phantom{=}\ + \lim_{t \to 0}\frac{1}{t}
+    \parentheses{%
+        \absolute{%
+            \begin{array}{c}
+                a_1\parentheses{t} \\
+                a_2\parentheses{t} \\
+                \vdots \\
+                a_n\parentheses{t + h}
+            \end{array}
+        }
+        -
+        \absolute{%
+            \begin{array}{c}
+                a_1\parentheses{t} \\
+                a_2\parentheses{t} \\
+                \vdots \\
+                a_n\parentheses{t}
+            \end{array}
+        }
+    } \\
+    &=
+    \absolute{%
+            \begin{array}{c}
+                \dot{a}_1\parentheses{t} \\
+                a_2\parentheses{t} \\
+                \vdots \\
+                a_n\parentheses{t}
+            \end{array}
+    }
+    +
+    \absolute{%
+            \begin{array}{c}
+                a_1\parentheses{t} \\
+                \dot{a}_2\parentheses{t} \\
+                \vdots \\
+                a_n\parentheses{t}
+            \end{array}
+    }
+    + \lim_{t \to 0}\frac{1}{t}
+    \parentheses{%
+        \absolute{%
+            \begin{array}{c}
+                a_1\parentheses{t} \\
+                a_2\parentheses{t} \\
+                \vdots \\
+                a_n\parentheses{t + h}
+            \end{array}
+        }
+        -
+        \absolute{%
+            \begin{array}{c}
+                a_1\parentheses{t} \\
+                a_2\parentheses{t} \\
+                \vdots \\
+                a_n\parentheses{t}
+            \end{array}
+        }
+    }
+\end{align*}
+\end{frame}
+
+\begin{frame}
+\frametitle{行列式の微分}
+上記の計算を繰り返すことで以下の公式を得る．
+\begin{align*}
+    \frac{d}{dt}\absolute{A\parentheses{t}}
+    = \sum_{i = 1}^n \absolute{%
+        \begin{array}{c}
+            a_1\parentheses{t} \\
+            \vdots \\
+            \dot{a}_i\parentheses{t} \\
+            \vdots \\
+            a_n\parentheses{t}
+        \end{array}
+    }
+    = \sum_{i = 1}^n \sum_{k = 1}^n \dot{a}_{ik} \varDelta_{ik}
+\end{align*}
+これを使いさらに簡潔な表現を得ることができる．
+次頁で説明する．
+\end{frame}
+
+\begin{frame}
+\frametitle{行列式の微分}
+$A$を$n$次正則行列$A$とし，その$\parentheses{i,j}$成分の余因子を$\varDelta_{ij} := \parentheses{-1}^{i + j}\absolute{A_{ij}}$，
+余因子行列を$\widetilde{A} = \parentheses{\varDelta_{ji}}_{ij}$と表す．このとき第$i$行に関する余因子展開を行えば
+\begin{align*}
+    \frac{d}{dt}\absolute{A\parentheses{t}}
+    = \sum_{i = 1}^n \absolute{%
+        \begin{array}{c}
+            a_1\parentheses{t} \\
+            \vdots \\
+            \dot{a}_i\parentheses{t} \\
+            \vdots \\
+            a_n\parentheses{t}
+        \end{array}
+    }
+    = \sum_{i = 1}^n \sum_{k = 1}^n \dot{a}_{ik} \varDelta_{ik}
+\end{align*}
+となる．
+\begin{align*}
+    \tr \parentheses{\widetilde{A}\parentheses{t}\dot{A}\parentheses{t}}
+    = \tr \parentheses{\parentheses{\sum_{k = 1}^n \varDelta_{ki} \dot{a}_{kj}}_{ij}}
+    = \sum_{i = 1}^n \sum_{k = 1}^n \varDelta_{ki} \dot{a}_{ki}
+\end{align*}
+なので$\parentheses{d/dt}\absolute{A\parentheses{t}} = \tr \parentheses{\widetilde{A}\parentheses{t}\dot{A}\parentheses{t}}$を得る．\nocite{golberg1972derivative}
+\end{frame}
+
+\begin{frame}
+\frametitle{行列式の対数の微分}
+正則行列について$\widetilde{A} / \absolute{A} = A^{-1}$が成り立つことと，
+いま導いた$\parentheses{d/dt}\absolute{A\parentheses{t}} = \tr\parentheses{\widetilde{A}\parentheses{t}\dot{A}\parentheses{t}}$を使うと
+\begin{align*}
+    \frac{d}{dt}\log\absolute{A\parentheses{t}}
+    &= \frac{1}{\absolute{A\parentheses{t}}}\frac{d}{dt}\absolute{A\parentheses{t}} \\
+    &= \frac{1}{\absolute{A\parentheses{t}}}\tr\parentheses{\widetilde{A}\parentheses{t}\dot{A}\parentheses{t}} \\
+    &=  \frac{1}{\absolute{A\parentheses{t}}}\tr\parentheses{\widetilde{A}\parentheses{t}\dot{A}\parentheses{t}} \\
+    &=  \tr\parentheses{A^{-1}\parentheses{t}\dot{A}\parentheses{t}}
+\end{align*}
+を得る．
+\end{frame}
+
+\subsection{補足2: 跡と二次形式}
+\label{sec:trace}
+\begin{frame}
+\frametitle{跡と二次形式}
+公式$\tr \parentheses{Axx'} = x'Ax$を示す．
+そのために，まずは$\tr \parentheses{AB'} = \tr\parentheses{A'B}$を示す．
+\begin{align*}
+    \tr \parentheses{AB'}
+    &= \sum_{i = 1}^n \sum_{k = 1}^n a_{ik}b_{ik} \\
+    &= \sum_{i = 1}^n \sum_{k = 1}^n a_{ki}b_{ki} \\
+    &= \tr \parentheses{A'B}
+\end{align*}
+したがって$A$が対称行列ならば
+\begin{align*}
+    \tr \parentheses{Axx'}
+    &= \tr \parentheses{\parentheses{x'A}'x'} \\
+    &= \tr \parentheses{x'Ax} \\
+    &= x'Ax
+\end{align*}
+が成り立つ．
+\end{frame}
+
+\begin{frame}
+\frametitle{参考文献}
+\bibliography{prml10.4-10.6}
+\bibliographystyle{apalike}
+\end{frame}
+
+\end{document}
