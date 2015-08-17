@@ -1684,17 +1684,18 @@ $A$を$n$次正則行列$A$とし，その$\parentheses{i,j}$成分の余因子�
 \begin{frame}
 \frametitle{跡と二次形式}
 公式$\tr \parentheses{Axx'} = x'Ax$を示す．
-そのために，まずは$\tr \parentheses{AB'} = \tr\parentheses{A'B}$を示す．
+そのために，まずは
+$\tr \parentheses{AB} = \tr\parentheses{BA}$を示す．
 \begin{align*}
-    \tr \parentheses{AB'}
-    &= \sum_{i = 1}^n \sum_{k = 1}^n a_{ik}b_{ik} \\
-    &= \sum_{i = 1}^n \sum_{k = 1}^n a_{ki}b_{ki} \\
-    &= \tr \parentheses{A'B}
+    \tr \parentheses{AB}
+    &= \sum_{i = 1}^m \sum_{k = 1}^n a_{ik}b_{ki} \\
+    &= \sum_{i = 1}^m \sum_{k = 1}^n b_{ki}a_{ik} \\
+    &= \tr \parentheses{BA}
 \end{align*}
-したがって$A$が対称行列ならば
+したがって
 \begin{align*}
     \tr \parentheses{Axx'}
-    &= \tr \parentheses{\parentheses{x'A}'x'} \\
+    &= \tr \parentheses{x'\parentheses{Ax}} \\
     &= \tr \parentheses{x'Ax} \\
     &= x'Ax
 \end{align*}
