@@ -8,7 +8,7 @@
 \usepackage{luatextra}
 \usepackage{luatexja-otf}
 \usepackage{luatexja-fontspec}
-\usepackage[hiragino-pron,deluxe,expert]{luatexja-preset}
+\usepackage[hiragino-pron,deluxe]{luatexja-preset}
 \usepackage{polyglossia}
 \setmainlanguage{english}
 \setotherlanguage{russian}
@@ -338,6 +338,7 @@ $D = \parentheses{d_i\delta_{ij}}$を
 \end{align*}
 \end{frame}
 
+\section{Cut}
 \begin{frame}
 \frametitle{Cutとは}
 どこで切断するかを決めるため，以下で定められる量を考えよう．
@@ -494,6 +495,7 @@ $A_2 := \braces{v_1,v_2,v_3}$とする．
 しかし，これはNP困難であることが知られている．
 \end{frame}
 
+\section{グラフ・ラプラシアン}
 \begin{frame}
 \frametitle{グラフ・ラプラシアン}
 そこで\textbf{グラフ・ラプラシアン}というものを導入し，\pref{MinNCut}を少し
@@ -553,6 +555,7 @@ $h_\kappa := \parentheses{h_{1,\kappa} \; \cdots h_{n,\kappa}}' \in \mathbb{R}^n
 \end{align*}
 \end{frame}
 
+\section{問題の最定式化とその解法}
 \begin{frame}
 \frametitle{問題の再定式化}
 さらに以下が成り立つ．
@@ -648,6 +651,7 @@ $\tr\parentheses{T'D^{-1/2}LD^{1/2}T}$が最小になるのである．
 一般化された固有値問題$L y = \lambda D y$の解を並べたものであることが分かる．
 \end{frame}
 
+\section{アルゴリズム}
 \begin{frame}
 \frametitle{類似度行列}
 アルゴリズムを紹介する前に，
@@ -719,6 +723,7 @@ $k$平均法によるクラスタリングは繰り返しの回数を$I$とし�
 
 \end{frame}
 
+\section{参考文献}
 \begin{frame}
 \frametitle{参考文献}
 \bibliography{spectral-clustering}
