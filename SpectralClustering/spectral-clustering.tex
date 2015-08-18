@@ -177,7 +177,7 @@ basicstyle=\small\ttfamily
 グラフは，頂点と呼ばれる対象からなる有限非空集合$V$と，
 辺と呼ばれる対象からなる集合$E$の組$\parentheses{V,E}$である．
 辺とは，$V$の異なる2つの元の非順序対である．
-辺$\parentheses{v_i,v_j}$を$e_{ij}$のように書く．
+辺$\braces{v_i,v_j}$を$e_{ij}$のように書く．
 
 \bigskip
 
@@ -635,20 +635,20 @@ $\lambda_i \neq \lambda_j$となり，$\anglebrackets{u_i,u_j} = 0$．
 つまり，行列$D^{-1/2}LD^{-1/2}$の固有値を
 小さいほうから$\lambda_1,\ldots,\lambda_n$と並べ，
 それぞれに対応する正規化された固有ベクトルを$u_1,\ldots,u_n$とするとき，
-$T = \parentheses{u_1 \; \cdots \; u_n}$とすれば
+$T = \parentheses{u_1 \; \cdots \; u_k}$とすれば
 $\tr\parentheses{T'D^{-1/2}LD^{1/2}T}$が最小になるのである．
 
 \bigskip
 
-ここで$y_i := D^{-1/2}u_i$と置くと
+ここで$z_i := D^{-1/2}u_i$と置くと
 \begin{gather*}
     D^{-1/2}LD^{-1/2}u_i = \lambda_i u_i \\
     D^{-1}LD^{-1/2}u = \lambda_i D^{-1/2}u_i \\
-    D^{-1}Ly_i = \lambda_i y_i \\
-    Ly_i = \lambda_i D y_i
+    D^{-1}Lz_i = \lambda_i z_i \\
+    Lz_i = \lambda_i D z_i
 \end{gather*}
-となり，$H = \parentheses{D^{-1/2}u_1 \; \cdots \; D^{-1/2}u_n} = \parentheses{y_1 \; \cdots \; y_n}$は
-一般化された固有値問題$L y = \lambda D y$の解を並べたものであることが分かる．
+となり，$H = \parentheses{D^{-1/2}u_1 \; \cdots \; D^{-1/2}u_k} = \parentheses{z_1 \; \cdots \; z_k}$は
+一般化された固有値問題$L z = \lambda D z$の解を並べたものであることが分かる．
 \end{frame}
 
 \section{アルゴリズム}
