@@ -1,0 +1,728 @@
+\documentclass[10pt,hyperref={unicode}]{beamer}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,accents,mathrsfs,bm,amsthm}
+\DeclareSymbolFont{bbold}{U}{bbold}{m}{n}
+\DeclareSymbolFontAlphabet{\mathbbold}{bbold}
+\usepackage{datetime}
+\usepackage[noenc,safe]{tipa}
+\usepackage{luatextra}
+\usepackage{luatexja-otf}
+\usepackage{luatexja-fontspec}
+\usepackage[hiragino-pron,deluxe,expert]{luatexja-preset}
+\usepackage{polyglossia}
+\setmainlanguage{english}
+\setotherlanguage{russian}
+\usepackage{listings}
+\usepackage{tikz}
+\usepackage{tikz-3dplot}
+\usepackage{tikz-qtree}
+\usetikzlibrary{automata,arrows,decorations.pathmorphing,backgrounds,positioning,fit,matrix}
+\usepackage{pgf}
+\usepackage{pgfplots}
+\usepackage{scrextend}
+\usepackage{natbib}
+\deffootnote[10pt]{10pt}{10pt}{\makebox[10pt][l]{\thefootnotemark\hspace{10pt}}}
+\usetheme{default}
+\usecolortheme{metropolis}
+\usefonttheme{professionalfonts}
+\setmainjfont[BoldFont=Hiragino Kaku Gothic ProN W6,Ligatures=TeX]%
+{Hiragino Kaku Gothic ProN W3}
+\setsansfont[BoldFont=Hiragino Kaku Gothic ProN W6,Ligatures=TeX]{Hiragino Kaku Gothic ProN W3}
+%\setmonofont{DejaVu Sans Mono}
+\newfontfamily\ipafont[]{CMU Serif}
+\DeclareMathOperator*{\aff}{aff}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\cut}{cut}
+\DeclareMathOperator*{\dom}{dom}
+\DeclareMathOperator*{\epi}{epi}
+\DeclareMathOperator*{\id}{id}
+\DeclareMathOperator*{\Ker}{ker}
+\DeclareMathOperator*{\rank}{rank}
+\DeclareMathOperator*{\ri}{ri}
+\DeclareMathOperator*{\sgn}{sgn}
+\DeclareMathOperator*{\tr}{tr}
+\DeclareMathOperator*{\var}{var}
+\DeclareMathOperator*{\KL}{KL}
+\DeclareMathOperator*{\Span}{span}
+\DeclareMathOperator*{\vol}{vol}
+\DeclareMathOperator*{\RatioCut}{RatioCut}
+\DeclareMathOperator*{\NCut}{NCut}
+\DeclareMathOperator*{\GammaDistribution}{Gamma}
+\newcommand\dottedcircle{%
+\begin{pgfpicture}
+\pgfsetlinewidth{0.25ex}
+\pgfsetroundcap
+\pgfsetdash{{0cm}{2pt}{0cm}{2pt}}{0cm}
+\pgfcircle{\pgfpointorigin}{0.75ex}
+\pgfusepath{stroke}
+\pgfsetbaseline{-0.75ex}
+\end{pgfpicture}%
+}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{itemize/enumerate subbody begin}{\vspace{1em}}
+\setbeamertemplate{caption}{\raggedright\insertcaption\par}
+\definecolor{mDarkTeal}{HTML}{23373b}
+\setbeamercolor{block title}{use=structure,fg=white,bg=mDarkTeal}
+\setbeamercolor{block body}{use=structure,fg=black,bg=gray!20!white}
+\newenvironment{wideitemize}{\itemize\addtolength{\itemsep}{1em}}{\enditemize}
+\newenvironment{wideenumerate}{\enumerate\addtolength{\itemsep}{1em}}{\endenumerate}
+\addtobeamertemplate{navigation symbols}{}{%
+\usebeamerfont{footline}%
+\usebeamercolor[fg]{footline}%
+\hspace{1em}%
+\insertframenumber/\inserttotalframenumber
+}
+\makeatletter\def\tagform@#1{\maketag@@@{{\fontfamily{cmr}\selectfont(#1)}\@@italiccorr}}\makeatother
+\newcommand{\pref}[1]{{\fontfamily{cmr}\selectfont (\ref{#1})}}
+\newcommand{\absolute}[1]{\left|#1\right|}
+\newcommand{\parentheses}[1]{\left(#1\right)}
+\newcommand{\leftopenrightclose}[1]{\left(\left.#1\right]\right.}
+\newcommand{\leftcloserightopen}[1]{\left[\left.#1\right)\right.}
+\newcommand{\braces}[1]{\left\{#1\right\}}
+\newcommand{\brackets}[1]{\left[#1\right]}
+\newcommand{\anglebrackets}[1]{\left\langle#1\right\rangle}
+\newcommand{\norm}[1]{\left\|#1\right\|}
+\newcommand{\const}{\mathrm{const.}}
+\renewcommand{\qedsymbol}{\rule[-2pt]{5pt}{10pt}}
+\newcommand{\energy}{\mathcal{L}}
+%\newcommand{\energy}{F}
+\pgfplotsset{%
+width=5cm,
+compat=newest,
+xlabel near ticks,
+ylabel near ticks
+}
+\lstset{%
+basicstyle=\small\ttfamily
+}
+\title{スペクトラル・クラスタリング}
+\institute{総合研究大学院大学 博士前期1年\newline\newline\texttt{miyazawa-a@nii.ac.jp}}
+\author{宮澤　彬}
+\date{\today}
+\begin{document}
+\setlength{\jot}{1.5\jot}
+\begin{frame}
+\maketitle
+\end{frame}
+
+\section{動機}
+\begin{frame}
+\frametitle{動機}
+各データを点とみなし，
+いくつかを辺で結ぶと
+グラフ理論でいうところのグラフができる．
+さらに辺の両端の点の類似度に応じて，
+重みを与えてやると
+クラスタリングの問題は
+重みの小さい，つまり
+結びつきの弱い部分でグラフを切断する問題に帰着させることができる．
+
+\bigskip
+
+\begin{center}
+\tikzset{>=stealth',every on chain/.append style={join},every join/.style={->}}
+\begin{tikzpicture}[every state/.style={inner sep=2.5pt, minimum size=0pt}]
+\node [state,accepting,color=red] (q1)  at (0,0) {$v_1$};
+\node [state,accepting,color=red] (q2) at (2,0) {$v_2$};
+\node [state,color=blue] (q3) at (4,0) {$v_3$};
+\node [state,color=blue] (q4) at (4 + 2 * 0.5, 2 * 0.866) {$v_4$};
+\node [state,color=blue] (q5) at (4 + 2 * 0.5, -2 * 0.866) {$v_5$};
+\path [-] (q1) edge node [above] {$0.8$} (q2);
+\path [-,dotted] (q1) edge [bend right] node [below] {$0.1$} (q3);
+\path [-,dotted] (q1) edge [bend left] node [above] {$0.1$} (q4);
+\path [-,dotted] (q1) edge [bend right] node [below] {$0.1$} (q5);
+\path [-,dotted] (q2) edge node [above] {$0.4$} (q3);
+\path [-,dotted] (q2) edge node [above] {$0.2$} (q4);
+\path [-,dotted] (q2) edge node [below] {$0.2$} (q5);
+\path [-] (q3) edge node [below right] {$0.9$} (q4);
+\path [-] (q3) edge node [above right] {$0.7$} (q5);
+\path [-] (q4) edge [bend left] node [right] {$0.8$} (q5);
+\visible<2->{\draw[color=red,thick] plot [domain=0:4.5] (\x,{-0.2 * (\x-0.1)^2 + 1.5});}
+\end{tikzpicture}
+\end{center}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{動機}
+グラフの連結構造を活用すれば
+クラスタリングの精度が向上する．
+以下の図は，$k$平均法ではうまくいかないが，
+スペクトラル・クラスタリングでは
+期待通りのクラスタが得られる例である．
+この図は\cite{murphy2012}から引用した．
+
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+            \begin{center}
+                \includegraphics[width=\textwidth]{spiral-kmeans.pdf}
+            \end{center}
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \begin{center}
+                \includegraphics[width=\textwidth]{spiral-spectral.pdf}
+            \end{center}
+        \end{column}
+    \end{columns}
+
+切断の問題は，
+グラフ理論の分野で既に多くの研究結果があり，
+それらを使うことができるという利点もある．
+\end{frame}
+
+
+\section{グラフ}
+\begin{frame}
+\frametitle{グラフとは}
+グラフは，頂点と呼ばれる対象からなる有限非空集合$V$と，
+辺と呼ばれる対象からなる集合$E$の組$\parentheses{V,E}$である．
+辺とは，$V$の異なる2つの元の非順序対である．
+辺$\parentheses{v_i,v_j}$を$e_{ij}$のように書く．
+
+\bigskip
+
+例えば以下のグラフを図示すると下の図のようになる．
+\begin{gather*}
+    G = \parentheses{V,E},\,V = \braces{v_1,v_2,v_3,v_4,v_5},\,
+    E = \braces{e_{13},e_{14},e_{24},e_{25},e_{35}}
+\end{gather*}
+
+\begin{center}
+\tikzset{>=stealth',every on chain/.append style={join},every join/.style={->}}
+\begin{tikzpicture}[every state/.style={inner sep=2.5pt, minimum size=0pt}]
+\def\r{1.5}
+% cos(\pi/2 - 2\pi/5) \approx 0.951
+% sin(\pi/2 - 2\pi/5) \approx 0.309
+% cos(\pi/2 - 4\pi/5) \approx 0.588
+% sin(\pi/2 - 4\pi/5) \approx -0.809
+\node [state] (q1) at (0,{\r * 1}) {$v_1$};
+\node [state] (q2) at ({\r * (-0.951)}, {\r * 0.309}) {$v_2$};
+\node [state] (q3) at ({\r * (-0.588)},{\r * (-0.809)}) {$v_3$};
+\node [state] (q4) at ({\r * 0.588}, {\r * (-0.809)}) {$v_4$};
+\node [state] (q5) at ({\r * 0.951},{\r * 0.309}) {$v_5$};
+\path [-] (q1) edge (q3);
+\path [-] (q1) edge (q4);
+\path [-] (q2) edge (q4);
+\path [-] (q2) edge (q5);
+\path [-] (q3) edge (q5);
+\end{tikzpicture}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{行列によるグラフの表現}
+$A=\parentheses{a_{ij}} = \mathbbold{1}_E\parentheses{e_{ij}}$とすれば，
+グラフの辺の構造を行列で表現することができる．
+この$A$を\textbf{隣接行列}(adjacency matrix)と呼ぶ．
+
+\bigskip
+
+\begin{center}
+\tikzset{>=stealth',every on chain/.append style={join},every join/.style={->}}
+\begin{tikzpicture}[every state/.style={inner sep=2.5pt, minimum size=0pt}]
+\def\r{1.5}
+\node [state] (q1) at (0,{\r * 1}) {$v_1$};
+\node [state] (q2) at (0,0) {$v_2$};
+\node [state] (q3) at ({\r * (-0.866)}, {\r * (-0.5)}) {$v_3$};
+\node [state] (q4) at ({\r * (0.866)}, {\r * (-0.5)}) {$v_4$};
+\path [-] (q1) edge (q2);
+\path [-] (q2) edge (q3);
+\path [-] (q2) edge (q4);
+\node (A) at (4,0.5) {%
+    ${\displaystyle A =
+        \parentheses{\begin{array}{cccc}
+            0 & 1 & 0 & 0 \\
+            1 & 0 & 1 & 1 \\
+            0 & 1 & 0 & 0 \\
+            0 & 1 & 0 & 0
+        \end{array}}}$};
+\end{tikzpicture}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{行列によるグラフの表現}
+データ$x_1,\ldots,x_n$に
+頂点$v_1,\ldots,v_n$を対応させる．
+2つのデータ$x_i,\,x_j$の類似度$s_{ij}$によって
+の辺$e_{ij}$に重み$w_{ij} \geq 0$を付与する．
+このとき$n$次実対称行列$W = \parentheses{w_{ij}}$を\textbf{重み付き隣接行列}
+(weighted adjacency matrix)と呼ぶ．
+
+\bigskip
+
+\begin{center}
+\tikzset{>=stealth',every on chain/.append style={join},every join/.style={->}}
+\begin{tikzpicture}[every state/.style={inner sep=2.5pt, minimum size=0pt}]
+\def\r{1.5}
+\node [state] (q1) at (0,{\r * 1}) {$v_1$};
+\node [state] (q2) at (0,0) {$v_2$};
+\node [state] (q3) at ({\r * (-0.866)}, {\r * (-0.5)}) {$v_3$};
+\node [state] (q4) at ({\r * (0.866)}, {\r * (-0.5)}) {$v_4$};
+\path [-] (q1) edge node [right] {$0.5$} (q2);
+\path [-] (q2) edge node [above] {$1.2$} (q3);
+\path [-] (q2) edge node [above] {$0.7$} (q4);
+\node (A) at (4,0.5) {%
+    ${\displaystyle W =
+        \parentheses{\begin{array}{cccc}
+            0   & 0.5 & 0   & 0   \\
+            0.5 & 0   & 1.2 & 0.7 \\
+            0   & 1.2 & 0   & 0   \\
+            0   & 0.7 & 0   & 0
+        \end{array}}}$};
+\end{tikzpicture}
+\end{center}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{行列によるグラフの表現}
+グラフの分割を考えるにあたり，重み付き隣接行列の他に，
+次数行列という行列も必要になるのでここで紹介しておく．
+
+\bigskip
+
+任意の頂点$v_i \in \braces{v_1,\ldots,v_n}$について，
+その\textbf{次数}(degree)を
+\begin{align*}
+    d_i = \sum_{j = 1}^n w_{ij}
+\end{align*}
+と定める．次数を対角成分に持つ$n$次正方行列
+$D = \parentheses{d_i\delta_{ij}}$を
+\textbf{次数行列}(degree matrix)と呼ぶ．
+ただし$\delta_{ij}$はクロネッカーのデルタである．
+\end{frame}
+
+\begin{frame}
+\frametitle{重み付き隣接行列と次数行列}
+\begin{center}
+\tikzset{>=stealth',every on chain/.append style={join},every join/.style={->}}
+\begin{tikzpicture}[every state/.style={inner sep=2.5pt, minimum size=0pt}]
+\node [state] (q1)  at (0,0) {$v_1$};
+\node [state] (q2) at (2,0) {$v_2$};
+\node [state] (q3) at (4,0) {$v_3$};
+\node [state] (q4) at (4 + 2 * 0.5, 2 * 0.866) {$v_4$};
+\node [state] (q5) at (4 + 2 * 0.5, -2 * 0.866) {$v_5$};
+\path [-] (q1) edge node [above] {$0.8$} (q2);
+\path [-] (q1) edge [bend right] node [below] {$0.1$} (q3);
+\path [-] (q1) edge [bend left] node [above] {$0.1$} (q4);
+\path [-] (q1) edge [bend right] node [below] {$0.1$} (q5);
+\path [-] (q2) edge node [above] {$0.4$} (q3);
+\path [-] (q2) edge node [above] {$0.2$} (q4);
+\path [-] (q2) edge node [below] {$0.2$} (q5);
+\path [-] (q3) edge node [below right] {$0.9$} (q4);
+\path [-] (q3) edge node [above right] {$0.7$} (q5);
+\path [-] (q4) edge [bend left] node [right] {$0.8$} (q5);
+\end{tikzpicture}
+\end{center}
+
+\begin{align*}
+    D = \parentheses{%
+        \begin{array}{ccccc}
+            1.1 & 0   & 0   & 0 & 0 \\
+            0   & 1.6 & 0   & 0 & 0 \\
+            0   & 0   & 2.1 & 0 & 0 \\
+            0   & 0   & 0   & 2 & 0 \\
+            0   & 0   & 0   & 0 & 1.8
+        \end{array}
+    },\,
+    W = \parentheses{%
+        \begin{array}{ccccc}
+            0   & 0.8 & 0.1 & 0.1 & 0.1 \\
+            0.8 & 0   & 0.4 & 0.2 & 0.2 \\
+            0.1 & 0.4 & 0   & 0.9 & 0.7 \\
+            0.1 & 0.2 & 0.9 & 0   & 0.8 \\
+            0.1 & 0.2 & 0.7 & 0.8 & 0
+        \end{array}
+    }
+\end{align*}
+\end{frame}
+
+\begin{frame}
+\frametitle{Cutとは}
+どこで切断するかを決めるため，以下で定められる量を考えよう．
+\begin{align}
+    \cut \parentheses{A,\overline{A}}
+    = \sum_{\braces{\parentheses{i,j}\,;\, v_i \in A,\,v_j \in \overline{A}}} w_{ij}
+    \label{cut}
+\end{align}
+ここで$\overline{A} = V\backslash A$である．
+\pref{cut}はクラスター$A$と$\overline{A}$を結ぶ
+重みの総和であり，これが小さくなるように
+切断するのが望ましいと考えられる．
+\end{frame}
+
+\begin{frame}
+\frametitle{Cutの例}
+$A_1 := \braces{v_1,v_2}$とする．
+
+\bigskip
+
+\begin{center}
+\tikzset{>=stealth',every on chain/.append style={join},every join/.style={->}}
+\begin{tikzpicture}[every state/.style={inner sep=2.5pt, minimum size=0pt}]
+\node [state,accepting,color=red] (q1)  at (0,0) {$v_1$};
+\node [state,accepting,color=red] (q2) at (2,0) {$v_2$};
+\node [state,color=blue] (q3) at (4,0) {$v_3$};
+\node [state,color=blue] (q4) at (4 + 2 * 0.5, 2 * 0.866) {$v_4$};
+\node [state,color=blue] (q5) at (4 + 2 * 0.5, -2 * 0.866) {$v_5$};
+\path [-] (q1) edge node [above] {$0.8$} (q2);
+\path [-,dotted] (q1) edge [bend right] node [below] {$\bm{0.1}$} (q3);
+\path [-,dotted] (q1) edge [bend left] node [above] {$\bm{0.1}$} (q4);
+\path [-,dotted] (q1) edge [bend right] node [below] {$\bm{0.1}$} (q5);
+\path [-,dotted] (q2) edge node [above] {$\bm{0.4}$} (q3);
+\path [-,dotted] (q2) edge node [above] {$\bm{0.2}$} (q4);
+\path [-,dotted] (q2) edge node [below] {$\bm{0.2}$} (q5);
+\path [-] (q3) edge node [below right] {$0.9$} (q4);
+\path [-] (q3) edge node [above right] {$0.7$} (q5);
+\path [-] (q4) edge [bend left] node [right] {$0.8$} (q5);
+\end{tikzpicture}
+\end{center}
+
+\begin{align*}
+    \cut\parentheses{A_1,\overline{A}_1}
+    &= w_{13} + w_{14} + w_{15} + w_{23} + w_{24} + w_{25} \\
+    &= 0.1 + 0.1 + 0.1 + 0.4 + 0.2 + 0.2 = 1.1
+    \vphantom{ < \cut\parentheses{A_1,\overline{A}_1}}
+\end{align*}
+\end{frame}
+
+\begin{frame}
+\frametitle{Cutの例}
+$A_2 := \braces{v_1,v_2,v_3}$とする．
+
+\bigskip
+
+\begin{center}
+\tikzset{>=stealth',every on chain/.append style={join},every join/.style={->}}
+\begin{tikzpicture}[every state/.style={inner sep=2.5pt, minimum size=0pt}]
+\node [state,accepting,color=red] (q1)  at (0,0) {$v_1$};
+\node [state,accepting,color=red] (q2) at (2,0) {$v_2$};
+\node [state,accepting,color=red] (q3) at (4,0) {$v_3$};
+\node [state,color=blue] (q4) at (4 + 2 * 0.5, 2 * 0.866) {$v_4$};
+\node [state,color=blue] (q5) at (4 + 2 * 0.5, -2 * 0.866) {$v_5$};
+\path [-] (q1) edge node [above] {$0.8$} (q2);
+\path [-] (q1) edge [bend right] node [below] {$0.1$} (q3);
+\path [-,dotted] (q1) edge [bend left] node [above] {$\bm{0.1}$} (q4);
+\path [-,dotted] (q1) edge [bend right] node [below] {$\bm{0.1}$} (q5);
+\path [-] (q2) edge node [above] {$0.4$} (q3);
+\path [-,dotted] (q2) edge node [above] {$\bm{0.2}$} (q4);
+\path [-,dotted] (q2) edge node [below] {$\bm{0.2}$} (q5);
+\path [-,dotted] (q3) edge node [below right] {$\bm{0.9}$} (q4);
+\path [-,dotted] (q3) edge node [above right] {$\bm{0.7}$} (q5);
+\path [-] (q4) edge [bend left] node [right] {$0.8$} (q5);
+\end{tikzpicture}
+\end{center}
+
+\begin{align*}
+    \cut\parentheses{A_2,\overline{A}_2}
+    &= w_{14} + w_{15} + w_{24} + w_{25} + w_{34} + w_{35} \\
+    &= 0.1 + 0.1 + 0.2 + 0.2 + 0.9 + 0.7 = 2.2 > \cut\parentheses{A_1,\overline{A}_1}
+\end{align*}
+\end{frame}
+
+\begin{frame}
+\frametitle{Cutの例}
+この基準には，1つの頂点と残りの頂点全部，という分割になりやすい傾向がある．
+以下は$A_3 := \braces{v_1}$とした例である．
+
+\bigskip
+
+\begin{center}
+\tikzset{>=stealth',every on chain/.append style={join},every join/.style={->}}
+\begin{tikzpicture}[every state/.style={inner sep=2.5pt, minimum size=0pt}]
+\node [state,accepting,color=red] (q1)  at (0,0) {$v_1$};
+\node [state,color=blue] (q2) at (2,0) {$v_2$};
+\node [state,color=blue] (q3) at (4,0) {$v_3$};
+\node [state,color=blue] (q4) at (4 + 2 * 0.5, 2 * 0.866) {$v_4$};
+\node [state,color=blue] (q5) at (4 + 2 * 0.5, -2 * 0.866) {$v_5$};
+\path [-,dotted] (q1) edge node [above] {$\bm{0.8}$} (q2);
+\path [-,dotted] (q1) edge [bend right] node [below] {$\bm{0.1}$} (q3);
+\path [-,dotted] (q1) edge [bend left] node [above] {$\bm{0.1}$} (q4);
+\path [-,dotted] (q1) edge [bend right] node [below] {$\bm{0.1}$} (q5);
+\path [-] (q2) edge node [above] {$0.4$} (q3);
+\path [-] (q2) edge node [above] {$0.2$} (q4);
+\path [-] (q2) edge node [below] {$0.2$} (q5);
+\path [-] (q3) edge node [below right] {$0.9$} (q4);
+\path [-] (q3) edge node [above right] {$0.7$} (q5);
+\path [-] (q4) edge [bend left] node [right] {$0.8$} (q5);
+\end{tikzpicture}
+\end{center}
+
+\begin{align*}
+    \cut\parentheses{A_3,\overline{A}_3}
+    &= w_{12} + w_{13} + w_{14} + w_{15} \\
+    &= 0.8 + 0.1 + 0.1 + 0.1 = 1.1 = \cut\parentheses{A_1,\overline{A}_1}
+\end{align*}
+\end{frame}
+
+\begin{frame}
+\frametitle{NCut}
+この問題を解決するため新しく\textbf{normalized cut}という基準を導入する．
+これは次の値
+\begin{align*}
+    \NCut \parentheses{A,\overline{A}}
+    &:= \frac{\NCut\parentheses{A,\overline{A}}}{\vol{A}} + \frac{\NCut\parentheses{\overline{A},A}}{\vol{\overline{A}}}
+\end{align*}
+が小さいほうが好ましいとする方法である．ただし
+\begin{align*}
+    \vol A = \sum_{\braces{i\,;\, v_i \in A}} d_i
+           = \sum_{\braces{i\,;\, v_i \in A}} \sum_{\braces{j\,;\, v_j \in V}} w_{ij}
+\end{align*}
+である．上で見た例について，これを計算すると
+\begin{gather*}
+    \NCut \parentheses{A_1,\overline{A}_1} = \frac{1.1}{1.1 + 1.6} + \frac{1.1}{2.1 + 2 + 1.8} = \frac{946}{1593} < 1, \\
+    \NCut \parentheses{A_3,\overline{A}_3} = \frac{1.1}{1.1} + \frac{1.1}{1.6 + 2.1 + 2 + 1.8} = 1 + \frac{11}{75} > 1
+\end{gather*}
+となり，より均衡がとれている$A_1$が好ましいとされる．
+\end{frame}
+
+\begin{frame}
+\frametitle{NCut}
+一般に$A_1,\ldots,A_k$について
+\begin{align*}
+    \NCut \parentheses{A_1,\ldots,A_k} = \sum_{i = 1}^k \frac{\cut\parentheses{A_i,\overline{A_i}}}{\vol A_i}
+\end{align*}
+と定める．
+
+\bigskip
+
+今までの話から，グラフの切断の問題は次の最適化問題に帰着させられる．
+\begin{align}
+    \underset{A_1,\ldots,A_k}{\mathrm{minimize}}\ \NCut\parentheses{A_1,\ldots,A_k} \label{MinNCut}
+\end{align}
+しかし，これはNP困難であることが知られている．
+\end{frame}
+
+\begin{frame}
+\frametitle{グラフ・ラプラシアン}
+そこで\textbf{グラフ・ラプラシアン}というものを導入し，\pref{MinNCut}を少し
+書き換えることを試みる．グラフ・ラプラシアンは
+\begin{align*}
+    L := D - W
+\end{align*}
+で与えられる．
+
+\bigskip
+
+定義からすぐに以下の性質が分かる．
+\begin{itemize}
+    \item $L$は$n$次実対称行列である．
+    \item $L$の固有値$0$と，それに対応する固有ベクトル$\bm{1} = \parentheses{1 \; \cdots \; 1}' \in \mathbb{R}^n$をもつ．
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{グラフ・ラプラシアンの性質}
+\textbf{補題}{\hskip\labelsep}任意のベクトル$f \in \mathbb{R}$について以下が成り立つ．
+\begin{align*}
+    f'Lf = \frac{1}{2} \sum_{i,j = 1}^n w_{ij} \parentheses{f_i - f_j}^2.
+\end{align*}
+
+\bigskip
+
+\textbf{証明}
+\begin{align*}
+    f'Lf &= f'Df - f'Wf \\
+         &= \sum_{i = 1}^n d_i f_i^2 - \sum_{i,j = 1}^n f_i f_j w_{ij} \\
+         &= \parentheses{\sum_{i = 1}^n d_i f_i^2
+                - \sum_{i,j = 1}^n f_i f_j w_{ij} + \sum_{j = 1}^2 d_j f_j^2} \\
+         &= \frac{1}{2}\sum_{i,j = 1}^n w_{ij}\parentheses{f_i - f_j}^2 \qedhere
+\end{align*}
+\end{frame}
+
+\begin{frame}
+\frametitle{グラフ・ラプラシアンの性質}
+任意の$A_\kappa \subset V$に対して，
+$h_\kappa := \parentheses{h_{1,\kappa} \; \cdots h_{n,\kappa}}' \in \mathbb{R}^n$を
+以下で定める．
+\begin{align*}
+    h_{i,\kappa} := \frac{\mathbbold{1}_{A_{\kappa}}\parentheses{v_i}}{\sqrt{\vol A_{\kappa}}}
+\end{align*}
+すると以下が成り立つ．
+\begin{align*}
+    h_{\kappa}'Lh_{\kappa}
+    &= \frac{1}{2} \sum_{i,j = 1}^n w_{ij} \parentheses{h_{i,\kappa} - h_{j,\kappa}}^2 \\
+    &= \frac{1}{2}
+    \sum_{\braces{\parentheses{i,j}\,;\, v_i \in A_{\kappa},\,v_j \in \overline{A_{\kappa}}}}
+        w_{ij} \parentheses{\frac{1}{\sqrt{\vol A_{\kappa}}}}^2 \\
+    & \phantom{=}\ + \frac{1}{2}
+        \sum_{\braces{\parentheses{i,j}\,;\, v_i \in \overline{A_{\kappa}},\,v_j \in A_{\kappa}}}
+        w_{ij} \parentheses{\frac{1}{\sqrt{\vol{\overline{A_{\kappa}}}}}}^2 \\
+    &= \frac{\cut\parentheses{A_{\kappa},\overline{A_{\kappa}}}}{\vol A_{\kappa}}.
+\end{align*}
+\end{frame}
+
+\begin{frame}
+\frametitle{問題の再定式化}
+さらに以下が成り立つ．
+\begin{align*}
+    h_{\iota}'Dh_{\kappa}
+    &= \sum_{i = 1}^n d_i h_{i,\iota}h_{i,\kappa} \\
+    &= \sum_{i = 1}^n d_i \frac{\mathbbold{1}_{A_{\iota}}\parentheses{v_i}\mathbbold{1}_{A_{\kappa}}\parentheses{v_i}}{{\sqrt{\vol A_\iota}\sqrt{\vol A_\kappa}}} \\
+    &= \frac{1}{\sqrt{\vol A_\iota}\sqrt{\vol A_\kappa}} \sum_{\braces{i \,;\, v_i \in A_{\iota} \cap A_{\kappa}}} d_i \\
+    &= \delta_{\iota\kappa}.
+\end{align*}
+
+よって\pref{MinNCut}は以下のように書き換えられる．
+\begin{align}
+    \begin{array}{l}
+        \underset{A_1,\ldots,A_k \subset V}{\mathrm{minimize}}\ \tr\parentheses{H'LH} \\[1.5\jot]
+        \mathrm{subject\ to}\ H'DH = I
+    \end{array} \label{MinNCut2}
+\end{align}
+\end{frame}
+
+\begin{frame}
+\frametitle{問題の再定式化}
+しかし\pref{MinNCut2}は依然としてNP困難であるから，
+$H$が$\mathbb{R}^{n \times k}$を動くものとする．
+すなわち
+\begin{align}
+    \begin{array}{l}
+        \underset{H \in \mathbb{R}^{n \times k}}{\mathrm{minimize}}\ \tr\parentheses{H'LH} \\[1.5\jot]
+        \mathrm{subject\ to}\ H'DH = I
+    \end{array} \label{MinNCut3}
+\end{align}
+を解くことにする．
+
+\bigskip
+
+解きやすくするため，以下では$T := D^{1/2}H$と置いた
+\begin{align}
+    \begin{array}{l}
+        \underset{T \in \mathbb{R}^{n \times k}}{\mathrm{minimize}}\ \tr\parentheses{T'D^{-1/2}LD^{-1/2}T} \\[1.5\jot]
+        \mathrm{subject\ to}\ T'T = I
+    \end{array} \label{MinNCut4}
+\end{align}
+を考える．
+\end{frame}
+
+\begin{frame}
+% Beckenbach and Bellman Chapter 2 Section 34 Thorem 25
+% Harville Theorem 21.12.5
+\frametitle{2次形式に関する不等式}
+\textbf{定理}{\hskip\labelsep}行列$A \in \mathbb{C}^{n \times n}$を
+エルミート行列とし，
+その固有値を$\lambda_1,\ldots,\lambda_n$，
+対応する固有ベクトルを$u_1,\ldots,u_n\,\parentheses{u_iu_j = \delta_{ij}}$とする\footnote[frame]{エルミート行列の固有ベクトルはそれぞれ互いに直交する．
+\begin{align*}
+    \lambda_i \anglebrackets{u_i,u_j} =\anglebrackets{\lambda_i u_i,u_j} = \anglebrackets{Au_i,u_j} = \anglebrackets{u_i,A^* u_j}
+    = \anglebrackets{u_i,\lambda_j u_j} = \overline{\lambda_j}\anglebrackets{u_i,u_j}
+\end{align*}
+エルミート行列の固有値は実数なので$\lambda_i \neq \lambda_j$ならば，
+$\lambda_i \neq \lambda_j$となり，$\anglebrackets{u_i,u_j} = 0$．
+}．
+このとき固有値について$\lambda_1 \leq \lambda_2 \leq \cdots \leq \lambda_n$が成り立っているならば，任意の$q \in \braces{1,\ldots,n}$と
+任意の正規直交系$\braces{x_1,\ldots,x_q\,;\, x_i \in \mathbb{C}^n,\, x_ix_j = \delta_{ij}}$に対して
+\begin{align}
+    \sum_{i = 1}^q \lambda_i \leq \sum_{i = 1}^q x_i'Ax_i \label{sumOfEigenvalues}
+\end{align}
+が成り立つ．さらに$x_i = u_i\,\parentheses{i = 1,\ldots,q}$ならば，
+\pref{sumOfEigenvalues}において等号が成立する．
+
+\bigskip
+
+\textbf{証明}{\hskip\labelsep}例えば\cite{simovici2008}を参照せよ．\hfill\qedsymbol
+\end{frame}
+
+\begin{frame}
+\frametitle{最適化問題の解}
+前のページの定理により\pref{MinNCut4}の解が求めることができる．
+つまり，行列$D^{-1/2}LD^{-1/2}$の固有値を
+小さいほうから$\lambda_1,\ldots,\lambda_n$と並べ，
+それぞれに対応する正規化された固有ベクトルを$u_1,\ldots,u_n$とするとき，
+$T = \parentheses{u_1 \; \cdots \; u_n}$とすれば
+$\tr\parentheses{T'D^{-1/2}LD^{1/2}T}$が最小になるのである．
+
+\bigskip
+
+ここで$y_i := D^{-1/2}u_i$と置くと
+\begin{gather*}
+    D^{-1/2}LD^{-1/2}u_i = \lambda_i u_i \\
+    D^{-1}LD^{-1/2}u = \lambda_i D^{-1/2}u_i \\
+    D^{-1}Ly_i = \lambda_i y_i \\
+    Ly_i = \lambda_i D y_i
+\end{gather*}
+となり，$H = \parentheses{D^{-1/2}u_1 \; \cdots \; D^{-1/2}u_n} = \parentheses{y_1 \; \cdots \; y_n}$は
+一般化された固有値問題$L y = \lambda D y$の解を並べたものであることが分かる．
+\end{frame}
+
+\begin{frame}
+\frametitle{類似度行列}
+アルゴリズムを紹介する前に，
+類似度行列を構成する主要な3つの手法を示す．
+
+\bigskip
+
+\begin{wideenumerate}
+    \item $\varepsilon$-neighbor
+
+        半径$\varepsilon$以内にある点のみに重みを与える．
+
+    \item $k$-nearest neighbor
+
+        類似度が高い$k$個の点のみに重みを与える．
+        類似度行列が対称になるように注意する．
+        例えば$v_i$と$v_j$がお互いに$k$-nearest neighborに
+        含まれる場合にのみ重さを与えるようにすればよい．
+
+    \item 完全連結
+
+        任意の2点間の類似度を計算する方法である．
+        例えば
+        \begin{align*}
+            s_{ij} = \exp\parentheses{- \frac{\norm{x_i - x_j}^2 }{2\sigma^2}}
+        \end{align*}
+        として計算しておく．
+\end{wideenumerate}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{アルゴリズム}
+\begin{lstlisting}[title={\texttt{Normalized spectral clustering according to Shi and Malik}},mathescape,numbers=left,breaklines]
+Construct a similarity graph.
+Compute the graph Laplacian $L$.
+Compute the first $k$ generalized eigenvectors $u_1,\ldots,u_k$ of the generalized eigenproblem $Lu = \lambda Du$.
+Let $H := \parentheses{h_{i\kappa}} = \parentheses{u_1 \; \cdots \; u_k} \in \mathbb{R}^{n \times k}$.
+Let $y_i := \parentheses{h_{i,1} \; \cdots \; h_{i,k}}' \in \mathbb{R}^k\,\parentheses{i = 1,\ldots,n}$.
+Cluster the points $y_1,\ldots,y_n$ with the $k$-means algorithm into clusters $C_1,\ldots,C_k$.
+\end{lstlisting}
+
+\bigskip
+
+時間計算量について考察する．
+類似度行列の作成は，完全連結で計算した場合$O\parentheses{dn^2}$となる．
+固有ベクトルの計算は，手法によって違いはあるものの大体$O\parentheses{n^3}$程度である．
+$k$平均法によるクラスタリングは繰り返しの回数を$I$として$O\parentheses{Ikdn}$である．
+
+\bigskip
+
+データが増えると固有ベクトルの計算が大きな負担になってしまう問題がある．
+\end{frame}
+
+\begin{frame}
+\frametitle{RatioCutとは}
+スペクトラル・クラスタリングにはいくつかの
+似た変種がある．
+例えばnormalized cutのかわりに，次のRatioCutを使う方法がある．
+\begin{align*}
+    \RatioCut \parentheses{A_1,\ldots,A_n}
+    &:= \sum_{i = 1}^k \frac{\cut\parentheses{A_i,\overline{A_i}}}{\absolute{A_i}}
+\end{align*}
+ただし$\absolute{A}_i$は$A_i$に含まれる頂点の数である．
+
+\bigskip
+
+このスライドは主に\cite{luxburg2007spectral}を参考に作った．
+類似の他の手法や技術的な詳細については，この資料を参考にするとよい．
+
+\end{frame}
+
+\begin{frame}
+\frametitle{参考文献}
+\bibliography{spectral-clustering}
+\bibliographystyle{apalike}
+\end{frame}
+
+\end{document}
