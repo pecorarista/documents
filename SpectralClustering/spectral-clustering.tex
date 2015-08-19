@@ -608,7 +608,7 @@ $H$が$\mathbb{R}^{n \times k}$を動くものとする．
 \textbf{定理}{\hskip\labelsep}行列$A \in \mathbb{C}^{n \times n}$を
 エルミート行列とし，
 その固有値を$\lambda_1,\ldots,\lambda_n$，
-対応する固有ベクトルを$u_1,\ldots,u_n\,\parentheses{u_iu_j = \delta_{ij}}$とする\footnote[frame]{エルミート行列の固有ベクトルはそれぞれ互いに直交する．
+対応する固有ベクトルを$u_1,\ldots,u_n,\,\anglebrackets{u_i,u_j} = \delta_{ij}$とする\footnote[frame]{エルミート行列の固有ベクトルはそれぞれ互いに直交する．
 \begin{align*}
     \lambda_i \anglebrackets{u_i,u_j} =\anglebrackets{\lambda_i u_i,u_j} = \anglebrackets{Au_i,u_j} = \anglebrackets{u_i,A^* u_j}
     = \anglebrackets{u_i,\lambda_j u_j} = \overline{\lambda_j}\anglebrackets{u_i,u_j}
@@ -617,7 +617,7 @@ $H$が$\mathbb{R}^{n \times k}$を動くものとする．
 $\lambda_i \neq \lambda_j$となり，$\anglebrackets{u_i,u_j} = 0$．
 }．
 このとき固有値について$\lambda_1 \leq \lambda_2 \leq \cdots \leq \lambda_n$が成り立っているならば，任意の$q \in \braces{1,\ldots,n}$と
-任意の正規直交系$\braces{x_1,\ldots,x_q\,;\, x_i \in \mathbb{C}^n,\, x_ix_j = \delta_{ij}}$に対して
+任意の正規直交系$\braces{x_1,\ldots,x_q\,;\, x_i \in \mathbb{C}^n,\, \anglebrackets{x_i, x_j} = \delta_{ij}}$に対して
 \begin{align}
     \sum_{i = 1}^q \lambda_i \leq \sum_{i = 1}^q x_i'Ax_i \label{sumOfEigenvalues}
 \end{align}
