@@ -1,6 +1,7 @@
 \documentclass[10pt,hyperref={unicode}]{beamer}
 \usepackage{lmodern}
 \usepackage{amsmath,amssymb,accents,mathrsfs,bm,amsthm}
+\usepackage[noend]{algpseudocode}
 \DeclareSymbolFont{bbold}{U}{bbold}{m}{n}
 \DeclareSymbolFontAlphabet{\mathbbold}{bbold}
 \usepackage{datetime}
@@ -48,6 +49,11 @@
 \DeclareMathOperator*{\RatioCut}{RatioCut}
 \DeclareMathOperator*{\NCut}{NCut}
 \DeclareMathOperator*{\GammaDistribution}{Gamma}
+\algrenewcommand\alglinenumber[1]{{\ttfamily#1:}}
+\newfontfamily\algfont{Linux Libertine O}
+\makeatletter
+\renewcommand{\ALG@beginalgorithmic}{\algfont}
+\makeatother
 \newcommand\dottedcircle{%
 \begin{pgfpicture}
 \pgfsetlinewidth{0.25ex}
@@ -684,14 +690,17 @@ $\tr\parentheses{T'D^{-1/2}LD^{1/2}T}$が最小になるのである．
 
 \begin{frame}[fragile]
 \frametitle{アルゴリズム}
-\begin{lstlisting}[title={\texttt{Normalized spectral clustering according to Shi and Malik}},mathescape,numbers=left,breaklines]
-Construct a similarity graph.
-Compute the graph Laplacian $L$.
-Compute the first $k$ generalized eigenvectors $u_1,\ldots,u_k$ of the generalized eigenproblem $Lu = \lambda Du$.
-Let $H := \parentheses{h_{i\kappa}} = \parentheses{u_1 \; \cdots \; u_k} \in \mathbb{R}^{n \times k}$.
-Let $y_i := \parentheses{h_{i,1} \; \cdots \; h_{i,k}}' \in \mathbb{R}^k\,\parentheses{i = 1,\ldots,n}$.
-Cluster the points $y_1,\ldots,y_n$ with the $k$-means algorithm into clusters $C_1,\ldots,C_k$.
-\end{lstlisting}
+{\setlength{\baselineskip}{15pt}
+{\fontfamily{algfont}\selectfont Normalized spectral clustering according to Shi and Malik (2000)}
+\begin{algorithmic}[1]
+    \State{Construct a similarity graph.}
+    \State{Compute the graph Laplacian $L$.}
+    \State{Compute the first $k$ generalized eigenvectors $u_1,\ldots,u_k$ of the generalized eigenproblem $Lu = \lambda Du$.}
+    \State{Let $H := \parentheses{h_{i\kappa}} = \parentheses{u_1 \; \cdots \; u_k} \in \mathbb{R}^{n \times k}$.}
+    \State{Let $y_i := \parentheses{h_{i,1} \; \cdots \; h_{i,k}}' \in \mathbb{R}^k\,\parentheses{i = 1,\ldots,n}$.}
+    \State{Cluster the points $y_1,\ldots,y_n$ with the $k$-means algorithm into clusters $C_1,\ldots,C_k$.}
+\end{algorithmic}
+}
 
 \bigskip
 
@@ -702,7 +711,7 @@ $k$平均法によるクラスタリングは繰り返しの回数を$I$とし�
 
 \bigskip
 
-データが増えると固有ベクトルの計算が大きな負担になってしまう問題がある．
+データが増えると固有ベクトルの計算が大きな負担になってしまう．
 \end{frame}
 
 \section{追記}
