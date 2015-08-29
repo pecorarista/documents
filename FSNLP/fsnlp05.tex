@@ -1,21 +1,19 @@
-\documentclass[9pt,leqno]{beamer}
-\usepackage{luatexja-otf}
-\usepackage[T1]{fontenc}
-\usepackage{textcomp}
-\usepackage[utf8]{luainputenc}
+\documentclass[10pt,leqno]{beamer}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb}
+\usepackage{datetime}
 \usepackage[noenc,safe]{tipa}
-\usepackage{luatexja}
+\usepackage{luatexja-otf}
+\usepackage{luatexja-fontspec}
+\usepackage[hiragino-pron,deluxe,expert]{luatexja-preset}
+\usepackage{luatexja-otf}
 \usepackage{luatexja-ruby}
-\usepackage[match]{luatexja-fontspec}
-\usepackage[deluxe,hiragino-pron]{luatexja-preset}
-\usepackage{etoolbox}
-\usepackage{amsmath}
-\usepackage{amssymb}
+\usepackage{polyglossia}
+\setmainlanguage{english}
 \usepackage{array}
 \usepackage{hhline}
 \usepackage{listings}
 \usepackage{graphicx}
-\usepackage{mathpazo}
 \usepackage{pgfplots}
 \usepackage{picture}
 \usepackage{stmaryrd}
@@ -23,17 +21,19 @@
 \usepackage{wrapfig}
 \usetheme{default}
 \usefonttheme{professionalfonts}
-\usecolortheme{seagull}
-\setsansfont{Hiragino Kaku Gothic ProN W3}
-\AtBeginEnvironment{quote}{\quotefont}
+\usecolortheme{metropolis}
+\setmainfont[Ligatures=TeX]{Linux Biolinum O}
+\setmainjfont[BoldFont=Hiragino Kaku Gothic ProN W6,Ligatures=TeX]%
+{Hiragino Kaku Gothic ProN W3}
+\setsansfont[BoldFont=Hiragino Kaku Gothic ProN W6,Ligatures=TeX]{Hiragino Kaku Gothic ProN W3}
+%\setmonofont{DejaVu Sans Mono}
 \newfontfamily{\quotefont}{Linux Biolinum O}
 \renewcommand{\ttdefault}{lmtt}
-\DeclareSymbolFont{letters}{OML}{ztmcm}{m}{it}
-\DeclareSymbolFontAlphabet{\mathnormal}{letters}
+%\DeclareSymbolFont{letters}{OML}{ztmcm}{m}{it}
+%\DeclareSymbolFontAlphabet{\mathnormal}{letters}
 \setbeamertemplate{navigation symbols}{}
 \setbeamertemplate{items}[default]
 \setbeamertemplate{caption}{\raggedright\insertcaption\par}
-\renewcommand{\kanjifamilydefault}{\gtdefault}
 \setbeamerfont{frametitle}{size=\large}
 \setbeamerfont{caption}{size=\scriptsize}
 \setbeamerfont{itemize/enumerate body}{size=\normalsize}
@@ -42,6 +42,8 @@
 \DeclareMathOperator*{\argmax}{arg\,max}
 \DeclareMathOperator*{\var}{var}
 \renewcommand{\arraystretch}{1.2}
+\newfontfamily\ipafont[]{CMU Serif}
+\newcommand{\parentheses}[1]{\left(#1\right)}
 \newcommand{\q}[1]{“#1”}
 \newcommand{\handwritten}[1]{\textit{\quotefont #1}}
 \newcommand{\uprightquote}[1]{\normalfont{\quotefont #1}}
@@ -56,42 +58,35 @@
     xlabel near ticks,
     ylabel near ticks
 }
-\title{{\huge \textbf{5} }Collocations}
+\title{Foundations of Statistical Natural Language Processing\newline\newline{}5 Collocations}
 \author{宮澤　彬}
-\institute{総研大 宮尾研究室 博士前期\hbox{}1\hbox{}年}
+\institute{総合研究大学院大学 博士前期1年\newline\newline\texttt{miyazawa-a@nii.ac.jp}}
 \date{\today}
 \begin{document}
+\setlength{\jot}{1.5\jot}
 \lstset{language=Python,basicstyle=\ttfamily\small}
-\abovedisplayskip=2pt
-\belowdisplayskip=5pt
-\jot=3pt
-{\usebackgroundtemplate{\includegraphics[width=5cm]{dice.pdf}}
-%<a href="https://openclipart.org/pdf/people/casino/1391010041.svg">Dice (PDF)</a>
 \begin{frame}
-    \frametitle{{\small Foundations of Statistical Natural Language Processing 輪読会資料}}
-    \titlepage
+\maketitle
 \end{frame}
-}
 
 \begin{frame}
-    \begin{quote}
-        Collocations of a given word are statements of the habitual or customary places of that word.
+    \frametitle{コロケーションとは}
+    \begin{quotefont}
+        “Collocations of a given word are statements of the habitual or customary places of that word.” by John Rupert Firth
+    \end{quotefont}
 
-        \begin{flushright}
-            John Rupert Firth
-        \end{flushright}
-        
-        {\small ある語のコロケーションとは（個人の）習慣的あるいは（文化の）慣例的なその語の（置かれる）場所である．}
-    \end{quote}
+    \bigskip
 
+    「ある語のコロケーションとは（個人の）習慣的あるいは（文化の）慣例的なその語の（置かれる）場所である．」
+\end{frame}
 
-    \smallskip
-    
+\begin{frame}
+    \frametitle{コロケーションとは}
     母語話者でないとなかなか分からない微妙な使い分け
     \begin{itemize}
         \item 「ご飯を炊く」と言うが「ほうれん草を炊く」とは言わない
         \item 「抹茶を点てる」や「風呂を点てる」などとは言うが
-            
+
             「インスタントコーヒーを点てる」とは言わない
     \end{itemize}
 
@@ -108,32 +103,35 @@
         \end{align*}
     のようなものは構成的でない．
 \end{frame}
+
 \begin{frame}
     \frametitle{5.1 Frequency}
-    
+
     コロケーションを見つけるためにはコーパス中のNグラムで発生頻度が高いものを
     集めればよい．しかしNグラムの頻度を単純に数えると上位がほとんど \uprightquote{of the}, \uprightquote{in the} のような機能語の組み合わせ
     で占められてしまい，有用な情報が得られない．
-    
+
     \bigskip
 
     これを解決する1つの方法は，特定の品詞の組み合わせのみを抽出することである．
 
+    \begin{quotefont}
     \begin{center}
         \begin{table}[h]
             \begin{tabular}{cl}
                 \thc{Tag Pattern} & \thc{Example} \\
                 \hline
-                A N            & \uprightquote{commutative ring} \\
-                N N            & \uprightquote{Banach space} \\
-                A A N          & \uprightquote{stochastic differential equation} \\
-                A N N          & \uprightquote{normed vector space} \\
-                N A N          & \uprightquote{Jordan measurable set} \\
-                N N N          & \uprightquote{probability density function} \\
-                N P N          & \uprightquote{convergence in probability}
-            \end{tabular}    
+                A N            & commutative ring \\
+                N N            & Banach space \\
+                A A N          & stochastic differential equation \\
+                A N N          & normed vector space \\
+                N A N          & Jordan measurable set \\
+                N N N          & probability density function \\
+                N P N          & convergence in probability
+            \end{tabular}
         \end{table}
     \end{center}
+    \end{quotefont}
 
     \uprightquote{New York} や \uprightquote{United States} のような複合語が抽出されやすい．
 
@@ -141,10 +139,10 @@
 
 \begin{frame}
     \frametitle{5.1 Frequency}
-    
+
     バイグラムの最初の単語を \uprightquote{strong} に限定したものと \uprightquote{powerful} に限定したものとを
     比較することでこれら２つの語の使い分けについて知ることができる．
-    
+
     \begin{center}
         \begin{table}[h]
             \begin{tabular}{lclc}
@@ -156,7 +154,7 @@
                 \uprightquote{opposition} & $19$ & \uprightquote{men}       &  $8$ \\
                 \uprightquote{showing}    & $18$ & \uprightquote{computer}  &  $8$ \\
                 \uprightquote{sense}      & $18$ & \uprightquote{man}       &  $7$ \\
-            \end{tabular}    
+            \end{tabular}
         \end{table}
     \end{center}
 
@@ -178,9 +176,9 @@
         \item[\uprightquote{(a)}] \uprightquote{she \textbf{knocked} on his \textbf{door}}
 
         \item[\uprightquote{(b)}] \uprightquote{they \textbf{knocked} at the \textbf{door}}
-            
+
         \item[\uprightquote{(c)}] \uprightquote{100 women \textbf{knocked} on Donaldson's \textbf{door}}
-          
+
         \item[\uprightquote{(d)}] \uprightquote{a man \textbf{knocked} on the metal front \textbf{door}}
     \end{itemize}
     \ltjsetparameter{autoxspacing=true}
@@ -189,7 +187,7 @@
 
     しかし，規則性がないわけではない．
     実際このような文脈で \uprightquote{knocked} の代わりに \uprightquote{hit} や \uprightquote{beat} は普通使わない．
-    
+
 \end{frame}
 
 \begin{frame}
@@ -208,8 +206,8 @@
                 \handwritten{stocks crash} & \handwritten{stocks as} & \handwritten{stocks rescue} &                            &   \\
                                            & \handwritten{crash as}  & \handwritten{crash rescue}  & \handwritten{crash plan}  &   \\
                                            &                          & \handwritten{as rescue}     & \handwritten{as plan}     & \handwritten{as teeters} \\
-                                           &                          &                              & \handwritten{rescue plan} & \handwritten{plan teeters} 
-            \end{tabular}    
+                                           &                          &                              & \handwritten{rescue plan} & \handwritten{plan teeters}
+            \end{tabular}
         \end{table}
     \end{center}
 \end{frame}
@@ -233,28 +231,27 @@
         s^2 &= \frac{1}{N - 1}\sum_{i = 1}^N \left(d_i - \overline{d}\right)^2 \\
             &= \frac{1}{3}\left((3 - 4)^2 + (3 - 4)^2 + (5 - 4)^2 + (5 - 4)^2\right) = \frac{4}{3}
     \end{align*}
-    であるが，コロケーションに関する評価では慣例的に標準偏差を用いるので，これを計算して
+    であるが，コロケーションに関する評価では慣例的に標準偏差を用いるので，これを計算して次を得る．
     \begin{align*}
-        s = \frac{2}{\sqrt{3}} \approx 1.15
+        s = \frac{2}{\sqrt{3}} \approx 1.15.
     \end{align*}
-    を得る．
 \end{frame}
 
 
 \begin{frame}
     \frametitle{5.2 Mean and Variance}
-    このようにして得られた平均と標準偏差をどのように解釈するか？
+    こうして得られた平均と標準偏差をどのように解釈するか？
     \begin{itemize}
         \item 平均が $1$ に近く，標準偏差が $0$ に近い
             \begin{itemize}
                 \item 連続した2語として現れやすい
-                    
+
                 \uprightquote{New, York} $\left(\overline{d} = 0.97,\, s = 0.43\right)$
             \end{itemize}
         \item 平均が $1$ よりもずっと大きく，標準偏差が $0$ に近い
             \begin{itemize}
                 \item 間隔を空けて使われる表現が定型化している
-                    
+
                     \uprightquote{previous, games} $\left(\overline{d} = 1.83,\, s = 0.48\right)$ $\to$ \uprightquote{privious $N$ games}
             \end{itemize}
 
@@ -287,7 +284,6 @@
             ]
             \addplot[
                 ybar interval,
-                fill=white
             ]
             coordinates {
                 (-4,7.5)
@@ -324,7 +320,6 @@
             ]
             \addplot[
                 ybar interval,
-                fill=white
             ]
             coordinates {
                 (-4,18)
@@ -373,13 +368,9 @@
     そこで$N$ 個のトークンの列を $N$ 個のバイグラムの並び（文頭または文末のどちらか一方だけに特殊な記号を追加？）と捉えて，
     各バイグラムを1回の試行とし，特定のバイグラムの出現を成功とする Bernoulli 試行とみなす．
     これらの出現が独立であるという帰無仮説を立てて検定を行う．
-    
     \begin{align*}
         H_0 \,:\, P(\text{\uprightquote{unsalted butter}}) = P(\text{\uprightquote{unsalted}}) P(\text{\uprightquote{butter}})
     \end{align*}
-
-    \bigskip
-
     $H_0$ が正しいならば，$i$ 回目の結果を表す確率変数を $X_i:\varOmega \to \{0,\,1\}$ としたとき
     \begin{align*}
         X_1,\,\ldots,\,X_N \stackrel{\mathrm{i.i.d.}}{\mbox{\scalebox{3}[1]{$\sim$}}}
@@ -388,7 +379,7 @@
     である．$N$ が大きいので de Moivre Laplace の定理により
     \begin{align*}
         Z := \frac{\sum_{i = 1}^N X_i - Np}{\sqrt{Np(1-p)}}
-        %= \frac{\overline{X} - p}{\sqrt{p(1-p)}/\sqrt{N}} 
+        %= \frac{\overline{X} - p}{\sqrt{p(1-p)}/\sqrt{N}}
         \stackrel{\mathrm{approx.}}{\mbox{\scalebox{4}[1]{$\sim$}}} \mathcal{N}(0,1)
     \end{align*}
     が成り立つから，以下では $Z \sim \mathcal{N}(0,1)$ として検定を行う．
@@ -419,7 +410,7 @@
             \begin{axis}[
                   axis lines=middle,
                   axis on top,
-                  domain=-4.9:4.9, 
+                  domain=-4.9:4.9,
                   samples=200,
                   xlabel={$t$},
                   ylabel=\empty,
@@ -429,7 +420,7 @@
                   xtick=\empty,
                   %xticklabel style={xshift=5},
                   ytick=\empty,
-                  enlargelimits=false, 
+                  enlargelimits=false,
                   clip=false
               ]
               \addplot [fill=cyan!20, draw=cyan!80, domain=-4.9:0.5] {2.5 * gauss(x,0,1)} \closedcycle;
@@ -453,19 +444,23 @@
     \end{itemize}
     が成立していないので $t$ 値を使うのは不適当である．
 
-    \smallskip
-    
+    \bigskip
+
     しかし
     \begin{quote}
         When the expected cooccurrence frequency $E_{11}$ (under $H_0$) is small, z-score values can become very large,
         leading to highly inflated scores for low-frequency pair types.
         The cause of this problem can be traced back to the denominator of the z-score equation,
-        where $E_{11}$ is the (approximate) variance of $\,X_{11}$ under the point null hypothesis of independence.    
+        where $E_{11}$ is the (approximate) variance of $\,X_{11}$ under the point null hypothesis of independence.
         \begin{flushright}
             \normalfont{\texttt{\href{http://www.collocations.de/AM/section4.html}{http://www.collocations.de/AM/section4.html}}}
         \end{flushright}
     \end{quote}
 
+\end{frame}
+
+\begin{frame}
+    \frametitle{5.3.1 The t test}
     さらに
     \begin{quote}
         The t test and other statistical tests are most useful as
@@ -488,11 +483,7 @@
     \begin{align*}
         Z := \frac{\left(\overline{X} - \overline{Y}\right) - \left(\mu_x - \mu_y \right)}{{\displaystyle \sqrt{\frac{\sigma_x^2}{N_x} + \frac{\sigma_y^2}{N_y}}}} \sim \mathcal{N}(0,\,1)
     \end{align*}
-    が成り立つ．帰無仮説を
-    \begin{align*}
-        H_0 \,:\, \mu_x = \mu_y
-    \end{align*}
-    として検定を行いたいところであるが，前頁で見たように検定にはあまり興味がない．知りたいのは $\mu_x = \mu_y$ のときの $Z$ である．
+    が成り立つ．帰無仮説を$H_0 \,:\, \mu_x = \mu_y$として検定を行いたいところであるが，前頁で見たように検定にはあまり興味がない．知りたいのは $\mu_x = \mu_y$ のときの $Z$ である．
     今回の設定では，比較したい（似ている）単語を$v^1$, $v^2$ とし，それ以外の各単語 $w$ について
     \begin{align*}
         Z \simeq \frac{P\left(v^1 w\right) - P\left(v^2 w\right)}{{\displaystyle \sqrt{\frac{P\left(v^1 w\right)}{N_x} + \frac{P\left(v^2 w\right)}{N_y}}}}
@@ -527,18 +518,15 @@
     \uprightquote{strong}が\uprightquote{support}のような内面的な強さを表している傾向をつかむことができる．
 \end{frame}
 \begin{frame}
-    \frametitle{5.3.3 Pearson$\text{\CID{96}}$s chi-square test}
+\frametitle{5.3.3 Pearson$\text{’}$s chi-square test}
     $t$ 検定が使えるのは母集団が正規分布していると
     仮定できる場合のみである．しかし実際のところ，
     普通はそのように仮定することができない．
     代替手段として分割表を用いた独立性の検定を
     コロケーションかどうかの判定に使うことを考える．
 
-    \smallskip
+    \bigskip
 
-    {\small 教科書で用いられている公式 (5.7) の導出}
-
-    {\fontsize{6pt}{7.2}\selectfont
     \begin{table}
         \begin{center}
             \begin{tabular}{|c|c|c|c|}
@@ -554,26 +542,37 @@
             \end{tabular}
         \end{center}
     \end{table}
-    }
-    {\fontsize{6pt}{7.2}\selectfont
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{5.3.3 Pearson$\text{’}$s chi-square test}
     \begin{align*}
         \chi^2 &:= \dfrac{\left(a - \dfrac{(a + b)(a + c)}{a + b + c + d}\right)^2}{\dfrac{(a + b)(a + c)}{a + b + c + d}}
                    + \dfrac{\left(b - \dfrac{(a + b)(b + d)}{a + b + c + d}\right)^2}{\dfrac{(a + b)(b + d)}{a + b + c + d}}
-                   + \dfrac{\left(c - \dfrac{(c + d)(a + c)}{a + b + c + d}\right)^2}{\dfrac{(c + d)(a + c)}{a + b + c + d}}
+                   \\
+               &\phantom{==}+ \dfrac{\left(c - \dfrac{(c + d)(a + c)}{a + b + c + d}\right)^2}{\dfrac{(c + d)(a + c)}{a + b + c + d}}
                    + \dfrac{\left(d - \dfrac{(c + d)(b + d)}{a + b + c + d}\right)^2}{\dfrac{(b + d)(a + c)}{a + b + c + d}}\\
-                   &\phantom{:}= \dfrac{\dfrac{(ad - bc)^2}{(a + b + c + d)^2}}{\dfrac{(a + b)(a + c)}{a + b + c + d}}
-                   + \dfrac{\dfrac{(ad - bc)^2}{(a + b + c + d)^2}}{\dfrac{(a + b)(b + d)}{a + b + c + d}}
-                   + \dfrac{\dfrac{(ad - bc)^2}{(a + b + c + d)^2}}{\dfrac{(c + d)(a + c)}{a + b + c + d}}
-                   + \dfrac{\dfrac{(ad - bc)^2}{(a + b + c + d)^2}}{\dfrac{(b + d)(a + c)}{a + b + c + d}}\\
-                   &\phantom{:}= \frac{(ad - bc)^2\left((c + d)(b + d) + (c + d)(a + c) + (a + b)(b + d) + (a + b)(c + d)\right)}{(a + b + c + d)(a + b)(c + d)(a + c)(b + d)} \\
-                   &\phantom{:}= \frac{(a + b + c + d)(ad - bc)^2}{(a + b)(c + d)(a + c)(b + d)}
+               &\phantom{:}= \dfrac{\dfrac{(ad - bc)^2}{(a + b + c + d)^2}}{\dfrac{(a + b)(a + c)}{a + b + c + d}}
+                   + \dfrac{\dfrac{(ad - bc)^2}{(a + b + c + d)^2}}{\dfrac{(a + b)(b + d)}{a + b + c + d}} \\
+               &\phantom{==}+ \dfrac{\dfrac{(ad - bc)^2}{(a + b + c + d)^2}}{\dfrac{(c + d)(a + c)}{a + b + c + d}}
+                   + \dfrac{\dfrac{(ad - bc)^2}{(a + b + c + d)^2}}{\dfrac{(b + d)(a + c)}{a + b + c + d}}
     \end{align*}
-    }
+\end{frame}
+
+\begin{frame}
+    \frametitle{5.3.3 Pearson$\text{’}$s chi-square test}
+    \begin{align*}
+        \chi^2 &= \frac{1}{(a + b + c + d)(a + b)(c + d)(a + c)(b + d)} \\
+               &\phantom{==}((ad - bc)^2((c + d)(b + d) + (c + d)(a + c) +\\
+               &\phantom{==}(a + b)(b + d) + (a + b)(c + d))) \\
+               &= \frac{(a + b + c + d)(ad - bc)^2}{(a + b)(c + d)(a + c)(b + d)}
+    \end{align*}
 \end{frame}
 
 
 \begin{frame}[fragile]
-    \frametitle{5.3.3 Pearson$\text{\CID{96}}$s chi-square test}
+    \frametitle{5.3.3 Pearson$\text{’}$s chi-square test}
     帰無仮説として
     \begin{align*}
        H_0 \,:\, \text{\uprightquote{unsalted}と\uprightquote{butter}の出現は独立である．}
@@ -595,7 +594,7 @@
     \begin{align*}
         \chi^2 = \frac{14307668(20 \cdot 14307344 - 300 \cdot 4)^2}{320 \cdot 14307348 \cdot 14307644 \cdot 24} \approx 745169
     \end{align*}
-    
+
     \smallskip
 
     $\chi^2$ が $\mathrm{df} = (2 - 1)(2 - 1)=1$ の $\chi^2$ 分布における片側1\%点 $6.63$
@@ -606,8 +605,8 @@
 \end{frame}
 
 \begin{frame}[fragile]
-    \frametitle{5.3.3 Pearson$\text{\CID{96}}$s chi-square test}
-    \begin{lstlisting}   
+    \frametitle{5.3.3 Pearson$\text{’}$s chi-square test}
+    \begin{lstlisting}
 >>> import numpy as np
 >>> import scipy.stats
 >>> chi2, p, dof, expected = \
@@ -625,7 +624,7 @@
             \begin{axis}[
                   axis lines=middle,
                   axis on top,
-                  domain=-0.2:2, 
+                  domain=-0.2:2,
                   samples=200,
                   xlabel={$x$},
                   ylabel=\empty,
@@ -673,31 +672,38 @@
         H_1 \,:\, p_1 = p_2\,,\quad H_2 \,:\, p_1 \neq p_2
     \end{align*}
     という仮説を立てる．
-    
-    $H_2$ が正しいと仮定したとき最尤推定量は
+\end{frame}
+
+\begin{frame}
+    \frametitle{5.3.4 Likelihood ratios}
+    $H_2$が正しいと仮定するとすると最尤推定量は以下のようになる．
     \begin{align*}
         L(H_2) &:= \binom{c_1}{c_{12}}p_1^{c_{12}}(1 - p_1)^{c_1 - c_{12}}
-        \binom{ N - c_1}{c_2 - c_{12}}p_2^{c_2 - c_{12}}(1 - p_2)^{(N - c_1) - (c_2 - c_{12})} \\
+        \\
+        &\qquad \qquad \binom{ N - c_1}{c_2 - c_{12}}p_2^{c_2 - c_{12}}(1 - p_2)^{(N - c_1) - (c_2 - c_{12})} \\
         & \phantom{:} = \binom{c_1}{c_{12}}\left(\frac{c_{12}}{c_1}\right)^{c_{12}}\left(1 - \frac{c_{12}}{c_1}\right)^{c_1 - c_{12}} \\
-        & \qquad \qquad \binom{ N - c_1}{c_2 - c_{12}}\left(\frac{c_2 - c_{12}}{N - c_1}\right)^{c_2 - c_{12}}\left(1 - \frac{c_2 - c_{12}}{N - c_1}\right)^{(N - c_1) - (c_2 - c_{12})}
+        & \qquad \qquad \binom{ N - c_1}{c_2 - c_{12}}\left(\frac{c_2 - c_{12}}{N - c_1}\right)^{c_2 - c_{12}}
+        \\
+        & \qquad \qquad \left(1 - \frac{c_2 - c_{12}}{N - c_1}\right)^{(N - c_1) - (c_2 - c_{12})}.
     \end{align*}
-    である．
 \end{frame}
-\begin{frame}   
+\begin{frame}
     \frametitle{5.3.4 Likelihood ratios}
-    一方 $H_1$ が正しいと仮定したとき最尤推定量は
+    一方$H_1$が正しいと仮定したとき最尤推定量は
     \begin{align*}
         L(H_1) &:= \binom{c_1}{c_{12}}p^{c_{12}}(1 - p)^{c_1 - c_{12}}
-        \binom{ N - c_1}{c_2 - c_{12}}p^{c_2 - c_{12}}(1 - p)^{(N - c_1) - (c_2 - c_{12})} \\
+        \\
+        & \qquad \qquad \binom{ N - c_1}{c_2 - c_{12}}p^{c_2 - c_{12}}(1 - p)^{(N - c_1) - (c_2 - c_{12})} \\
         &\phantom{:}= \binom{c_1}{c_{12}}\left(\frac{c_2}{N}\right)^{c_{12}}\left(1 - \frac{c_2}{N}\right)^{c_1 - c_{12}} \\
         & \qquad \qquad \binom{ N - c_1}{c_2 - c_{12}}\left(\frac{c_2}{N}\right)^{c_2 - c_{12}}\left(1 - \frac{c_2}{N}\right)^{(N - c_1) - (c_2 - c_{12})}
     \end{align*}
     である．
 
+    \bigskip
+
     $H_1$ と $H_2$ の尤度比を $\lambda := L(H_1) / L(H_2)$ とすると，
     $-2 \log \lambda$ は漸近的に自由度1のカイ二乗分布に従うことが知られている．
     $-2 \log \lambda$ は $H_2$ が尤もらしいとき大きい値をとる．
-    
 \end{frame}
 
 \begin{frame}
@@ -721,7 +727,7 @@
     尤度比と似たような概念に相対頻度比がある．
     2つのコーパスのNグラムにおいて相対頻度比が $1$ から
     大きく離れたものは、主題を特徴付けるNグラムであると考えられる．
-    
+
     \begin{center}
         \begin{table}
             \begin{tabular}{crrll}
@@ -746,6 +752,10 @@
                  &\phantom{:}= \log_2 \frac{P(x|y)}{P(x)} \tag{5.12} \\
                  &\phantom{:}= \log_2 \frac{P(y|x)}{P(y)} \tag{5.13}
     \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{5.4 Mutual Information}
     事象 $x$ の情報量 $I(x)$ は
     \begin{align*}
         I(x) := \log \frac{1}{P(x)}
@@ -756,7 +766,7 @@
     \begin{align*}
         I(x,\,y) = \log \frac{1}{P(x)} - \log \frac{1}{P(x|y)} = I(x) - I(x|y)
     \end{align*}
-    
+
 \end{frame}
 
 \begin{frame}
@@ -767,8 +777,8 @@
 
    フランス語において
    \begin{itemize}
-       \item \uprightquote{chambre} {\usefont{T1}{lmr}{m}{n}\selectfont \textipa{/S\~{A}mbr/}} 部屋，議会
-    \end{itemize}   
+   \item \uprightquote{chambre} {\begin{ipafont}\textipa{/S\~{A}mbr/}\end{ipafont}} 部屋，議会
+    \end{itemize}
     あることに注意すれば，英語・フランス語のaligned corpusにおいて
     英文中で\uprightquote{house}という語が出てくると知れば，仏文中で\uprightquote{chambre}が出てきそうだと予想がつく．
     よって $I(\text{\uprightquote{chambre}}|\text{\uprightquote{house}})$ は大きいと考えられる．
@@ -784,7 +794,7 @@
     こうなってしまうのはHansard corpusにおいて\uprightquote{house}の最もよく使われる用法が
     \uprightquote{House of Commons}（英国の下院）であり，
     それに対応するフランス語が\uprightquote{chambre des communes}だからである．
-    
+
 \end{frame}
 
 \begin{frame}
