@@ -1,0 +1,17 @@
+\begin{thebibliography}{}
+
+\bibitem[Murphy, 2012]{murphy2012}
+Murphy, K.~P. (2012).
+\newblock {\em Machine learning: a probabilistic perspective}.
+
+\bibitem[Simovici and Djeraba, 2008]{simovici2008}
+Simovici, D.~A. and Djeraba, C. (2008).
+\newblock Mathematical tools for data mining.
+\newblock {\em Advanced Information and Knowledge Processing}, pages 129{\textendash}172.
+
+\bibitem[von Luxburg, 2007]{luxburg2007spectral}
+von Luxburg, U. (2007).
+\newblock A tutorial on spectral clustering.
+\newblock {\em Statistics and computing}, 17(4):395{\textendash}416.
+
+\end{thebibliography}

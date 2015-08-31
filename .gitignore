@@ -1,5 +1,4 @@
 *.aux
-*.bbl
 *.blg
 *.dvi
 *.fdb_latexmk
@@ -12,3 +11,4 @@
 *.synctex.gz
 *.toc
 *.vrb
+PRML/Figure*
