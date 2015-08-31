@@ -1,0 +1,574 @@
+\documentclass[10pt,hyperref={unicode}]{beamer}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,accents,mathrsfs,bm}
+%\usepackage[noend]{algpseudocode}
+\usepackage[noend]{algpseudocode}
+\usepackage{etoolbox}
+\usepackage{multirow}
+\usepackage{datetime}
+\usepackage[noenc,safe]{tipa}
+\usepackage{luatextra}
+\usepackage{luatexja-otf}
+\usepackage{luatexja-fontspec}
+\usepackage[hiragino-pron,deluxe,expert]{luatexja-preset}
+\usepackage{polyglossia}
+\setmainlanguage{english}
+\setotherlanguage{russian}
+\usepackage{listings}
+\usepackage{tikz}
+\usepackage{tikz-3dplot}
+\usepackage{pgf}
+\usepackage{pgfplots}
+\usetikzlibrary{automata,arrows,decorations.pathmorphing,backgrounds,positioning,fit,matrix}
+\usepackage{scrextend}
+\usepackage{natbib}
+\deffootnote[10pt]{10pt}{10pt}{\makebox[10pt][l]{\thefootnotemark\hspace{10pt}}}
+\usetheme{default}
+\usecolortheme{metropolis}
+\usefonttheme{professionalfonts}
+\setmainjfont[BoldFont=Hiragino Kaku Gothic ProN W6,Ligatures=TeX]%
+{Hiragino Kaku Gothic ProN W3}
+\setsansfont[BoldFont=Hiragino Kaku Gothic ProN W6,Ligatures=TeX]{Hiragino Kaku Gothic ProN W3}
+%\setmonofont{DejaVu Sans Mono}
+\newcommand{\thc}[1]{\multicolumn{1}{c}{#1}}
+\newfontfamily\ipafont[]{CMU Serif}
+\DeclareSymbolFont{bbold}{U}{bbold}{m}{n}
+\DeclareSymbolFontAlphabet{\mathbbold}{bbold}
+\DeclareMathOperator*{\aff}{aff}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\epi}{epi}
+\DeclareMathOperator*{\id}{id}
+\DeclareMathOperator*{\rank}{rank}
+\DeclareMathOperator*{\ri}{ri}
+\DeclareMathOperator*{\sgn}{sgn}
+\DeclareMathOperator*{\tr}{tr}
+\DeclareMathOperator*{\var}{var}
+\DeclareMathOperator*{\dom}{dom}
+\DeclareMathOperator*{\KL}{KL}
+\DeclareMathOperator*{\Dir}{Dir}
+\DeclareMathOperator*{\Multi}{Multi}
+\DeclareMathOperator*{\avgSimC}{avgSimC}
+\DeclareMathOperator*{\maxSim}{maxSim}
+\DeclareMathOperator*{\GammaDistribution}{Gamma}
+\algrenewcommand\algorithmicdo{}
+\algrenewcommand\algorithmicthen{}
+\algdef{SE}[FUNCTION]{Function}{EndFunction}%
+   [2]{\algorithmicfunction\ \textproc{#1}\ifthenelse{\equal{#2}{}}{}{#2}}%
+   {\algorithmicend\ \algorithmicfunction}%
+\algtext*{EndFunction}
+\algrenewcommand\alglinenumber[1]{{\ttfamily #1:}}
+\newfontfamily\figfont{Noto Sans}
+\newfontfamily\algfont{Linux Libertine O}
+\let\oldReturn\Return
+\renewcommand{\Return}{\State\oldReturn}
+\makeatletter
+\renewcommand{\ALG@beginalgorithmic}{\algfont}
+\makeatother
+\newcommand\dottedcircle{%
+\begin{pgfpicture}
+\pgfsetlinewidth{0.25ex}
+\pgfsetroundcap
+\pgfsetdash{{0cm}{2pt}{0cm}{2pt}}{0cm}
+\pgfcircle{\pgfpointorigin}{0.75ex}
+\pgfusepath{stroke}
+\pgfsetbaseline{-0.75ex}
+\end{pgfpicture}%
+}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{itemize/enumerate subbody begin}{\vspace{1em}}
+\setbeamertemplate{caption}{\raggedright\insertcaption\par}
+\definecolor{mDarkTeal}{HTML}{23373b}
+\setbeamercolor{block title}{use=structure,fg=white,bg=mDarkTeal}
+\setbeamercolor{block body}{use=structure,fg=black,bg=gray!20!white}
+\newenvironment{wideitemize}{\itemize\addtolength{\itemsep}{1em}}{\enditemize}
+\newenvironment{wideenumerate}{\enumerate\addtolength{\itemsep}{1em}}{\endenumerate}
+\addtobeamertemplate{navigation symbols}{}{%
+\usebeamerfont{footline}%
+\usebeamercolor[fg]{footline}%
+\hspace{1em}%
+\insertframenumber/\inserttotalframenumber
+}
+\makeatletter\def\tagform@#1{\maketag@@@{{\fontfamily{lmr}\selectfont(#1)}\@@italiccorr}}\makeatother
+\newcommand{\paref}[1]{{\fontfamily{cmr}\selectfont (\ref{#1})}}
+\makeatletter\renewenvironment{proof}{\par\pushQED{\qed}\normalfont\topsep6\p@\@plus6\p@\relax\trivlist\item[\hskip\labelsep{\bfseries 証明}\hskip\labelsep]\ignorespaces}{\popQED\endtrivlist\@endpefalse}\makeatother
+\newcommand{\absolute}[1]{\left|#1\right|}
+\newcommand{\parentheses}[1]{\left(#1\right)}
+\newcommand{\leftopenrightclose}[1]{\left(\left.#1\right]\right.}
+\newcommand{\leftcloserightopen}[1]{\left[\left.#1\right)\right.}
+\newcommand{\braces}[1]{\left\{#1\right\}}
+\newcommand{\brackets}[1]{\left[#1\right]}
+\newcommand{\anglebrackets}[1]{\left\langle#1\right\rangle}
+\newcommand{\norm}[1]{\left\|#1\right\|}
+\newcommand{\const}{\mathrm{const.}}
+\renewcommand{\qedsymbol}{\rule{5pt}{10pt}}
+\newcommand{\energy}{\mathcal{L}}
+%\newcommand{\energy}{F}
+\pgfplotsset{%
+width=5cm,
+compat=newest,
+xlabel near ticks,
+ylabel near ticks
+}
+\lstset{%
+basicstyle=\ttfamily
+}
+\title{Ontologically Grounded Multi-sense Representation Learning for Semantic Vector Space Models\newline{\small Sujay Kumar Jauhar, Chris Dyer and Eduard Hovy}}
+\institute{総合研究大学院大学 博士前期1年\newline\newline\texttt{miyazawa-a@nii.ac.jp}}
+\author{宮澤　彬}
+\date{\today}
+\begin{document}
+\setlength{\jot}{1.5\jot}
+\begin{frame}
+\maketitle
+\end{frame}
+
+\section{問題意識}
+\begin{frame}
+\frametitle{問題意識}
+\nocite{jauharontologically}
+ベクトル空間モデルは
+1つの語に1つのベクトルが対応していることが多い．
+→ 多義性が表現されていない．
+
+\bigskip
+
+bank \begin{ipafont}\textipa{/{\textprimstress}b{\ae}nk/}\end{ipafont}
+\begin{enumerate}
+    \item 銀行
+    \item 土手
+\end{enumerate}
+
+\bigskip
+
+オントロジーのグラフ表現を使い，これらに別々のベクトルを割り当てる．
+
+\bigskip
+
+\begin{center}
+\begin{figfont}
+{\scriptsize
+\tikzset{>=stealth',every on chain/.append style={join},every join/.style={->}}
+\begin{tikzpicture}[every state/.style={inner sep=2.5pt,align=center}]
+\tikzstyle{circg}=[state,thick,draw=black!75,fill=black!20,minimum size=27pt]
+\tikzstyle{circw}=[state,thick,draw=black!75,minimum size=27pt]
+\tikzstyle{sqw}=[rectangle,thick,draw=black!75,minimum size=13pt]
+\tikzstyle{sqg}=[rectangle,thick,draw=black!75,fill=black!20,minimum size=13pt]
+\node [circw] (q1)  at (-2,0) {cat \\ (1)};
+\node at (-2,-0.8) {\normalsize $t_{ij}$};
+\node [circw] (q2)  at (2,0) {feline \\ (1)};
+\node at (2,-0.8) {\normalsize $t_{i'j'}$};
+\node at (0,-0.3) {\normalsize $e^{r}_{ij-i'j'}$};
+\path [-] (q1) edge node [above] {$r = \text{synonym}$} (q2);
+\end{tikzpicture}
+}
+\end{figfont}
+\end{center}
+\end{frame}
+
+%\begin{frame}
+%\frametitle{オントロジーのグラフによる表現}
+%$W = \braces{w_1,\ldots,w_n}$を語形の集合とする．
+%語$w_i$の意味の個数を$k_i$とし，語義集合$W_s$を
+%$W_s = \braces{s_{ij}\,;\, w_i \in W,\, 1 \leq j \leq k_i}$で定義する．
+%さらにオントロジーに対応するグラフ$\varOmega$を
+%$\varOmega = \parentheses{T_\varOmega, E_\varOmega}$で定める．
+%頂点の集合$T_\varOmega = \braces{t_{ij}\,;\,\forall s_{ij} \in W_s}$の各要素は語義集合$W_s$の各要素に対応している．
+%また辺の集合$E_\varOmega = \braces{e_{ij - i'j'}^{r}}$は語義の組$\braces{s_{ij}, s_{i'j'}}$を「類義語」など何らかの意味関係$r$で
+%結ぶものである．
+%
+%\bigskip
+%\end{frame}
+
+\section{提案手法}
+\begin{frame}
+\frametitle{オントロジーと語のベクトル表現をどう結びつけるか}
+語彙のベクトル空間埋め込み$\widehat{U} = \braces{\hat{u}_i \,|\, w_i \in W}$と
+オントロジー$\varOmega$を与えられたときに，
+それらと整合性のとれた語義集合$V = \braces{v_{ij} \,|\, s_{ij} \in W_s}$を推測する．
+\begin{center}
+\begin{figfont}
+{\scriptsize
+\tikzset{>=stealth',every on chain/.append style={join},every join/.style={->}}
+\begin{tikzpicture}[every state/.style={inner sep=2.5pt,align=center}]
+\tikzstyle{circg}=[state,thick,draw=black!75,fill=black!20,minimum size=27pt]
+\tikzstyle{circw}=[state,thick,draw=black!75,minimum size=27pt]
+\tikzstyle{sqw}=[rectangle,thick,draw=black!75,minimum size=13pt]
+\tikzstyle{sqg}=[rectangle,thick,draw=black!75,fill=black!20,minimum size=13pt]
+\node [circg] (q1)  at (0,0) {loan};
+\node [sqg] (q2) at (0,-1) {};
+\node [circw] (q3)  at (0,-2) {loan \\ (3)};
+\node [sqw] (q4) at (1,-2) {};
+\node [circg] (q5) at (1.4,-1) {money};
+\node [sqg] (q6) at (1.4,-2.3) {};
+\node [circw] (q7) at (1.4,-3.5) {money \\ (1)};
+\node [sqw] (q8) at ({(1.4+3)/2},{(-3.5-2)/2}) {};
+\node [circw] (q9) at (3,-2) {bank \\ (1)};
+\node [sqg] (q10) at (3.5,-1) {};
+\node [circg] (q11)  at (4.1,0) {bank};
+\node at (4.1,0.75) {{\normalsize $\hat{u}_i$}};
+\node [sqg] (q12) at (4.7,-1) {};
+\node [circw] (q13) at (5.2,-2) {bank \\ (2)};
+\node at (5.2,-2.8) {{\normalsize $v_{ij}$}};
+\node [sqw] (q14) at (6.3,-2) {};
+\node [circw] (q15) at (7.4,-2) {river \\ (1)};
+\node at (7.4,-2.8) {{\normalsize $v_{i'j'}$}};
+\node [sqg] (q16) at (7.4,-1) {};
+\node [circg] (q17) at (7.4,0) {river};
+\path [-] (q1) edge (q2);
+\path [-] (q2) edge (q3);
+\path [-] (q3) edge (q4);
+\path [-] (q4) edge (q9);
+\path [-] (q5) edge (q6);
+\path [-] (q6) edge (q7);
+\path [-] (q7) edge (q8);
+\path [-] (q8) edge (q9);
+\path [-] (q9) edge (q10);
+\path [-] (q10) edge (q11);
+\path [-] (q11) edge (q12);
+\path [-] (q12) edge (q13);
+\path [-] (q13) edge (q14);
+\path [-] (q14) edge (q15);
+\path [-] (q15) edge (q16);
+\path [-] (q16) edge (q17);
+\end{tikzpicture}
+}
+\end{figfont}
+\end{center}
+灰色で塗られている頂点が語（観測される変数）に対応し，
+白い頂点が語義（観測されない潜在変数）に対応している．
+\end{frame}
+
+\begin{frame}
+\frametitle{アルゴリズム}
+以下を求めたい．
+\begin{align*}
+    C\parentheses{V} = \argmin_{V} \braces{\sum_{i-ij} \alpha \norm{\hat{u}_i - v_{ij}}^2 + \sum_{ij-i'j'}\beta_r\norm{v_{ij} - v_{i'j'}}^2}
+\end{align*}
+$\braces{\cdot}$の中を$v_{ij}$について微分して$0$とおくと
+\begin{align*}
+    v_{ij} = \frac{\displaystyle \alpha \hat{u}_i + \sum_{i'j' \in \mathcal{N}_{ij}}\beta_rv_{i'j'}}{\displaystyle \alpha + \sum_{i'j' \in \mathcal{N}_{ij}}\beta_r}
+\end{align*}
+となる．
+\end{frame}
+
+\begin{frame}
+\frametitle{アルゴリズム}
+したがって以下のアルゴリズムを得る．
+        \begin{algorithmic}[1]
+{\setlength{\baselineskip}{28pt}
+            \Function{Retrofit}{$\parentheses{\hat{U},\varOmega}$}
+            \State $V^{\parentheses{0}} \leftarrow \braces{v_{ij}^{(0)} = \hat{u}_i \,;\, \forall s_{ij} \in W_s }$
+            \While{$\norm{v_{ij}^{\parentheses{t}} - v_{ij}^{\parentheses{t - 1}}} \geq \varepsilon \; \mathrm{for\ all\ }i,\,j$}
+                \For{$t_{ij} \in T_\varOmega$}
+            \vspace{4mm}
+                    \State{$v_{ij}^{\parentheses{t + 1}}$ $\leftarrow \frac{\displaystyle \alpha \hat{u}_i + \sum_{i'j' \in \mathcal{N}_{ij}}\beta_rv_{i'j'}}{\displaystyle \alpha + \sum_{i'j' \in \mathcal{N}_{ij}}\beta_r}$}
+                \EndFor
+            \EndWhile
+            \vspace{-4mm}
+            \Return{$V^{\parentheses{t}}$}
+            \EndFunction
+}
+        \end{algorithmic}
+\end{frame}
+
+\begin{frame}
+\frametitle{モデルの拡張}
+語$w_i$と文脈上の語$c_i$の組を集めたコーパス$D = \braces{\parentheses{w_i,c_i}}_{i = 1}^N$と，
+オントロジー$\varOmega$が与えられているとする．単語の意味情報を含んだベクトル表現の集合$V = \braces{v_{ij} \,|\, \forall s_{ij} \in W_s}$を求めたい．
+
+\bigskip
+
+文脈上の語に対応するベクトルの集合を$U = \braces{u_i \,|\, c_i \in W}$，
+語義に対応するベクトルの集合を$V = \braces{v_{ij} \,|\, s_{ij} \in W_s}$とする．
+さらに文脈を考慮しない意味の比率を$\pi_{ij} = p\parentheses{s_{ij} | w_{i}}$と置き，$\varPi = \braces{\pi_{ij}}_{ij}$とする．
+\end{frame}
+
+\begin{frame}
+\frametitle{拡張されたモデルの枠組み}
+\begin{center}
+{\scriptsize
+\tikzset{>=stealth',every on chain/.append style={join},every join/.style={->}}
+\begin{tikzpicture}[every state/.style={inner sep=2.5pt}] \tikzstyle{sqw}=[rectangle,thick,draw=black!75,minimum height=15pt,minimum width=40pt,align=center] \tikzstyle{sqg}=[rectangle,thick,draw=black!75,fill=black!20,minimum height=15pt,minimum width=40pt,align=center]
+\node [sqg] (q1)  at (-1.5,0) {\begin{figfont}Chase\vphantom{ly}\end{figfont}};
+\node [sqw] (q2) at (0,-1.5) {\begin{figfont}bank${}_{\text{2}}$\end{figfont}};
+\node [sqg] (q3)  at (0,-3) {\begin{figfont}bank\end{figfont}};
+\node [sqg] (q4) at (1.5,0) {\begin{figfont}loaned\vphantom{y}\end{figfont}};
+\node [sqg] (q5) at (3.5,0) {\begin{figfont}\vphantom{l}money\end{figfont}};
+\path [->] (q2) edge node [left=10pt] {$p\parentheses{c_i|s_{ij}}$} (q1);
+\path [->] (q3) edge node [left=10pt] {$\pi_{ij} = p\parentheses{s_{ij}|w_i}$} (q2);
+\path [->] (q2) edge (q4);
+\path [->] (q2) edge (q5);
+\node [align=center] at (-3.5,0) {文脈上の語 $c_i$ \\ （観測される変数）};
+\node [align=center] at (-3.5,-1.5) {語義 $s_{ij}$ \\ （潜在変数）};
+\node [align=center] at (-3.5,-3) {語 $w_{i}$ \\ （観測される変数）};
+\end{tikzpicture}
+}
+\end{center}
+パラメータ$\theta = \parentheses{U,V,\varPi}$をうまく選び以下を求める．
+\begin{align}
+    C\parentheses{\theta}
+    = \argmax_{\theta}
+    &\left\{\sum_{\parentheses{w_i,c_i} \in D}\log\parentheses{%
+    \sum_{s_{ij}} p\parentheses{c_i | s_{ij};\theta} p \parentheses{s_{ij} | w_i ; \theta}}\right. \notag \\
+    &\left. \vphantom{\sum_{s_{ij}}}\phantom{\sum}
+    - \gamma \sum_{ij-i'j'}\beta_r \norm{v_{ij} - v_{i'j'}}^2 \right\}
+    \tag{4}
+\end{align}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{アルゴリズム}
+Eステップでは以下を求める．
+\begin{align}
+    s_{ij} = \argmax_{s_{ij}} p \parentheses{c_i \left| s_{ij}; \theta^{\parentheses{t}}\right.}\pi_{ij}^{\parentheses{t}} \tag{5} \label{E-step}
+\end{align}
+Mステップでは仮定
+$w_i \sim \Multi\parentheses{w_i | \pi_i},\,\pi_{i} \sim \Dir \parentheses{\pi_i \left| \braces{\lambda\pi_{ij}^{\parentheses{0}}}_j\right.}$の下で変分ベイズ法を使うことにより，$\varPi$を以下で更新すればよいことがわかる．
+\begin{align}
+    \pi^{\parentheses{t + 1}}_{ij} \propto \frac{\exp\parentheses{\psi\parentheses{\tilde{c}\parentheses{w_i,s_{ij}} + \lambda \pi_{ij}^{\parentheses{0}}}}}%
+    {\exp{\psi\parentheses{\tilde{c}\parentheses{w_i} + \lambda}}}
+    \tag{6} \label{M-step}
+\end{align}
+ここで$\tilde{c}$は期待される出現回数を表し，
+$\psi$はディガンマ関数を表している．
+\end{frame}
+
+\begin{frame}
+\frametitle{アルゴリズム}
+$U$と$V$については，negative samplingを使った
+スキップグラムのモデルを使って更新する．
+具体的には以下の式に確率的勾配降下法を用いる．
+\begin{align}
+    \mathcal{L}
+    &= \log \sigma\parentheses{u_i \cdot v_{ij}} + \sum_{\substack{j' \\ j' \neq j}} \parentheses{-u_i \cdot v_{ij'}} \notag \\
+    &\phantom{==} + \sum_m \mathbb{E}_{c_i' \sim P_n\parentheses{c}} \brackets{\log \sigma \parentheses{-u_{i'} \cdot v_{ij}}}
+    \tag{7}
+\end{align}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{アルゴリズム}
+よって以下のアルゴリズムを得る．
+        \begin{algorithmic}[1]
+{\setlength{\baselineskip}{17pt}
+    \Function{SenseEM}{$\parentheses{D,\varOmega}$}
+        \State{$\theta^{\parentheses{0}} \leftarrow \mathrm{initialize}$}
+        \For{$\parentheses{w_i,c_i} \in D$}
+            \If{$\mathrm{period} > k$}
+            \State{RETROFIT$\parentheses{\theta^{\parentheses{t}},\varOmega}$}
+            \EndIf
+            \State{\ttfamily /* E-Step */}
+            \State{${\displaystyle s_{ij} \leftarrow}$ update using equation 5}
+            \State{\ttfamily /* M-Step */}
+            \State{${\displaystyle \varPi^{\parentheses{t + 1}} \leftarrow}$ update using equation 6}
+            \State{${\displaystyle U^{\parentheses{t + 1}},\,V^{\parentheses{t + 1}} \leftarrow }$ update using 7}
+        \EndFor
+        \Return{$\theta^{\parentheses{t}}$}
+    \EndFunction
+}
+        \end{algorithmic}
+\end{frame}
+
+\section{評価}
+\begin{frame}
+\frametitle{評価}
+オントロジーとしてはWordNetを，
+ベクトル表現の作成にはWord2Vecを使用する．
+
+\bigskip
+
+3つのタスクで他の手法と比較実験する．
+
+\bigskip
+
+\begin{wideenumerate}
+    \item Similarity Scoring
+
+        2つの単語に対し，あらかじめ人手で付与された類似度と，
+        提案手法で得たベクトルのコサイン類似度を比較する．
+
+    \item Synonym Selection
+
+        与えられた語に対して，リスト中の最も意味が近い語を見つけてくるタスク．
+        提案手法では2語の類似度を次で求める．
+        \begin{align}
+            \maxSim \parentheses{w_i,w_{i'}} = \max_{j,j'} \cos \parentheses{v_{ij}, v_{i'j'}}
+        \tag{9}
+        \end{align}
+\end{wideenumerate}
+\end{frame}
+
+\begin{frame}
+\frametitle{Similarity ScoringとSynonym Selectionの結果}
+\begin{algfont}
+    {\renewcommand{\arraystretch}{1.5}
+        {\scriptsize
+\begin{tabular}{cc|cccc|ccc|}
+    \cline{3-9}
+    & \multicolumn{1}{l|}{} & \multicolumn{4}{c|}{Word Similarity $(\rho)$} & \multicolumn{3}{c|}{Synonym Selection $(\%)$} \\
+                                          &                      & WS-353    & RG-65    & MC-30   & MEN-3k   & ESL-50     & RD-300     & TOEFL-80    \\
+\hline
+\multicolumn{1}{|l|}{\multirow{3}{*}{GC}}
+                        & SINGLE            & \textbf{0.623} & 0.629          & 0.657          & 0.314          & 47.73          & 45.07          & 60.87          \\
+\multicolumn{1}{|l|}{}  & MULTI             & 0.535          & 0.510          & 0.309          & 0.359          & 27.27          & 47.89          & 52.17          \\
+\multicolumn{1}{|l|}{}  & \textbf{RETRO}    & 0.543          & \textbf{0.661} & \textbf{0.714} & \textbf{0.528} & \textbf{63.64} & \textbf{66.20} & \textbf{71.01} \\
+\hline
+\multicolumn{1}{|l|}{\multirow{6}{*}{SG}}
+                        & SINGLE            & \textbf{0.639} & 0.546          & 0.627          & \textbf{0.646} & 52.08          & 55.66          & 66.67          \\
+\multicolumn{1}{|l|}{}  & EM                & 0.194          & 0.278          & 0.167          & 0.228          & 27.08          & 33.96          & 40.00          \\
+\multicolumn{1}{|l|}{}  & WSD               & 0.481          & 0.298          & 0.396          & 0.175          & 16.67          & 49.06          & 42.67          \\
+\multicolumn{1}{|l|}{}  & IMS               & 0.549          & 0.579          & 0.606          & 0.591          & 41.67          & 53.77          & 66.67          \\
+\multicolumn{1}{|l|}{}  & \textbf{RETRO}    & 0.552          & 0.673          & 0.705          & 0.560          & 56.25          & 65.09          & \textbf{73.33} \\
+\multicolumn{1}{|l|}{}  & \textbf{EM+RETRO} & 0.321          & \textbf{0.734} & \textbf{0.758} & 0.428          & \textbf{62.22} & \textbf{66.67} & 68.63          \\
+\hline
+\end{tabular}
+        }
+    }
+\end{algfont}
+\end{frame}
+
+\begin{frame}
+\frametitle{Similarity Scoring in Context}
+\begin{wideenumerate}
+\setcounter{enumi}{2}
+    \item Similarity Scoring in Context
+
+        文脈上の意味が考慮されたSimilarity Scoring．
+        例えば「土手」の意味の“bank”と
+        「銀行」の意味の“bank”は区別される．
+        \begin{align}
+        &\avgSimC\parentheses{w_i,c_i,w_{i'},c_{i'}} \notag \\
+        &\phantom{==}= \sum_{j,j'} p\parentheses{s_{ij}|c_i,w_i} p\parentheses{s_{i'j'}|c_{i'},w_{i'}}\cos\parentheses{v_{ij},v_{i'j'}}
+        \tag{10}
+        \end{align}
+
+        \begin{center}
+            \begin{algfont}
+                {\renewcommand{\arraystretch}{1.5}
+                    {\scriptsize
+                        \begin{tabular}{|c|c|}
+                            \hline
+                            Vectors     & SCWS $(\rho)$ \\
+                            \hline
+                            SG-WSD      & 0.343      \\
+                            SG-IMS      & 0.528      \\
+                            SG-RETRO    & 0.417      \\
+                            GC-RETRO    & 0.420      \\
+                            SG-EM       & 0.613      \\
+                            SG-EM+RETRO & 0.587      \\
+                            GC-MULTI    & \textbf{0.657} \\
+                            \hline
+                        \end{tabular}
+                    }
+                }
+            \end{algfont}
+        \end{center}
+\end{wideenumerate}
+\end{frame}
+
+\begin{frame}
+\frametitle{Similarity Scoring in Context}
+3つ目のタスクではGC (Global Context)，すなわち単語ごとにベクトルを
+作る方法のほうが提案手法よりも良い結果を出している．これは
+実験に使ったSCWSデータセットが異なる品詞の語の組を含んでいる一方で，
+WordNetが同一の品詞の語の組にしか類義語関係や上位語・下位語の関係を付与していないことに
+起因していると考えられる．
+
+\bigskip
+
+提案手法の1つ目(RETRO)と2つ目(EM+RETRO)の違いとしては，
+前者が訓練にかかる時間が短く，
+また他のモデルと組み合わせやすいという特徴があるのに対し，
+後者は上記のタスクでより高い精度を出しているという特徴がある．
+
+        \begin{center}
+            \begin{algfont}
+                {\renewcommand{\arraystretch}{1.5}
+                    {\scriptsize
+                        \begin{tabular}{|c|c|}
+                            \hline
+                            Method & CPU Time \\
+                            \hline
+                            RETRO    & {\textasciitilde}20 secs \\
+                            EM+RETRO & {\textasciitilde}4 hours \\
+                            IMS      & {\textasciitilde}3 days  \\
+                            WSD      & {\textasciitilde}1 year \\
+                            \hline
+                        \end{tabular}
+                    }
+                }
+            \end{algfont}
+        \end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{定性的評価}
+意味を考慮しない場合は，最も頻度が高い語
+が選ばれやすいのに対し，
+意味を考慮した場合は，比較的頻度が少ないものも選ばれるようになっている．
+
+\bigskip
+
+        \begin{center}
+            \begin{algfont}
+                {\renewcommand{\arraystretch}{1.5}
+                    {\footnotesize
+                        \begin{tabular}{|c|c|}
+                        \hline
+                        Word or Sense        & Top 3 Most Similar          \\
+                        \hline
+                        hanging              & hung dangled hangs          \\
+                        hanging (suspending) & shoring support suspension  \\
+                        hanging (decoration) & tapestry braid smock        \\
+                        \hline
+                        climber              & climbers skier Loretan      \\
+                        climber (sportsman)  & lifter swinger sharpshooter \\
+                        climber (vine)      & woodbine brier kiwi \\
+                        \hline
+                        \end{tabular}
+                    }
+                }
+            \end{algfont}
+        \end{center}
+\end{frame}
+
+\section{まとめ}
+\begin{frame}
+\frametitle{まとめ}
+語義ごとのベクトル表現を用いることにより，
+Similarity Scoring in Contextを除くWSDのタスクにおいて，
+単語ごとにベクトルを割り当てる手法と比較して大幅な改善が見られた．
+
+\bigskip
+
+ここでは固定的なオントロジーに基づいてベクトルを作ったが，
+将来の展望としてオントロジーとベクトル空間モデルの間で双方向的に
+拡大・改善していくような拡張が考えられる．
+他には，複数言語のWordNetを用いて，
+多言語に一般化された意味ベクトルを学習するような拡張も考えられる．
+\end{frame}
+
+\begin{frame}
+\frametitle{Reference}
+\bibliography{semantic-VSMs}
+\bibliographystyle{apalike}
+\end{frame}
+
+
+%\begin{frame}
+%\frametitle{LDA}
+%$\pi \sim \Dir\parentheses{\pi_i,\lambda}$
+%\begin{align*}
+%    p\parentheses{\pi_{ij}|w_i,\lambda}
+%    &= \frac{p\parentheses{w_i,\pi_{ij}|\lambda}}{p\parentheses{w_i|\lambda}} \propto p\parentheses{w_i,\pi_{ij}|\lambda} \\
+%    &= p\parentheses{w_i|\pi_{ij}} p\parentheses{\pi_{ij}|\lambda} \\
+%    &= \prod_j \pi_{ij}^{c\parentheses{w_i,s_{ij}}} \prod_{j} \pi_{ij}^{\lambda - 1} \\
+%    &= \prod_{j} \pi_{ij}^{c\parentheses{w_i,s_{ij}} + \lambda - 1} \\
+%    &= \Dir \parentheses{\pi_{ij}\left|c\parentheses{w_i,s_{ij}} + \lambda\right.}
+%\end{align*}
+%\end{frame}
+
+\end{document}
