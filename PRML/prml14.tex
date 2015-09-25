@@ -892,8 +892,8 @@ $\alpha$を動かすと次のようなことがわかる．
 \begin{algorithmic}[1]
     \State{$i \leftarrow 0$}
     \While{$\absolute{\widetilde{T^i}} > 1$}
-    \State{${\displaystyle \alpha_i \leftarrow \min_{t \in V\parentheses{T^i} \backslash \widetilde{T^i_t}} g\parentheses{t\,;\,T^i}}$}
-    \State{${\displaystyle \mathcal{T}^i \leftarrow \argmin_{t \in V\parentheses{T^i} \backslash \widetilde{T_t^i}} g\parentheses{t\,;\,T^i}}$}
+    \State{${\displaystyle \alpha_i \leftarrow \min_{t \in V\parentheses{T^i} \backslash \widetilde{T^i}} g\parentheses{t\,;\,T^i}}$}
+    \State{${\displaystyle \mathcal{T}^i \leftarrow \argmin_{t \in V\parentheses{T^i} \backslash \widetilde{T^i}} g\parentheses{t\,;\,T^i}}$}
         \For{$t \in \mathcal{T}^i$}
         \State{$T^i \leftarrow T^i - T^i_t$}
         \EndFor
