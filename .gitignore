@@ -11,4 +11,5 @@
 *.synctex.gz
 *.toc
 *.vrb
+*.bbl
 PRML/Figure*
