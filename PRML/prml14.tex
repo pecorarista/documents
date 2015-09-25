@@ -1,0 +1,1246 @@
+\documentclass[10pt,hyperref={unicode}]{beamer}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,accents,mathrsfs,bm,amsthm}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+\DeclareSymbolFont{bbold}{U}{bbold}{m}{n}
+\DeclareSymbolFontAlphabet{\mathbbold}{bbold}
+\usepackage{datetime}
+\usepackage[noenc,safe]{tipa}
+\usepackage{luatextra}
+\usepackage{luatexja-otf}
+\usepackage{luatexja-fontspec}
+\usepackage[hiragino-pron,deluxe,expert]{luatexja-preset}
+\usepackage{polyglossia}
+\setmainlanguage{english}
+\setotherlanguage{russian}
+\usepackage{listings}
+\usepackage{framed}
+\usepackage{tikz}
+\usepackage{tikz-3dplot}
+\usepackage{tikz-qtree}
+\usetikzlibrary{automata,arrows,decorations.pathmorphing,backgrounds,positioning,fit,matrix}
+\usepackage[normalem]{ulem}
+\usepackage{pgf}
+\usepackage{pgffor}
+\usepackage{pgfplots}
+\usepackage{scrextend}
+\usepackage{natbib}
+\deffootnote[10pt]{10pt}{10pt}{\makebox[10pt][l]{\thefootnotemark\hspace{10pt}}}
+\usetheme{default}
+\usecolortheme{metropolis}
+\usefonttheme{professionalfonts}
+\setmainjfont[BoldFont=Hiragino Kaku Gothic ProN W6,Ligatures=TeX]%
+{Hiragino Kaku Gothic ProN W3}
+\setsansfont[BoldFont=Hiragino Kaku Gothic ProN W6,Ligatures=TeX]{Hiragino Kaku Gothic ProN W3}
+%\setmonofont{DejaVu Sans Mono}
+\newfontfamily\ipafont[]{CMU Serif}
+\DeclareMathOperator*{\aff}{aff}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\cov}{cov}
+\DeclareMathOperator*{\cut}{cut}
+\DeclareMathOperator*{\dom}{dom}
+\DeclareMathOperator*{\epi}{epi}
+\DeclareMathOperator*{\ErrorRate}{ErrorRate}
+\DeclareMathOperator*{\id}{id}
+\DeclareMathOperator*{\Ker}{ker}
+\DeclareMathOperator*{\minimize}{minimize}
+\DeclareMathOperator*{\rank}{rank}
+\DeclareMathOperator*{\ri}{ri}
+\DeclareMathOperator*{\SE}{SE}
+\DeclareMathOperator*{\sgn}{sgn}
+\DeclareMathOperator*{\sign}{sign}
+\DeclareMathOperator*{\tr}{tr}
+\DeclareMathOperator*{\var}{var}
+\DeclareMathOperator*{\KL}{KL}
+\DeclareMathOperator*{\Span}{span}
+\DeclareMathOperator*{\vol}{vol}
+\DeclareMathOperator*{\RatioCut}{RatioCut}
+\DeclareMathOperator*{\NCut}{NCut}
+\DeclareMathOperator*{\GammaDistribution}{Gamma}
+\newcommand\redout{\bgroup\markoverwith{\textcolor{red}{\rule[.5ex]{2pt}{2pt}}}\ULon}
+\newcommand{\thc}[1]{\multicolumn{1}{c}{#1}}
+\let\oldReturn\Return
+\renewcommand{\Return}{\State\oldReturn}
+\algrenewcommand\alglinenumber[1]{{\ttfamily#1:}}
+\newfontfamily\algfont{Linux Libertine O}
+\newfontfamily\hiragino[BoldFont=Hiragino Kaku Gothic ProN W6]{Hiragino Kaku Gothic ProN W3}
+\makeatletter
+\renewcommand{\ALG@beginalgorithmic}{\algfont}
+\makeatother
+\algrenewcommand\algorithmicdo{}
+\newcommand\dottedcircle{%
+\begin{pgfpicture}
+\pgfsetlinewidth{0.25ex}
+\pgfsetroundcap
+\pgfsetdash{{0cm}{2pt}{0cm}{2pt}}{0cm}
+\pgfcircle{\pgfpointorigin}{0.75ex}
+\pgfusepath{stroke}
+\pgfsetbaseline{-0.75ex}
+\end{pgfpicture}%
+}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{itemize/enumerate subbody begin}{\vspace{1em}}
+\setbeamertemplate{caption}{\raggedright\insertcaption\par}
+\definecolor{mDarkTeal}{HTML}{23373b}
+\setbeamercolor{block title}{use=structure,fg=white,bg=mDarkTeal}
+\setbeamercolor{block body}{use=structure,fg=black,bg=gray!20!white}
+\newenvironment{wideitemize}{\itemize\addtolength{\itemsep}{1em}}{\enditemize}
+\newenvironment{wideenumerate}{\enumerate\addtolength{\itemsep}{1em}}{\endenumerate}
+\addtobeamertemplate{navigation symbols}{}{%
+\usebeamerfont{footline}%
+\usebeamercolor[fg]{footline}%
+\hspace{1em}%
+\insertframenumber/\inserttotalframenumber
+}
+\makeatletter\def\tagform@#1{\maketag@@@{{\fontfamily{cmr}\selectfont(#1)}\@@italiccorr}}\makeatother
+\newcommand{\pref}[1]{{\fontfamily{lmr}\selectfont (\ref{#1})}}
+\newcommand{\absolute}[1]{\left|#1\right|}
+\newcommand{\parentheses}[1]{\left(#1\right)}
+\newcommand{\leftopenrightclose}[1]{\left(\left.#1\right]\right.}
+\newcommand{\leftcloserightopen}[1]{\left[\left.#1\right)\right.}
+\newcommand{\braces}[1]{\left\{#1\right\}}
+\newcommand{\brackets}[1]{\left[#1\right]}
+\newcommand{\anglebrackets}[1]{\left\langle#1\right\rangle}
+\newcommand{\norm}[1]{\left\|#1\right\|}
+\newcommand{\const}{\mathrm{const.}}
+\renewcommand{\qedsymbol}{\rule[-2pt]{5pt}{10pt}}
+\newcommand{\energy}{\mathcal{L}}
+\pgfplotsset{%
+width=5cm,
+compat=newest,
+xlabel near ticks,
+ylabel near ticks
+}
+\lstset{%
+basicstyle=\small\ttfamily
+}
+\hypersetup{
+    pdfinfo={%
+    Author={宮澤彬},%
+    Title={Pattern Recognition and Machine Learning Chapter 14},%
+    CreationDate={D:20150924135200},%
+    ModDate={\pdfdate},%
+}}
+\title{PRML 第14章}
+\institute{総合研究大学院大学 博士前期1年\newline\newline\texttt{miyazawa-a@nii.ac.jp}}
+\author{宮澤　彬}
+\date{\today}
+\begin{document}
+\setlength{\jot}{1.5\jot}
+\begin{frame}
+\maketitle
+\end{frame}
+
+\section{はじめに}
+\begin{frame}
+    \frametitle{はじめに}
+    \begin{wideitemize}
+        \item このスライドの{\LuaLaTeX}のソースコードは
+            \href{https://github.com/pecorarista/documents}{\texttt{https://github.com/pecorarista/documents}}に
+            あります．
+        \item 教科書とは若干異なる表記をしている場合があります．
+        \item 図はTikZで描いたものを除き，\cite{prml}のサポートページ
+            \url{http://research.microsoft.com/en-us/um/people/cmbishop/prml/}
+            または\cite{murphy2012}のサポートページ
+            \url{http://www.cs.ubc.ca/~murphyk/MLbook/}から引用しています．
+        \item 間違った記述を見つけた方は連絡ください．
+    \end{wideitemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{今日やること}
+\begin{wideenumerate}
+    \item ベイズモデル平均化
+    \item コミッティ
+    \item ブースティング(AdaBoost)
+        \begin{wideitemize}
+            \item 分類
+            \item \redout{\textcolor{gray}{回帰}}
+        \end{wideitemize}
+    \item 木構造モデル(CART)
+        \begin{wideitemize}
+            \item 回帰
+            \item 分類
+        \end{wideitemize}
+    \item \redout{\textcolor{gray}{条件付き混合モデル}}
+\end{wideenumerate}
+\end{frame}
+
+\begin{frame}
+\frametitle{モデルの結合}
+    複数のモデルの予測結果の平均を使って回帰を行うと，
+    過学習が避けられて，より良い予測値が得られそう．
+    また，分類の場合は多数決の結果を使うと同様のことが言えそう．
+
+    \bigskip
+
+    複数のモデルの出力を組み合わせて使う方法を\textbf{コミッティ}あるいは\textbf{合議}(committee)と呼ぶ．
+\end{frame}
+
+\section{ベイズモデル平均化}
+\begin{frame}
+\frametitle{モデルの結合}
+モデルの結合とベイズモデル平均化を混同しないように注意する．
+
+\bigskip
+
+まずはモデル結合の例として，
+混合ガウス分布の密度推定を考える．
+モデルは，データがどの混合要素から生成されたかを示す潜在変数
+$z$を使って，同時確率$p\parentheses{x,z}$で与えられる．
+観測変数$x$の密度は
+\begin{align}
+    p\parentheses{x}
+    &= \sum_{z} p\parentheses{x,z} \tag{14.3} \\
+    &= \sum_{k = 1}^K \pi_k \mathcal{N}\parentheses{x|\mu_k,\varSigma_k} \tag{14.4}
+\end{align}
+となる．データ$X = \parentheses{x_1,\ldots,x_N}$に関する周辺分布は
+\begin{align}
+    p\parentheses{X} = \prod_{n = 1}^N p\parentheses{x_n}
+    = \prod_{n = 1}^N \parentheses{\sum_{z_n}p\parentheses{x_n,z_n}}
+    \tag{14.5}
+\end{align}
+であり，各$x_n$に対して$z_n$が存在していることがわかる．
+
+\end{frame}
+
+\begin{frame}
+\frametitle{ベイズモデル平均化}
+次にベイズモデル平均化の例を示す．
+いくつかの異なるモデルがあって，
+$h = 1,\ldots,H$で番号付けられているとする．
+例えば1つは混合ガウス分布で，もう1つは混合コーシー分布であるとする．
+
+\bigskip
+
+\begin{center}
+    \tikzset{>=stealth',every on chain/.append style={join},every join/.style={->}}
+    \begin{tikzpicture}[align=center]
+        \def\s{0.4}
+        \def\a{0.6}
+        \def\b{2}
+        \def\c{0.3}
+        \def\d{0.5}
+        \def\r{3}
+        \draw[color=blue,thick,samples=200] plot [domain=-6:-2.5] (\x,{%
+            \r * 0.4 * (1/(sqrt(2 * pi) * \s)) * exp((-(\x + 5)^2)/(2 * (\s^2)))
+            + \r * 0.6 * (1/(sqrt(2 * pi) * \s)) * exp((-(\x + 3.5)^2)/(2 * (\s^2)))
+        });
+        \path [->] (-6.5,0) edge (-2,0);
+        \node at ({(-6.5 - 2) / 2},2.5) {${\displaystyle \sum_{k} \pi_k \mathcal{N}\parentheses{x | \mu_k, \varSigma_k}}$};
+        \draw[color=red,thick,samples=200] plot [domain=-1:3] (\x,{%
+            \r * 0.6 * 1/ (pi * \c * (1 +  (\x - \a) * (\x - \a) * (1 / (\c * \c))))
+            + \r * 0.4 * 1/(pi * \c * (1 +  (\x - \b) * (\x - \b) * (1 / (\d * \d))))
+        });
+        \path [->] (-1.5,0) edge (3.5,0);
+        \node at (1,2.5) {${\displaystyle \sum_{\ell} \rho_\ell t_1\parentheses{x | \mu_\ell, \varSigma_\ell}}$};
+    \end{tikzpicture}
+\end{center}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{ベイズモデル平均化}
+モデルに関する事前確率が$p\parentheses{h}$で与えられているならば，
+データに関する周辺分布は次式で求められる．
+\begin{align}
+    p\parentheses{X} = \sum_{h = 1}^H p\parentheses{X|h}p\parentheses{h}
+    \tag{14.6}
+    \label{BayesianModelAveraging}
+\end{align}
+モデル結合との違いは，
+データを生成しているのは
+モデル$h = 1,\ldots,H$のどれか1つだということである．
+\end{frame}
+
+\section{コミッティ}
+\begin{frame}
+\frametitle{コミッティ}
+コミッティを使う手法の例として，\textbf{バギング}(bagging; \textbf{b}ootstrap \textbf{ag}gregation)を紹介する．
+まず訓練用データ$Z=\parentheses{z_1,\ldots,z_N}$から，ブートストラップ標本$Z^{\parentheses{1}},\ldots,Z^{\parentheses{M}}$を作る．
+
+\bigskip
+
+\begin{center}
+{\scriptsize
+\tikzset{>=stealth',every on chain/.append style={join},every join/.style={->}}
+\begin{tikzpicture}[every state/.style={inner sep=2.5pt}]
+\tikzstyle{sqy}=[rectangle,thick,draw=black!75,fill=blue!20,minimum height=20pt,minimum width=80pt]
+\tikzstyle{sqg}=[state,thick,draw=black!75,fill=green!20,minimum height=30pt]
+\node [sqg] (q1) at (-1.5,0) {$Z^{\parentheses{1}}$};
+\node [sqg] (q2) at (0,0) {$Z^{\parentheses{2}}$};
+\node [sqg] (q3) at (3,0) {$Z^{\parentheses{M}}$};
+\node [sqy] (q4) at (0,-2.5) {$Z = \parentheses{z_1,\ldots,z_N}$};
+\path [<->] (q4) edge (q1);
+\path [<->] (q4) edge (q2);
+\path [<->] (q4) edge node [right=10pt] {復元抽出} (q3);
+\node [align=center] at (5,0) {ブートストラップ標本};
+\node [align=center] at (2.3,-2.5) {訓練標本};
+\end{tikzpicture}
+}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{コミッティ}
+バギングにおけるコミッティの予測値$y_\mathrm{COM}\parentheses{x}$は，
+各ブートストラップ集合$Z^{\parentheses{1}},\ldots,Z^{\parentheses{M}}$で学習したモデルの予測$y_1\parentheses{x},\ldots,y_m\parentheses{x}$を使って
+\begin{align}
+    y_\mathrm{COM}\parentheses{x} = \frac{1}{M} \sum_{m = 1}^M y_m\parentheses{x}
+    \tag{14.7}
+\end{align}
+となる．
+
+\bigskip
+
+これで実際に良い結果が得られるのか，
+誤差を評価して確認する．
+\end{frame}
+
+\begin{frame}
+\frametitle{バギングの誤差評価}
+予測したい回帰関数を$h\parentheses{x}$とし，
+各モデルの予測値$y_m\parentheses{x}$が，$h\parentheses{x}$と加法的な誤差$\varepsilon_m\parentheses{x}$を使って
+\begin{align}
+    y_m\parentheses{x} = h\parentheses{x} + \varepsilon_m\parentheses{x}
+    \tag{14.8}
+\end{align}
+と表せると仮定する．
+このとき，二乗誤差は
+\begin{align}
+    \mathbb{E}\brackets{%
+        \parentheses{%
+            y_m\parentheses{x} - h\parentheses{x}
+        }^2
+    }
+    =
+    \mathbb{E}\brackets{%
+        \parentheses{%
+            \varepsilon_m\parentheses{x}
+        }^2
+    }
+    \tag{14.9}
+\end{align}
+となるので，平均二乗誤差の期待値$E_{\mathrm{AV}}$は
+\begin{align}
+    E_{\mathrm{AV}} &:=
+    \mathbb{E}\brackets{%
+            \frac{1}{M}
+            \sum_{m = 1}^M
+        \parentheses{%
+            y_m\parentheses{x} - h\parentheses{x}
+        }^2
+    } \notag \\
+    &= \frac{1}{M}
+    \sum_{m = 1}^M
+    \mathbb{E}\brackets{\parentheses{\varepsilon_m\parentheses{x}}^2}
+    \tag{14.10}
+\end{align}
+で求められる．
+\end{frame}
+
+\begin{frame}
+\frametitle{バギングの誤差評価}
+一方，コミッティによる出力について，
+誤差の期待値$E_\mathrm{COM}$は
+\begin{align}
+    E_{\mathrm{COM}} &:=
+    \mathbb{E}\brackets{%
+        \parentheses{%
+            \frac{1}{M}\sum_{m = 1}^M y_m - h\parentheses{x}
+        }^2
+    } \notag \\
+    &= \mathbb{E}\brackets{%
+        \parentheses{%
+            \frac{1}{M}\sum_{m = 1}^M\varepsilon_m\parentheses{x}
+        }^2
+    }
+    \tag{14.11}
+\end{align}
+と求められる．
+ベクトル$\parentheses{1 \; \cdots \; 1}' \in \mathbb{R}^M$と$\parentheses{\varepsilon_1\parentheses{x} \; \cdots \; \varepsilon_m\parentheses{x}}' \in \mathbb{R}^M$に対してCauchy-Schwarzの不等式を用いると
+\begin{gather*}
+    \parentheses{\sum_{m =1}^M \varepsilon_m\parentheses{x}}^2
+    \leq
+    M \sum_{m = 1}^M\parentheses{\varepsilon_m\parentheses{x}}^2 \\
+    E_\mathrm{COM} \leq E_\mathrm{AV}
+\end{gather*}
+が成り立つ．
+つまりコミッティを使う場合の誤差の期待値は，
+構成要素の誤差の期待値の和を超えない．
+\end{frame}
+
+\begin{frame}
+\frametitle{バギングの誤差評価}
+特に誤差の平均が$0$で無相関である，すなわち
+\begin{gather}
+    \mathbb{E}\brackets{\varepsilon_m\parentheses{x}} = 0
+    \tag{14.12} \\
+    \cov\parentheses{\varepsilon_{m}\parentheses{x},\varepsilon_\ell\parentheses{x}}
+    = \mathbb{E}\brackets{\varepsilon_m\parentheses{x}\varepsilon_\ell\parentheses{x}} = 0,\, m \neq \ell
+    \tag{14.13}
+\end{gather}
+が成り立つならば\footnote[frame]{同じようなモデルを，同じような訓練データで学習させているのだから，こんなことは期待できない．}
+\begin{align}
+    E_\mathrm{COM}
+    &= \mathbb{E}\brackets{\parentheses{\frac{1}{M}\sum_{m = 1}^M \varepsilon_m\parentheses{x}}^2} \notag \\
+    &= \frac{1}{M^2}\mathbb{E}\brackets{\sum_{m = 1}^M \parentheses{\varepsilon_m\parentheses{x}}^2} \notag \\
+    &= \frac{1}{M}E_\mathrm{AV} \tag{14.14}
+\end{align}
+となり，誤差の期待値が大幅に低減される．
+\end{frame}
+
+\section{ブースティング}
+\begin{frame}
+\frametitle{ブースティング}
+コミッティを使う手法の別な例として，
+\textbf{ブースティング}(boosting)と呼ばれる手法を紹介する．
+ブースティングは分類のためのアルゴリズムとして設計されたが，回帰にも拡張できる．
+とりあえず分類について考える．
+
+\bigskip
+
+コミッティを構成する個々の分類器は\textbf{ベース学習器}(base learner)または\textbf{弱学習器}(weak learner)と呼ばれる．
+ブースティングは，弱学習器を（並列的にではなく）逐次的に，
+重み付きデータを使って学習を進める方法である．
+重みの大きさは，それ以前に誤って分類されたデータに対して大きくなるように定める．
+
+
+\bigskip
+
+ブースティングの中で代表的な手法である\textbf{AdaBoost} (\textbf{ada}ptive \textbf{boost}ing)を紹介する．
+\end{frame}
+
+\begin{frame}
+\frametitle{AdaBoost}
+\begin{center}
+    \includegraphics[scale=0.8]{Figure14-1.pdf}
+\end{center}
+
+\bigskip
+
+\begin{leftbar}
+{\footnotesize
+\begin{algorithmic}
+\For{$m = 1,\ldots,N$}
+    \State{Initialize the data weighting coefficients}
+    \begin{align*}
+        w_n^{\parentheses{1}} := \frac{1}{N}
+    \end{align*}
+\EndFor
+\end{algorithmic}
+}
+\end{leftbar}
+\end{frame}
+
+\begin{frame}
+\frametitle{AdaBoost}
+\begin{leftbar}
+{\footnotesize
+\begin{algorithmic}
+\For{$m = 1,\ldots,M$}
+    \State{Fit a classifier $y_m\parentheses{x}$ to the training data by minimizing}
+    \begin{align}
+        J_m := \sum_{n = 1}^N w_n^{\parentheses{m}} \mathbbold{1}_{\braces{x\,|\, y_m\parentheses{x} \neq t_n}}\parentheses{x_n}.
+        \tag{14.15}
+        \label{err}
+    \end{align}
+
+    \State{Evaluate}
+        \begin{align}
+            \alpha_m := \log \frac{1 - \varepsilon_m}{\varepsilon_m}
+            \tag{14.17}
+            \label{alpha}
+        \end{align}
+    \State{where}
+        \begin{align}
+    \varepsilon_m :=
+    \frac{\displaystyle \sum_{n = 1}^N w_n^{\parentheses{m}}\mathbbold{1}_{\braces{x \,|\, y_m\parentheses{x} \neq t_n}}\parentheses{x_n}}{\displaystyle \sum_{n = 1}^N w_n^{\parentheses{m}}}.
+            \tag{14.15}
+            \label{epsilon}
+        \end{align}
+    \State{Update the data weighting coefficients}
+    \begin{align}
+        w_n^{\parentheses{m + 1}} := w_n^{\parentheses{m}}
+        \exp \parentheses{\alpha_m \mathbbold{1}_{\braces{x | y_m\parentheses{x_n} \neq t_n }} \parentheses{x_n}}.
+        \tag{14.18}
+        \label{updatew}
+    \end{align}
+\EndFor
+\end{algorithmic}
+}
+\end{leftbar}
+\end{frame}
+
+\begin{frame}
+\frametitle{AdaBoost}
+\begin{leftbar}
+{\footnotesize
+\begin{algorithmic}
+    \State{Make predictions using the final model, which is given by}
+    \begin{align}
+        Y_M\parentheses{x} := \sign \parentheses{\sum_{m = 1}^M \alpha_m y_m\parentheses{x}}.
+        \tag{14.19}
+        \label{YM}
+    \end{align}
+\end{algorithmic}
+}
+\end{leftbar}
+
+\bigskip
+
+このアルゴリズム中に現れる式は，
+指数誤差の逐次的な最小化から導かれる．
+\end{frame}
+
+\subsection{指数誤差の最小化}
+\begin{frame}
+\frametitle{指数誤差の最小化}
+目標値を$t \in \braces{-1,1}$，予測値を$y \in \mathbb{R}$とし，
+これらの積$ty$を$z$と置く．
+このとき指数誤差は$E\parentheses{z} := \exp\parentheses{-z}$という形で与えられる．
+$E\parentheses{z}$は$t$と$y$が同符号$\parentheses{z > 0}$なら$0$に近い正の値を，
+異符号$\parentheses{z < 0}$ならば正の大きな値をとる．
+
+\bigskip
+
+\begin{figure}
+\begin{center}
+    \includegraphics{Figure14-3.pdf}
+\end{center}
+\caption{\textcolor{green}{指数誤差関数} \textcolor{red}{交差エントロピー誤差} \textcolor{blue}{ヒンジ形誤差関数} 誤分類誤差}
+\end{figure}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{指数誤差の最小化}
+以下の誤差$E$を最小化したい．
+\begin{align*}
+    E := \sum_{n = 1}^N \exp \parentheses{-t_n\sum_{\ell = 1}^m \frac{1}{2}\alpha_\ell y_\ell\parentheses{x_n}}
+\end{align*}
+逐次的に学習していくので$\alpha_1,\ldots,\alpha_{m - 1}$と$y_1\parentheses{x},\ldots,y_{m - 1}\parentheses{x}$は所与として，
+$\alpha_m$と$y_m\parentheses{x}$に関して$E$を最小化する．
+$E$を
+\begin{align}
+    E
+    &= \sum_{n = 1}^N \exp\parentheses{-t_n\sum_{\ell = 1}^{m - 1} \frac{1}{2}\alpha_\ell y_\ell\parentheses{x_n} - \frac{1}{2}t_n\alpha_my_m\parentheses{x_n}} \notag \\
+    &= \sum_{n = 1}^N w_n^{\parentheses{m}}\exp\parentheses{-\frac{1}{2}t_n\alpha_my_m\parentheses{x_n}}
+    \tag{14.22}
+\end{align}
+と書き換える．ここで以下のように置いた．
+\begin{align}
+    w_n^{\parentheses{m}} := \exp\parentheses{-t_n\sum_{\ell = 1}^{m - 1}\frac{1}{2}\alpha_\ell y_\ell \parentheses{x_n}}
+    \tag{$14.22'$}
+    \label{w}
+\end{align}
+\end{frame}
+
+\begin{frame}
+\frametitle{指数誤差の最小化}
+$y_m: x \mapsto \braces{-1,1}$によって正しく分類されたデータ点の
+添字集合を$\mathcal{T}_m$，
+誤って分類されたデータの添字集合を$\mathcal{M}_m$とする．
+このとき
+\begin{align}
+    E
+    &= e^{-\alpha_m/2}\sum_{n \in \mathcal{T}_m} w_n^{\parentheses{m}} + e^{\alpha_m/2}\sum_{n \in \mathcal{M}_m}w_n^{\parentheses{m}} \notag \\
+    &= \parentheses{e^{\alpha_m/2} - e^{-\alpha_m/2}}\sum_{n = 1}^N w_n^{\parentheses{m}}\mathbbold{1}_{\braces{x | y_m\parentheses{x_n} \neq t_n}}\parentheses{x_n} \notag \\
+    &\qquad + e^{-\alpha_m/2}\sum_{n = 1}^N w_n^{\parentheses{m}}
+    \tag{14.23}
+\end{align}
+が成り立つ．
+これを$y_m\parentheses{x}$について最小化することは
+\pref{err}を最小化することと同値である．
+\end{frame}
+
+\begin{frame}
+\frametitle{指数誤差の最小化}
+また$\alpha_m$について微分して$0$と置くと
+\begin{gather*}
+    \parentheses{e^{\alpha_m/2} + e^{-\alpha_m/2}}\sum_{n = 1}^N w_n^{\parentheses{m}}\mathbbold{1}_{\braces{x | y_m\parentheses{x_n} \neq t_n}}\parentheses{x_n}
+    - e^{-\alpha_m/2}\sum_{n = 1}^N w_n^{\parentheses{m}} = 0 \\
+    e^{\alpha_m} + 1
+    = \frac{\displaystyle \sum_{n = 1}^N w_n^{\parentheses{m}}}{\displaystyle \sum_{n = 1}^N w_n^{\parentheses{m}}\mathbbold{1}_{\braces{x | y_m\parentheses{x_n} \neq t_n}}\parentheses{x_n}}
+\end{gather*}
+となる．\pref{epsilon}と同じ置き換えを行うことにより
+\begin{gather*}
+    \alpha_m = \log \frac{1 - \varepsilon_m}{\varepsilon_m}
+\end{gather*}
+を得る．これはアルゴリズム中の\pref{alpha}に等しい．
+\end{frame}
+
+\begin{frame}
+\frametitle{指数誤差の最小化}
+重みは\pref{w}に従い次のように更新する．
+\begin{align}
+    w_n^{\parentheses{m + 1}}
+    = w_n^{\parentheses{m}} \exp\parentheses{-\frac{1}{2}t_n\alpha_m y_m \parentheses{x_n}}
+    \tag{14.24}
+\end{align}
+ここで
+\begin{align}
+    t_n y_m\parentheses{x_n}
+    = 1 - 2 \mathbbold{1}_{\braces{x | y_m\parentheses{x} \neq t_n}}\parentheses{x_n}
+    \tag{14.25}
+\end{align}
+が成り立つことを使うと
+\begin{align}
+    w_n^{\parentheses{m + 1}}
+    &= w_n^{\parentheses{x}} \exp\parentheses{-\frac{1}{2}\alpha_m
+        \parentheses{1 - 2 \mathbbold{1}_{\braces{x | y_m\parentheses{x} \neq t_n}}\parentheses{x_n}}
+    } \notag \\
+    &= w_n^{\parentheses{x}} \exp\parentheses{-\frac{\alpha_m}{2}}
+        \exp\parentheses{%
+        \mathbbold{1}_{\braces{x | y_m\parentheses{x} \neq t_n}}\parentheses{x_n}
+    } \tag{14.26}
+\end{align}
+と書き換えられる．$\exp\parentheses{-\alpha_m/2}$はすべてのデータに共通なので無視すると\pref{updatew}が得られる．
+\end{frame}
+
+\subsection{ブースティングのための誤差関数}
+\begin{frame}
+\frametitle{ブースティングのための誤差関数}
+以下の指数誤差を考える．
+\begin{align}
+    \mathbb{E}\brackets{\exp\parentheses{-ty\parentheses{x}}}
+    &= \sum_{t \in \braces{-1, 1}} \int \exp \parentheses{-ty\parentheses{x}}
+    p\parentheses{t|x}p\parentheses{x}dx
+    \tag{14.27}
+\end{align}
+変分法を使って$y$について上式を最小化する．
+$\varphi_t\parentheses{y} := \exp\parentheses{-ty\parentheses{x}}p\parentheses{t|x}p\parentheses{x}$とする．停留点は以下のように求められる．
+\begin{gather}
+    \sum_{t \in \braces{-1, 1}} D_y\varphi_t\parentheses{y} = 0 \notag \\
+    \exp\parentheses{y\parentheses{x}}p\parentheses{t = - 1 | x}
+    - \exp\parentheses{-y\parentheses{x}}p\parentheses{t = 1 | x} = 0 \notag \\
+    % \exp\parentheses{2y\parentheses{x}} = \frac{p\parentheses{t = 1 | x}}{p\parentheses{t = -1 | x}} \notag \\
+    y\parentheses{x} = \frac{1}{2}\log \frac{p\parentheses{t = 1 | x}}{p\parentheses{t = -1 | x}}
+    \tag{14.28}
+\end{gather}
+つまりAdaBoostは逐次的に$p\parentheses{t = 1|x}$と$\parentheses{t = -1|x}$の比の対数の近似を求めている．
+これが最終的に\pref{YM}で符号関数を使って分類器を作った理由となっている．
+\end{frame}
+
+\begin{frame}
+\frametitle{AdaBoostの振る舞い}
+AdaBoostによる分類の例を示す．
+図中の円は各データを表し，その半径は割り振られた重みを表している．
+
+\bigskip
+
+\begin{center}
+\includegraphics{Figure14-2a.pdf}
+\includegraphics{Figure14-2b.pdf}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{AdaBoostの振る舞い}
+\begin{center}
+\includegraphics{Figure14-2c.pdf}
+\includegraphics{Figure14-2d.pdf}
+\end{center}
+\begin{center}
+\includegraphics{Figure14-2e.pdf}
+\includegraphics{Figure14-2f.pdf}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{AdaBoostの拡張}
+AdaBoostは\cite{freund1996}で導入されたが，
+指数誤差の逐次的最小化としての解釈は\cite{friedman2000}で与えられた．
+これ以降，誤差関数の変更により様々な拡張が行われるようになった．
+\end{frame}
+
+\section{木構造モデル}
+\begin{frame}
+\frametitle{木構造モデル}
+今までは複数の出力を合わせる方法を見てきた．
+今度は入力を複数のモデルの1つに振り分ける方法
+である木構造モデルを扱う．
+
+\bigskip
+
+木構造モデルのでは，入力空間を矩形(cuboid)領域に分けて，
+それぞれの領域に対応するモデルに予測をさせる．
+
+\bigskip
+
+\begin{center}
+\includegraphics[scale=0.75]{Figure14-5.pdf}
+\hspace{10pt}
+\includegraphics[scale=0.75]{Figure14-6.pdf}
+\end{center}
+\end{frame}
+
+\begin{frame}
+% Hastie 日本語訳 p.350
+\nocite{hastie2009}
+\frametitle{CART}
+以下では木構造モデルの1つである
+\textbf{CART} (classification and regression tree)を扱う．
+CARTは名前の通り分類にも回帰にも使うことができるが，
+まずは回帰に絞って説明する．
+
+\bigskip
+
+入力と目標値の組$\mathcal{D} = \parentheses{\bm{x}_1,t_n},\ldots,\parentheses{\bm{x}_N,t_N} \in \mathbb{R}^D\times \mathbb{R}$が与えられているとする．
+入力に対する分割が$\mathcal{R}_1,\ldots,\mathcal{R}_M$となっているとき，予測値を次のように定義する．
+\begin{align*}
+    f\parentheses{\bm{x}} := \sum_{m= 1}^M
+    c_m \mathbbold{1}_{\mathcal{R}_m}\parentheses{\bm{x}}
+\end{align*}
+\end{frame}
+
+\begin{frame}
+\frametitle{CART}
+\begin{center}
+    \includegraphics[width=0.8\textwidth]{regtreeSurfaceB.pdf}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{分割が与えられているときの最適な予測値}
+各領域で二乗和誤差を最小化する予測値を求めよう．
+$\mathcal{I}_m := \braces{n\,;\, \bm{x}_n \in \mathcal{R}_m}$と表すと
+誤差は以下のようになる．
+\begin{align*}
+    \sum_{n = 1}^N \parentheses{t_n - f\parentheses{\bm{x}_n}}^2
+    &= \sum_{n = 1}^N \parentheses{%
+        t_n - \sum_{m= 1}^M c_m \mathbbold{1}_{\mathcal{R}_m}\parentheses{\bm{x}_n}
+    }^2 \\
+    &= \sum_{m = 1}^M \sum_{n \in \mathcal{I}_m} \parentheses{%
+        c_m - t_n
+    }^2
+\end{align*}
+各$c_m$について微分して$0$と置くと，
+最適な予測値は
+\begin{align*}
+    \bar{c}_m = \frac{1}{\absolute{\mathcal{I}_m}}\sum_{n \in \mathcal{I}_m} t_n
+\end{align*}
+となることが分かる．ただし二乗和誤差を最小化するような分割を決めようとすると計算量が大きくなる．そこで\textbf{貪欲法}を使って木の構造を定める．
+\end{frame}
+
+\begin{frame}
+\frametitle{分割基準}
+各回の領域の分割基準を考える．
+変数を表す添字を$j \in \braces{1,\ldots,D}$，閾値を$\theta$として，2つの領域$\mathcal{R}_1\parentheses{j,\theta}$と$\mathcal{R}_2\parentheses{j,\theta}$を次で定める．
+\begin{align*}
+    \mathcal{R}_1 \parentheses{j,\theta} = \braces{\bm{x}\,;\, x_j \leq \theta},\;\;
+    \mathcal{R}_2 \parentheses{j,\theta} = \braces{\bm{x}\,;\,x_j > \theta}
+\end{align*}
+$\mathcal{I}_i\parentheses{j,\theta} := \braces{n \,;\,\bm{x}_n \in \mathcal{R}_i\parentheses{j,\theta}}$とする．分割の基準となる$\parentheses{j,\theta}$は
+次を解いて得られる．
+\begin{align*}
+    \min_{j \in \braces{1,\ldots,D}}
+    \min_{\theta}
+    \braces{%
+        \min_{c_1}
+        \sum_{n \in \mathcal{I}_1\parentheses{j,\theta}}
+        \parentheses{c_1 - t_n}^2 +
+        \min_{c_2} \sum_{n \in \mathcal{I}_2\parentheses{j,\theta}}
+        \parentheses{c_2 - t_n}^2
+    }.
+\end{align*}
+内側の和を最小化する$c_1$と$c_2$は，
+それぞれ
+\begin{align*}
+    \bar{c}_1 =
+        \frac{1}{\absolute{\mathcal{I}_1\parentheses{j,\theta}}}
+        \sum_{n \in \mathcal{I}_1\parentheses{j,\theta}} t_n,\;\;
+    \bar{c}_2 =
+        \frac{1}{\absolute{\mathcal{I}_2\parentheses{j,\theta}}}
+        \sum_{n \in \mathcal{I}_2\parentheses{j,\theta}} t_n
+\end{align*}
+となる．あとは各$j$について最適な$\theta$を計算し，
+そのあとで最適な$j$を求めればよい．
+\end{frame}
+
+\begin{frame}
+\frametitle{停止基準}
+次に停止基準について考えなければならない．
+
+\bigskip
+
+単純に考えると誤差の減少幅が小さくなったときに止める方法が
+良さそうであるが，分割を続けていると大きな誤差の減少が見られることが
+経験的に知られている．
+
+\bigskip
+
+そこで，先に大きな木を作ってからその木の枝を刈って適当な木を得ることにする．
+
+\end{frame}
+
+\begin{frame}
+\frametitle{枝刈り}
+\begin{center}
+\begin{figure}
+\tikzset{>=stealth',every on chain/.append style={join},every join/.style={->}}
+\begin{tikzpicture}[every state/.style={inner sep=2.5pt,align=center}]
+\tikzstyle{circt}=[state,thick,minimum size=22pt]
+\tikzstyle{circg}=[state,thick,draw=black!75,fill=black!20,minimum size=22pt]
+\tikzstyle{circw}=[state,thick,draw=black!75,minimum size=22pt]
+\tikzstyle{sqw}=[rectangle,thick,draw=black!75,minimum size=13pt]
+\node<1> at (0,1) {$T$};
+\node<2> at (0,1) {$\phantom{T}$};
+\node<3> at (0,1) {$T - T_{t_7}$};
+\node [circw] (q1) at (0,0) {$t_1$};
+\node [circw] (q2) at (-2.5, -1) {$t_2$};
+\node [circw] (q3) at (2.5, -1) {$t_3$};
+\node [circw] (q4) at (-4, -2.2) {$t_4$};
+\node [circw] (q5) at (-1, -2.2) {$t_5$};
+\node [circw] (q6) at (1, -2.2) {$t_6$};
+\node<1> [circw] (q7) at (4, -2.2) {$t_7$};
+\node<1> at (5,-2.2) {$\phantom{T_{t_7}}$};
+\node<2> at (5,-2.2) {$T_{t_7}$};
+\node<2> [circg] (q7) at (4, -2.2) {$t_7$};
+\node<3> [circw] (q7) at (4, -2.2) {$t_7$};
+\node<1> [circw] (q8) at (3, -3.4) {$t_8$};
+\node<2> [circg] (q8) at (3, -3.4) {$t_8$};
+\node<1> [circw] (q9) at (5, -3.4) {$t_9$};
+\node<2> [circg] (q9) at (5, -3.4) {$t_9$};
+\path [-] (q1) edge (q2);
+\path [-] (q1) edge (q3);
+\path [-] (q2) edge (q4);
+\path [-] (q2) edge (q5);
+\path [-] (q3) edge (q6);
+\path<1> [-] (q7) edge (q8);
+\path<2> [-,thick] (q7) edge (q8);
+\path<1> [-] (q7) edge (q9);
+\path<2> [-,thick] (q7) edge (q9);
+\path [-] (q3) edge (q7);
+\path<3> [-] (q3) edge (q7);
+\end{tikzpicture}
+\end{figure}
+\end{center}
+
+\bigskip
+
+\only<3>{$t_8$に対応する領域と$t_9$に対応する領域を併合するので$t_7$は残る．}
+\end{frame}
+
+\begin{frame}
+\frametitle{枝刈りの基準}
+切り落とす位置は，次の\textbf{error-complexity measure}
+\begin{align*}
+    R_\alpha \parentheses{T} =
+    R \parentheses{T} + \alpha \absolute{\widetilde{T}}
+\end{align*}
+が一番大きく減少するような節点$t$を選ぶ．
+ただし$\widetilde{T}$は木$T$の葉全体の集合，
+$R\parentheses{T}$は誤差
+\begin{align*}
+    R\parentheses{T}
+    := \sum_{m = 1}^{\absolute{\widetilde{T}}} \sum_{n \in \mathcal{I}_m} \parentheses{\bar{c}_m - t_n}^2
+\end{align*}
+である．
+$\alpha \geq 0$は枝の数に対する罰則を調整するパラメータである．
+この基準では，刈っても（通常大きくなってしまう）誤差があまり大きくならず，葉の数が減るような枝刈りが優先して行われる．
+
+\end{frame}
+
+\begin{frame}
+\frametitle{枝刈りの基準}
+$\alpha$を動かすと次のようなことがわかる．
+
+\bigskip
+\begin{wideitemize}
+    \item $\alpha = 0$のとき
+
+        各データに1つの葉を対応させるような木が最適になる．
+
+    \item $\alpha$が大きいとき
+
+        根$t_1$だけから成る木が最適になる．
+\end{wideitemize}
+
+\bigskip
+
+ちょうどいい木はこの間にある．
+\end{frame}
+
+\begin{frame}
+\frametitle{枝刈り}
+部分木$T_t$と節点$t$から下を刈ってできる木$\parentheses{\braces{t},\emptyset}$のerror-complexity measureはそれぞれ
+\begin{gather*}
+    R_\alpha\parentheses{T_t} = R\parentheses{T_t} + \alpha \absolute{\widetilde{T_t}}, \\
+    R_\alpha\parentheses{\parentheses{\braces{t}, \emptyset}} = R\parentheses{\parentheses{\braces{t}, \emptyset}} + \alpha
+\end{gather*}
+である．$R_\alpha\parentheses{T_t} > R_\alpha{\parentheses{\parentheses{\braces{t}, \emptyset}}}$，すなわち
+\begin{align*}
+    \alpha < \frac{R\parentheses{T_t} - R\parentheses{\parentheses{\braces{t}, \emptyset}}}{\absolute{\widetilde{T_t}} - 1}
+\end{align*}
+が成り立つならば刈り取ったほうがよい．この右辺を刈り取る効果の指標とし
+\begin{align*}
+    g\parentheses{t\,;\,T} := \frac{R\parentheses{T_t} - R\parentheses{\parentheses{\braces{t}, \emptyset}}}{\absolute{\widetilde{T_t}} - 1}
+\end{align*}
+と定める．
+\end{frame}
+
+\begin{frame}
+\frametitle{枝刈り}
+次の\textbf{最弱リンク枝刈り}(weakest link pruning)と呼ばれるアルゴリズムにより$T^0 \succ \cdots \succ T^J = \parentheses{\braces{t_1},\emptyset}$と狭義単調増加列$\alpha_0 < \cdots < \alpha_J$を得る．
+
+\bigskip
+
+{\setlength{\baselineskip}{20pt}
+\begin{algorithmic}[1]
+    \State{$i \leftarrow 0$}
+    \While{$\absolute{\widetilde{T^i}} > 1$}
+    \State{${\displaystyle \alpha_i \leftarrow \min_{t \in V\parentheses{T^i} \backslash \widetilde{T^i_t}} g\parentheses{t\,;\,T^i}}$}
+    \State{${\displaystyle \mathcal{T}^i \leftarrow \argmin_{t \in V\parentheses{T^i} \backslash \widetilde{T_t^i}} g\parentheses{t\,;\,T^i}}$}
+        \For{$t \in \mathcal{T}^i$}
+        \State{$T^i \leftarrow T^i - T^i_t$}
+        \EndFor
+        \State{$i \leftarrow i + 1$}
+    \EndWhile
+\end{algorithmic}
+}
+\end{frame}
+
+\begin{frame}
+\frametitle{交差確認}
+最終的にやらなければならないことは，得られた列$\anglebrackets{T^i}_{i = 0}^J$の中から適当な$T^i$選ぶことである．そのための方法としては交差確認(cross validation)が使われる．
+\begin{algfont}
+\begin{center}
+\tikzset{>=stealth',every on chain/.append style={join},every join/.style={->}}
+\begin{tikzpicture}[every state/.style={inner sep=2.5pt,align=center}]
+\tikzstyle{sqb}=[rectangle,thick,draw=black!75,fill=blue!20,minimum width=27pt]
+\tikzstyle{sqb}=[rectangle,thick,draw=black!75,fill=blue!20,minimum width=180pt,minimum height=15pt]
+\tikzstyle{vs}=[-,thick,color=black!75]
+\def\y{0.6}
+\def\N{4}
+\foreach \i in {0,...,\N}{%
+    \foreach \j in {0,...,\N}{%
+        \ifthenelse{\i=2}{
+            \ifthenelse{\j=2}{%
+                \node at ({\i + 0.5},{0.4 - \j}) {$\vdots$};
+            }{
+                \fill [color=blue!20] (\i,-\j + \y) rectangle ({\i + 1},-\j);
+            }
+        }{%
+            \ifthenelse{\j=2}{%
+            }{%
+                \ifthenelse{\i=\j}{%
+                    \fill [color=red!20] (\i,-\j + \y) rectangle ({\i + 1},-\j);
+                    \node at ({\i + 0.5},{0.3 - \j}) {Test};
+                }{%
+                    \fill [color=blue!20] (\i,-\j + \y) rectangle ({\i + 1},-\j);
+                    \node at ({\i + 0.5},{0.3 - \j}) {Train};
+                }
+            }
+        }
+        % 上書きしたほうが綺麗
+        \ifthenelse{\j=2}{
+        }{%
+            \path [vs] (\i,{-\j + \y}) edge (\i,-\j);
+        }
+    }
+}
+\foreach \i in {0,...,\N}{%
+    \ifthenelse{\i=2}{%
+    }{%
+        \path [vs] (-0.014,-\i) edge ({\N + 1 + 0.014},-\i);
+        \path [vs] (-0.014,-\i+\y) edge ({\N + 1 + 0.014},-\i+\y);
+        \path [vs] ({\N + 1},{-\i + \y}) edge ({\N + 1},-\i);
+    }
+}
+\node at (0.5,1) {$1$};
+\node at (1.5,1) {$2$};
+\node at (2.5,1) {$\cdots$};
+\node at (3.5,1) {$K - 1$};
+\node at (4.5,1) {$K$};
+\end{tikzpicture}
+\end{center}
+\end{algfont}
+\end{frame}
+
+\begin{frame}
+\frametitle{交差確認}
+手順は以下のようになる．
+{\setlength{\baselineskip}{20pt}
+\begin{algorithmic}[1]
+    \State{データ$\mathcal{D}$を使って，木の列$\anglebrackets{T^i}_{i = 0}^J$とパラメータの列$\anglebrackets{\alpha_i}_{i = 0}^J$を作る．}
+    \State{データ$\mathcal{D}$を$\mathcal{D} = \coprod_{k = 1}^K \mathcal{D}_k$と分割する．極力，各$\absolute{\mathcal{D}_k}$が同じ大きさになるようにする．}
+    \State{各$\mathcal{D}^{\parentheses{k}}:=\mathcal{D}\backslash\mathcal{D}_k$を使い，
+    木の列$\anglebrackets{T^{\parentheses{k}i}}_{i = 0}^{i_k}$とパラメータの列$\anglebrackets{\alpha^{\parentheses{k}}_i}_{i = 0}^{i_k}$を作る．}
+    \algstore{a}
+\end{algorithmic}
+}
+\end{frame}
+
+\begin{frame}
+% Murphy 6.5.3.2
+\frametitle{交差確認}
+{\setlength{\baselineskip}{20pt}
+\begin{algorithmic}[1]
+    \algrestore{a}
+    \State{各$\alpha_i' := \sqrt{\alpha_i \alpha_{i + 1}}$に対して$R_{\alpha_i'}\parentheses{T}$を最小化するような$T^{\parentheses{1}}\parentheses{\alpha_i'},\ldots,T^{\parentheses{K}}\parentheses{\alpha_i'}$とそれらに対応する予測$y_i^{\parentheses{1}},\ldots,y_i^{\parentheses{K}}$を求める．ここで$\alpha \in \leftcloserightopen{\alpha_i^{\parentheses{k}}, \alpha_{i + 1}^{\parentheses{k}}}$ならば$T^{\parentheses{k}}\parentheses{\alpha} = T^{\parentheses{k}i}$となることに注意する．}
+    \State{今までの結果から以下を求めることができる．
+    \begin{gather*}
+        R^{\mathrm{CV}}\parentheses{T^i}
+        = \frac{1}{N}\sum_{k = 1}^K \sum_{n \in \braces{n' \,;\, \parentheses{\bm{x}_n,t_n} \in \mathcal{D}_k}} \parentheses{t_n - y_i^{\parentheses{k}}\parentheses{\bm{x}_n}}^2
+    \end{gather*}
+    }
+    \State{誤差が一番小さい木を $T^{**} := \argmin_{T^i} R\parentheses{T^i}$とする．}
+    \algstore{b}
+\end{algorithmic}
+}
+\end{frame}
+
+
+\begin{frame}
+% Breiman 3.4.3, 11.5
+\frametitle{交差確認}
+{\setlength{\baselineskip}{20pt}
+\begin{algorithmic}[1]
+    \algrestore{b}
+    \State{標準誤差\begin{hiragino}(standard error)\end{hiragino} $\mathrm{SE}$
+            を求める．
+        \begin{gather*}
+            \SE\parentheses{R^{\mathrm{CV}}\parentheses{T^i}} := s\parentheses{T^i} / \sqrt{N}, \\
+            s\parentheses{T^i}
+                := \sqrt{\frac{1}{N}\sum_{n = 1}^N \parentheses{%
+                    \parentheses{t_n - y_i^{\parentheses{\kappa\parentheses{n}}}
+                    \parentheses{x_n}}^2 - R^\mathrm{CV}\parentheses{T^i}}^2},\\
+            \kappa\parentheses{n}
+            = \sum_{k = 1}^K k\mathbbold{1}_{\mathcal{D}_k}
+                \parentheses{\parentheses{x_n,t_n}}
+        \end{gather*}
+    }
+    \State{以下を満たす$T$の中で最小の木$T^*$を最終的な結果とする．
+    \begin{align*}
+        R^{\mathrm{CV}}\parentheses{T} \leq R^{\mathrm{CV}}\parentheses{T^{**}} + 1 \times \mathrm{SE}\parentheses{T^{**}}
+    \end{align*}
+    このヒューリスティックな決め方は
+    \begin{hiragino}\textbf{1 SE rule}\end{hiragino}と呼ばれる．
+    }
+\end{algorithmic}
+}
+\end{frame}
+
+\begin{frame}
+\frametitle{交差確認}
+\begin{table}
+\caption{\cite{breiman1984}のTABLE 3.3}
+{\renewcommand{\arraystretch}{1.3}
+{\footnotesize
+\begin{tabular}{lccc}
+\hline
+$i$  & $\absolute{\widetilde{T^i}}$  & $R\parentheses{T^i}$ & $R^{\mathrm{CV}}\parentheses{T^i} \pm \SE\parentheses{T^i}$ \\
+\hline
+$1$  & $31$ & $.17$ & $.30 \pm .03$  \\
+$2^{**}$  & $23$ & $.19$ & $\bm{.27 \pm .03}$ \\
+$3$  & $17$ & $.22$ & $.30 \pm .03$  \\
+$4$  & $15$ & $.23$ & $.30 \pm .03$  \\
+$5$  & $14$ & $.24$ & $.31 \pm .03$  \\
+$\bm{6}^*$  & $10$ & $.29$ & $.30 \pm .03$  \\
+$7$  & $9$  & $.32$ & $.41 \pm .04$ \\
+$8$  & $7$  & $.41$ & $.51 \pm .04$   \\
+$9$  & $6$  & $.46$ & $.53 \pm .04$ \\
+$10$ & $5$  & $.53$ & $.61 \pm .04$ \\
+$11$ & $2$  & $.75$ & $.75 \pm .03$  \\
+$12$ & $1$  & $.86$ & $.86 \pm .03$ \\
+\hline
+\end{tabular}
+}
+}
+\end{table}
+\end{frame}
+
+
+\begin{frame}
+% はじめてのパターン認識 p. 180
+\nocite{hajipata}
+\frametitle{CARTによる分類}
+次に分類を扱う．手順は回帰とほぼ同様なので，分割の基準だけ扱う．
+
+\bigskip
+
+$\mathcal{C}_1,\ldots,\mathcal{C}_K$の$K$クラスに分類する問題を解きたいとする．
+節点$t$を通って流れていくデータの数を$N\parentheses{t}$とする．
+またそれらのうちで$\mathcal{C}_k$に属するものの数を$N_k\parentheses{t}$と表す．
+このとき
+\begin{gather*}
+    p\parentheses{t|\mathcal{C}_k}
+    = \frac{N_k\parentheses{t}}{N_k},\\
+    p\parentheses{\mathcal{C}_k,t}
+    = p\parentheses{\mathcal{C}_k}p\parentheses{t|\mathcal{C}_k}
+    = \frac{N_k}{N} \frac{N_k\parentheses{t}}{N_k}
+    = \frac{N_k\parentheses{t}}{N},\\
+    p\parentheses{t}
+    = \sum_{k = 1}^K p\parentheses{\mathcal{C}_k,t}
+    = \frac{N\parentheses{t}}{N}
+\end{gather*}
+である．よって事後確率$p\parentheses{\mathcal{C}_k|t}$は次のように求められる．
+\begin{align*}
+    p\parentheses{\mathcal{C}_k|t}
+    = \frac{p\parentheses{\mathcal{C}_k, t}}{p\parentheses{t}}
+    = \frac{N_k\parentheses{t}}{N\parentheses{t}}
+\end{align*}
+\end{frame}
+
+\begin{frame}
+\frametitle{CARTによる分類}
+分割の基準には\textbf{不純度関数}(impurity function)というものを使う．
+不純度関数とは，
+以下の条件を満たす関数$\varphi : \varDelta^M \to \mathbb{R}$のことである．
+
+\bigskip
+
+\begin{wideenumerate}
+    \item $\varphi\parentheses{p}$は$p = \parentheses{1/M, \cdots, 1/M}$のときに限り最大となる．
+    \item $\varphi\parentheses{p}$は$p = (0, \cdots, 0, \raisebox{.7pt}{$\stackrel{\substack{i \\ \smallsmile}}{1}$}, 0, \cdots, 0)$のときに限り最小となる．
+    \item $\varphi(p_1,\ldots,\stackrel{\substack{i \\ \smallsmile}}{p_i},\ldots,
+        \stackrel{\substack{j \\ \smallsmile}}{p_j},\ldots, p_M)
+        = \varphi(p_1,\ldots,\stackrel{\substack{i \\ \smallsmile}}{p_j},\ldots,
+        \stackrel{\substack{j \\ \smallsmile}}{p_i},\ldots, p_M)$．
+\end{wideenumerate}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{不純度}
+不純度関数を$\varphi$とすると，任意の節点$t$の不純度$I\parentheses{t}$は
+\begin{align*}
+    I\parentheses{t}
+    := \varphi\parentheses{p\parentheses{\mathcal{C}_1|t},\ldots,p\parentheses{\mathcal{C}_K|t}}
+\end{align*}
+で定められる．
+
+\bigskip
+
+節点$t$の子$t_L$と$t_R$について，
+$t$からそれらに流れるデータの割合を
+\begin{align*}
+    p_L = \frac{p\parentheses{t_L}}{p\parentheses{t}},
+    \;\; p_R = \frac{p\parentheses{t_R}}{p\parentheses{t}}
+\end{align*}
+とすると，$t$において基準$s$で分割したときの不純度の減少は
+\begin{align*}
+    \Delta I\parentheses{s, t}
+    = I\parentheses{t} - p_R I\parentheses{t_R}
+    - p_L I\parentheses{t_L}
+\end{align*}
+と表される．不純度の減少が最大になるような分割を行っていけばよい．
+\end{frame}
+
+\begin{frame}
+\frametitle{不純度関数の例}
+\begin{itemize}
+    \item 誤分類率
+        \begin{align*}
+            I \parentheses{t} =
+                1 - \max_k p\parentheses{\mathcal{C}_k|t}
+        \end{align*}
+    \item 交差エントロピー
+        \begin{align*}
+            I \parentheses{t} =
+            - \sum_{k = 1}^K p\parentheses{\mathcal{C}_k | t}
+                            \log p\parentheses{\mathcal{C}_k | t}
+        \end{align*}
+    \item ジニ指数(Gini index)
+        \begin{align*}
+            I \parentheses{t} =
+            \sum_{k = 1}^K p\parentheses{\mathcal{C}_k | t}
+            \parentheses{1 - p\parentheses{\mathcal{C}_k | t}}
+        \end{align*}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{不純度の数値例}
+2クラス分類において，$I$として交差エントロピーを使う例．
+
+\bigskip
+
+\begin{center}
+\begin{figure}
+\tikzset{>=stealth',every on chain/.append style={join},every join/.style={->}}
+\begin{tikzpicture}[every state/.style={inner sep=2.5pt,align=center}]
+\tikzstyle{sqw}=[rectangle,thick,draw=black!75,minimum size=20pt,minimum width=50pt]
+\node at (-1.2,0.5) {$t$};
+\node [sqw] (q1) at (0,0) {\textcolor{red}{$100$}$/$\textcolor{blue}{$100$}};
+\node [sqw] (q2) at (-2.5, -1) {\textcolor{red}{$100$}$/$\textcolor{blue}{$0$}};
+\node [sqw] (q3) at (2.5, -1) {\textcolor{red}{$0$}$/$\textcolor{blue}{$100$}};
+\path [-] (q1) edge (q2);
+\path [-] (q1) edge (q3);
+\end{tikzpicture}
+\end{figure}
+\end{center}
+\begin{align*}
+    \Delta I\parentheses{s,t}
+    &= I\parentheses{t}
+    - p_L I\parentheses{t_L}
+    - p_R I \parentheses{t_R} \\
+    &= - \frac{1}{2} \log \frac{1}{2} - \frac{1}{2} \log \frac{1}{2}
+    - 2 \cdot \frac{1}{2} \parentheses{- 1 \log 1 - 0 \log 0} \\
+    &= \log 2
+\end{align*}
+\end{frame}
+
+\begin{frame}
+\frametitle{不純度の数値例}
+別な分割$s'$を使う例．
+
+\bigskip
+
+\begin{center}
+\begin{figure}
+\tikzset{>=stealth',every on chain/.append style={join},every join/.style={->}}
+\begin{tikzpicture}[every state/.style={inner sep=2.5pt,align=center}]
+\tikzstyle{sqw}=[rectangle,thick,draw=black!75,minimum size=20pt,minimum width=50pt]
+\node at (-1.2,0.5) {$t$};
+\node [sqw] (q1) at (0,0) {\textcolor{red}{$100$}$/$\textcolor{blue}{$100$}};
+\node [sqw] (q2) at (-2.5, -1) {\textcolor{red}{$60$}$/$\textcolor{blue}{$40$}};
+\node [sqw] (q3) at (2.5, -1) {\textcolor{red}{$40$}$/$\textcolor{blue}{$60$}};
+\path [-] (q1) edge (q2);
+\path [-] (q1) edge (q3);
+\end{tikzpicture}
+\end{figure}
+\end{center}
+\begin{align*}
+    \Delta I\parentheses{s',t}
+    &= I\parentheses{t}
+    - p_L I\parentheses{t_L}
+    - p_R I \parentheses{t_R} \\
+    &= \log 2
+    - 2 \cdot \frac{1}{2} \parentheses{- \frac{3}{5}\log \frac{3}{5} - \frac{2}{5} \log \frac{2}{5}} < \Delta I\parentheses{s, t}
+\end{align*}
+
+\bigskip
+
+前の分割$s$のほうが好ましい．
+\end{frame}
+
+\begin{frame}
+\frametitle{不純度関数の比較}
+\begin{center}
+    \includegraphics[width=0.8\textwidth]{giniDemo.pdf}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{木構造モデルの問題点}
+\begin{wideitemize}
+\item 軸に合わせて分割しているので，
+    軸と平行でない方向にうまく境界が引けない．
+\item 入力空間をハードに（ただ1つのモデルが対応するように）分割してしまう．
+\item 通常，回帰では滑らかな関数での近似するが，
+    このモデルでは境界で不連続な，領域ごとの定数予測になってしまう．
+\end{wideitemize}
+\end{frame}
+
+\section{参考文献}
+\begin{frame}
+\frametitle{参考文献}
+    \bibliographystyle{apalike}
+    \bibliography{prml14}
+\end{frame}
+
+\end{document}
