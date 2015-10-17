@@ -15,14 +15,6 @@
 \setmonofont[Ligatures=TeX]{CMU Typewriter Text}
 \setotherlanguage{russian}
 \ltjsetparameter{jacharrange={-2,-3,-8}}
-\setlength{\textwidth}{128mm}
-\setlength{\textheight}{195mm}
-\setlength{\oddsidemargin}{0mm}
-\setlength{\evensidemargin}{0mm}
-\setlength{\topmargin}{0mm}
-\setlength{\headheight}{0mm}
-\setlength{\headsep}{0mm}
-\setlength{\footskip}{10mm}
 \usepackage{natbib}
 \bibliographystyle{jeconcomma}
 \usepackage[unicode,hidelinks]{hyperref}
@@ -36,11 +28,12 @@
 }
 \title{攻殻機動隊S.A.C.のOPをロシア語で歌いたい}
 \author{@pecorarista}
-\date{2015年4月4日（2015年7月28日更新）}
+\date{2015年4月4日（2015年10月17日更新）}
 \pagestyle{plain}
 \begin{document}
 
 \maketitle
+
 攻殻機動隊ARISEのTV版が今週から放送されるそうです。楽しみですね。
 私が攻殻機動隊という作品に初めて触れたのは2008年ころにレンタルビデオ店で攻殻機動隊STAND ALONE COMPLEXのDVDを借りて見たときでした。
 名作と呼ばれるだけあってとても魅力的な話でしたが、それと同じくらいOrigaの歌う不思議な雰囲気のオープニング曲\textit{Inner Universe}\nocite{origa2011}が印象的でした。
@@ -81,11 +74,11 @@
 
 発音の表記は、こだわり始めるときりがないので、厳密な音声表記ではなく、音素表記を教科書を適当に参考にしながら少し詳しく書いたものになっています。また、あまり一般的でない記号{\guilsinglleft}\textipa{{\textlowering{\textbari}}}{\guilsinglright}を使っていますが、これは\citep{jones2011}において バー付きのイオタで表されている\textipa{/{\textbari}/}の弱化した音として使っています。
 
-\begin{russian}“ангелы”\end{russian}を例にとって、ロシア語の知識がほとんど無い状態でどのようにして単語帳を作っていったかを説明したいと思います。興味のない方は次の項から読み進めてください。
+\begin{russian}``ангелы''\end{russian}を例にとって、ロシア語の知識がほとんど無い状態でどのようにして単語帳を作っていったかを説明したいと思います。興味のない方は次の項から読み進めてください。
 まずダウンロードした\texttt{dict.opcorpora.txt}をVimなどの適当なテキストエディタで開き、\texttt{АНГЕЛЫ}で検索します。
-キーボードの設定は“Russian (Russian Federation)”よりも“Russian (US, phonetic)”\footnote{これらの名称は私の使っている環境 (CentOS 7) での名称です。環境によって名称や設定の方法は異なります。}のほうがキーボードに印字されているラテン文字と押下したときに入力されるキリル文字が同じもののほうがすぐに慣れて使いやすいです。
+キーボードの設定は``Russian (Russian Federation)''よりも``Russian (US, phonetic)''\footnote{これらの名称は私の使っている環境 (CentOS 7) での名称です。環境によって名称や設定の方法は異なります。}のほうがキーボードに印字されているラテン文字と押下したときに入力されるキリル文字が同じもののほうがすぐに慣れて使いやすいです。
 正規表現が使えるならば\texttt{\^}\texttt{АНГЕЛЫ\textbackslash{}t}のように 後続の表現が行頭に現れることを表す記号\texttt{\^}とタブ文字を表す記号 \texttt{\textbackslash{}t}を使うと早く見つかることがあります。さて、検索すると178653行目に\texttt{АНГЕЛЫNOUN,anim,masc plur,nomn}と書いてあるのが見つかります。\texttt{NOUN}は「名詞」ですね。\texttt{anim}はなんでしょうか。
-\href{http://www.ruscorpora.ru/en/corpora-morph.html}{こちら}を参考にしました。こちらによると\texttt{anim}は“animate”であることを表しているようです。この“animate”はアニメグッズを売っているアニメイトではなくて、「生命のある」という意味の形容詞です。ロシア語では名詞を生命のあるものを指す名詞生命のないものを指す名詞に区別します。\citep{uda2009}では動物名詞と非動物名詞という用語を使っています。
+\href{http://www.ruscorpora.ru/en/corpora-morph.html}{こちら}を参考にしました。こちらによると\texttt{anim}は``animate''であることを表しているようです。この``animate''はアニメグッズを売っているアニメイトではなくて、「生命のある」という意味の形容詞です。ロシア語では名詞を生命のあるものを指す名詞生命のないものを指す名詞に区別します。\citep{uda2009}では動物名詞と非動物名詞という用語を使っています。
 
 \bigskip
 
@@ -95,10 +88,10 @@
 
 \bigskip
 
-次の項目の\texttt{masc}ですが、これは“masculine”の略で名詞が「男性」であることを表します。ロシア語の名詞の「性」は「男性」「女性」「中性」の合計3つです。名詞の性は、日本語話者にとってはわかりにくい概念ですが、名詞が指すものの自然な性別（父や母など）や語末の文字で決まるもので語形変化に影響を与えるものです。つづく\texttt{plur}はpluralの略で「複数形」を表しています。「単数形」は\texttt{sing} (singular)です。最後の\texttt{nomn}はnominative、つまり「主格」を表しています。ロシア語の格は主格nominative、対格accusative、属格genitive、処格locative、与格dative、具格instrumentalの6つです。6つは多いような気がしますが、日本語の「名詞＋格助詞」と同じようなものと考えるとそこまで多い気はしないと思います。\texttt{dict.opcorpora.txt}でグループの最初に載っている語形\begin{russian}“ангелы”\end{russian}で辞書を引き、意味を調べます。「天使」だそうです。確かに、そう言われてみると英語の“angel”に似ています。おそらく同じ語源なのでしょう。発音についてですが、博友社の辞典であれば[\textipa{\'{a}ng’Il}]のように書いてあります。
+次の項目の\texttt{masc}ですが、これは``masculine''の略で名詞が「男性」であることを表します。ロシア語の名詞の「性」は「男性」「女性」「中性」の合計3つです。名詞の性は、日本語話者にとってはわかりにくい概念ですが、名詞が指すものの自然な性別（父や母など）や語末の文字で決まるもので語形変化に影響を与えるものです。つづく\texttt{plur}はpluralの略で「複数形」を表しています。「単数形」は\texttt{sing} (singular)です。最後の\texttt{nomn}はnominative、つまり「主格」を表しています。ロシア語の格は主格nominative、対格accusative、属格genitive、処格locative、与格dative、具格instrumentalの6つです。6つは多いような気がしますが、日本語の「名詞＋格助詞」と同じようなものと考えるとそこまで多い気はしないと思います。\texttt{dict.opcorpora.txt}でグループの最初に載っている語形\begin{russian}``ангелы''\end{russian}で辞書を引き、意味を調べます。「天使」だそうです。確かに、そう言われてみると英語の``angel''に似ています。おそらく同じ語源なのでしょう。発音についてですが、博友社の辞典であれば[\textipa{\'{a}ng’Il}]のように書いてあります。
 それ以外の辞典は見出しに\begin{russian}\'{а}нгел\end{russian}のように書いてあります。博友社のほうが詳しくていいのですが、慣れてくれば各々の綴り字が語のどの位置にあるか（語頭か語末かなど）や、強勢の有無によってどんな音になるかわかるので冗長に感じるでしょう。とりあえずこれで単語の1つについて必要な情報がすべて揃いました。同様の作業を 20 回くらい続ければ意味を理解しつつロシア語で歌うことができます。
 
-動詞についても 1 つだけ、詳しく見ておきます。\begin{russian}“кружили”\end{russian}を\texttt{dict.opcorpora.txt}で調べると\texttt{VERB,impf,tran plur,past,indc}と書いてあります。\texttt{VERB}から品詞は動詞だとわかります。\texttt{impf}はimperfective（不完了相）を表します。これと対になる概念として\texttt{perf} (perfective)（完了相）があります。
+動詞についても 1 つだけ、詳しく見ておきます。\begin{russian}``кружили''\end{russian}を\texttt{dict.opcorpora.txt}で調べると\texttt{VERB,impf,tran plur,past,indc}と書いてあります。\texttt{VERB}から品詞は動詞だとわかります。\texttt{impf}はimperfective（不完了相）を表します。これと対になる概念として\texttt{perf} (perfective)（完了相）があります。
 「相」は言語学の用語で、動作の始まりや終わりなどを表す表現を指します。\texttt{impf/perf}については\citep[p. 151]{cubberley2002}に以下のようなことが書いてあります。
 
 \bigskip
@@ -145,7 +138,7 @@ The Imperfective is the unmarked partner, used where the aspect is irrelevant (a
 
 \section{Кто его зова понять не смог...}
 
-ロシア語がよくわかっていなかったので、意外なところに属格が出てきてしばらく意味がわかりませんでした。文法書を見ると、否定される他動詞の補語は属格になるということが書いてありました\cite[p. 102]{uda2009}。そう言われると上の\begin{russian}“счастья”\end{russian}も同じ理由ですね。この記述を見つけられなければ大きな誤解をしたまま進めるところでした。なお、この否定される他動詞の補語に属格を用いる決まりですが、20世紀初め以降は、一部で対格が許容されるようになっていて、今では共存している状況らしいです（同書）。
+ロシア語がよくわかっていなかったので、意外なところに属格が出てきてしばらく意味がわかりませんでした。文法書を見ると、否定される他動詞の補語は属格になるということが書いてありました\cite[p. 102]{uda2009}。そう言われると上の\begin{russian}``счастья''\end{russian}も同じ理由ですね。この記述を見つけられなければ大きな誤解をしたまま進めるところでした。なお、この否定される他動詞の補語に属格を用いる決まりですが、20世紀初め以降は、一部で対格が許容されるようになっていて、今では共存している状況らしいです（同書）。
 \begin{itemize}
     \item \begin{russian}кто\end{russian} \textipa{/{\textprimstress}kto/} 〈関係代名詞〉〜する人（男性単数扱い）；主格
     \item \begin{russian}его\end{russian} \textipa{/jI{\textprimstress}vo/} 〈所有代名詞〉彼の、（男性名詞・中性名詞を指して）その
@@ -157,7 +150,7 @@ The Imperfective is the unmarked partner, used where the aspect is irrelevant (a
 \bigskip
 
 \section{Собой остаться дольше...}
-ここで発音がよくわからなかったのが\begin{russian}“остаться”\end{russian}の \begin{russian}-ться\end{russian}の部分です。\citep[p. 150]{jones2011}には
+ここで発音がよくわからなかったのが\begin{russian}``остаться''\end{russian}の \begin{russian}-ться\end{russian}の部分です。\citep[p. 150]{jones2011}には
 
 \bigskip
 
@@ -175,7 +168,7 @@ the stop element of \textbf{ts} in such words is prolonged, until, in a slow, pr
 \noindent と書いてあります。
 \texttt{\textbf{t-s}}は\textipa{/\texttslig/}のような1つの破擦音ではなく、
 \textipa{/t/}と\textipa{/s/}の連続を表します。
-\citep{jones2011}ではこの説明を踏まえ\textipa{/{\texttslig}/}と表し、
+\citep{jones2011}では上記の説明を踏まえ\textipa{/{\texttslig}/}と表し、
 博友社の辞典は\textipa{/t{\texttslig}/}と表しています。
 ここでは前者の表記を使います。
 
@@ -188,8 +181,8 @@ the stop element of \textbf{ts} in such words is prolonged, until, in a slow, pr
 \bigskip
 
 ここで具格が出てくるのは、何だか妙な感じがします。\citep[p. 205]{cubberley2002}によると、
-コピュラや、英語で言うところの“become”や“remain”のような変化に関する意味を持った動詞（“semi-copulative verb”などと呼ぶ人もいるそうです。）は補語として具格を取るのが普通だということでした。
-\begin{russian}“оставаться”\end{russian}はまさにそのsemi-copulative verbでしょう。
+コピュラや、英語で言うところの``become''や``remain''のような変化に関する意味を持った動詞（``semi-copulative verb''などと呼ぶ人もいるそうです。）は補語として具格を取るのが普通だということでした。
+\begin{russian}``оставаться''\end{russian}はまさにそのsemi-copulative verbでしょう。
 これでまた1つ謎が解けました。
 
 \section{...Бесконечный бег...}
@@ -219,11 +212,11 @@ the stop element of \textbf{ts} in such words is prolonged, until, in a slow, pr
 
 \bigskip
 
-\begin{russian}“жива”\end{russian}について調べているとき、「短語尾」という見慣れない用語が目に入ってきました。
+\begin{russian}``жива''\end{russian}について調べているとき、「短語尾」という見慣れない用語が目に入ってきました。
 文法書を読むと、ロシア語の形容詞には、短語尾と長語尾があり、文字通り語尾の長さに違いがあり、複雑な使い分けが行われているということがわかりました。
 大きな違いは、長語尾が限定的にも叙述的にも使える一方で、短語尾は叙述的にしか使えないということです。
-形容詞の短語尾形は、英語でいうところの形容詞“alive”のような使い方をするのだ、と私は捉えました。
-ここで出てきた“жива”はちょうど、英語の“alive” と同じ意味なので、もしかしたら何かしらの共通の背景があるのかもしれません。
+形容詞の短語尾形は、英語でいうところの形容詞``alive''のような使い方をするのだ、と私は捉えました。
+ここで出てきた``жива''はちょうど、英語の``alive'' と同じ意味なので、もしかしたら何かしらの共通の背景があるのかもしれません。
 
 「処格2」は、特定の男性名詞が前置詞\begin{russian}в, на\end{russian}に支配されるときにとる処格の形です。「処格2」という用語は一般的な名称ではありません。そもそも日本語で書かれたロシア語の文法書は通常「処格」ではなく「前置格」という用語を使うことが多いようです。
 
