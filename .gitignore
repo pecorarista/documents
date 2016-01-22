@@ -12,4 +12,5 @@
 *.toc
 *.vrb
 *.bbl
-PRML/Figure*
+PRML/*.pdf
+!PRML/prml*.pdf
