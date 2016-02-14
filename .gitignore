@@ -1,4 +1,7 @@
+*.4tc
+*.4ct
 *.aux
+*.bbl
 *.blg
 *.dvi
 *.fdb_latexmk
@@ -11,6 +14,6 @@
 *.synctex.gz
 *.toc
 *.vrb
-*.bbl
+*.xref
 PRML/*.pdf
 !PRML/prml*.pdf
