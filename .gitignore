@@ -13,6 +13,7 @@
 *.snm
 *.synctex.gz
 *.toc
+*.tmp
 *.vrb
 *.xref
 PRML/*.pdf

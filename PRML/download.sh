@@ -1,8 +1,13 @@
 #!/bin/sh
-for i in a b c d e f
+for i in "6a" "6b" "12a" "12b" "14a" "14b"
 do
-    wget "http://research.microsoft.com/en-us/um/people/cmbishop/PRML/prmlfigs-pdf/Figure14.2${i}.pdf"
-    mv "Figure14.2${i}.pdf" "Figure14-2${i}.pdf"
+    wget "http://research.microsoft.com/en-us/um/people/cmbishop/prml/prmlfigs-pdf/Figure4.${i}.pdf"
+    mv "Figure4.${i}.pdf" "Figure4-${i}.pdf"
 done
-wget "http://people.cs.ubc.ca/~murphyk/MLbook/figReport-16-Aug-2012/pdfFigures/regtreeSurfaceB.pdf"
-wget "http://people.cs.ubc.ca/~murphyk/MLbook/figReport-16-Aug-2012/pdfFigures/giniDemo.pdf"
+# for i in "2a" "2b" "2c" "2d" "2e" "2f"
+# do
+#     wget "http://research.microsoft.com/en-us/um/people/cmbishop/PRML/prmlfigs-pdf/Figure14.${i}.pdf"
+#     mv "Figure14.${i}.pdf" "Figure14-${i}.pdf"
+# done
+# wget "http://people.cs.ubc.ca/~murphyk/MLbook/figReport-16-Aug-2012/pdfFigures/regtreeSurfaceB.pdf"
+# wget "http://people.cs.ubc.ca/~murphyk/MLbook/figReport-16-Aug-2012/pdfFigures/giniDemo.pdf"
