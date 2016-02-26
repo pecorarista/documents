@@ -1,4 +1,4 @@
-\documentclass[10pt,hyperref={unicode}]{beamer}
+\documentclass[10pt,usepdftitle=false,hyperref={unicode}]{beamer}
 \usepackage{lmodern}
 \usepackage{amsmath,amssymb,accents,mathrsfs,bm}
 \usepackage{datetime}
@@ -79,18 +79,26 @@
 \newcommand{\energy}{\mathcal{L}}
 %\newcommand{\energy}{F}
 \pgfplotsset{%
-width=5cm,
-compat=newest,
-xlabel near ticks,
-ylabel near ticks
+    width=5cm,
+    compat=newest,
+    xlabel near ticks,
+    ylabel near ticks
 }
 \lstset{%
-basicstyle=\ttfamily
+    basicstyle=\ttfamily
 }
 \title{PRML 10.4 - 10.6}
-\institute{総合研究大学院大学 博士前期1年\newline\newline\texttt{miyazawa-a@nii.ac.jp}}
+\hypersetup{%
+    pdfinfo={%
+        Title={PRML 10.4 - 10.6},
+        Author={Miyazawa Akira},%
+        CreationDate={D:20150807000000},
+        ModDate={D:20150909000000}
+    }
+}
+\date{August 7, 2015\newline(modified: September 9, 2015)}
+\institute{総合研究大学院大学 博士前期\newline\newline\texttt{miyazawa-a@nii.ac.jp}}
 \author{宮澤　彬}
-\date{\today}
 \begin{document}
 \setlength{\jot}{1.5\jot}
 \nocite{bishop2008}
