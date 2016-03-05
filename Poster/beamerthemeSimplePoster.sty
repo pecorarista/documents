@@ -1,0 +1,58 @@
+\ProvidesPackage{beamerthemeSimplePoster}
+\mode<presentation>
+\DeclareOptionBeamer{footertext}{\def\SimplePoster@footertext{#1}}
+\ProcessOptionsBeamer
+\selectcolormodel{RGB}
+\definecolor{royalblue}{RGB}{1,72,152}
+\definecolor{aliceblue}{RGB}{240,248,255}
+%\definecolor{vermillion}{RGB}{227,66,52}
+\setbeamercolor{headline}{fg=white,bg=royalblue}
+\setbeamercolor{footline}{fg=white,bg=royalblue}
+\setbeamercolor{title in headline}{fg=white}
+\setbeamercolor{author in headline}{fg=white}
+\setbeamercolor{institute in headline}{fg=white}
+\setbeamercolor{conference in headline}{fg=white}
+\setbeamercolor*{normal text}{fg=black,bg=white}
+\setbeamercolor*{block body}{fg=black,bg=aliceblue}
+\setbeamercolor*{block title}{fg=white,bg=royalblue}
+\setbeamerfont{block title}{size=\large,series=\bf}
+\setbeamercolor{structure}{fg=red}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{block begin}{%
+    \vskip.5ex
+    \begin{beamercolorbox}[rounded=true,shadow=true,leftskip=1em,colsep*=.75ex]{block title}%
+        \usebeamerfont*{block title}\insertblocktitle
+    \end{beamercolorbox}%
+    \usebeamerfont{block body}%
+    \begin{beamercolorbox}[rounded=true,shadow=true,leftskip=1em,rightskip=1em,colsep*=.75ex,sep=1ex,vmode]{block body}%
+}
+\setbeamertemplate{block end}{%
+    \end{beamercolorbox}
+    \vskip1.5ex
+}
+
+\setbeamertemplate{headline}{%
+    \leavevmode
+    \begin{beamercolorbox}[wd=\paperwidth]{headline}
+        \centering
+        \vskip4ex
+        \usebeamercolor{title in headline}{\color{fg}\textbf{\LARGE{\inserttitle}}\\[2.5ex]}
+        \usebeamercolor{author in headline}{\color{fg}\large{\insertauthor}\\[1.2ex]}
+        \usebeamercolor{institute in headline}{\color{fg}\large{\insertinstitute}}
+        \vskip2ex
+    \end{beamercolorbox}
+}
+
+\setbeamertemplate{footline}{%
+    \begin{beamercolorbox}[wd=\paperwidth,ht=11ex]{footline}
+    \leavevmode%
+    \begin{columns}[T]
+        \begin{column}{0.7\paperwidth}
+        \end{column}
+        \begin{column}{0.3\paperwidth}
+            \usebeamercolor{conference in headline}{\color{fg}\large{\SimplePoster@footertext}}
+        \end{column}
+    \end{columns}
+    \vskip3ex
+    \end{beamercolorbox}
+}

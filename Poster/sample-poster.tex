@@ -1,0 +1,232 @@
+\documentclass[unicode,colorlinks]{beamer}
+\usepackage[orientation=landscape,size=a0,scale=1.4]{beamerposter}
+\usetheme[footertext={フッターに何か適当なことを書くこともできます．}]{SimplePoster}
+\usepackage{amsmath,amssymb}
+\usepackage{listings}
+\usepackage[safe]{tipa}
+\usepackage[no-math]{fontspec}
+\usepackage{luatexja}
+\usepackage{luatexja-otf}
+\usepackage[match]{luatexja-fontspec}
+\usepackage[hiragino-pron,deluxe,expert]{luatexja-preset}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta}
+\usepackage{pgfplots}
+\usetikzlibrary{arrows,quotes,angles}
+\setmainfont[Ligatures=TeX]{CMU Serif}
+\setsansfont[Ligatures=TeX]{Droid Sans}
+\setmonofont{DejaVu Sans Mono}
+\newcommand{\absolute}[1]{\left|#1\right|}
+\newcommand{\parentheses}[1]{\left(#1\right)}
+\newcommand{\sequence}[1]{\parentheses{#1}}
+\renewcommand{\kanjifamilydefault}{\gtdefault}
+\usefonttheme{professionalfonts}
+% http://tex.stackexchange.com/questions/64830/using-tipa-with-fontspec
+% http://tex.stackexchange.com/questions/264452/ipa-characters-with-tipa-in-beamer-poster-switch-to-small-font-size-cannot-be-s
+\newfontfamily\ipafamily{Charis SIL}[Scale=MatchLowercase]
+\DeclareRobustCommand\ipa[1]{{\ipafamily\textipa{#1}}}
+\definecolor{royalblue}{RGB}{1,72,152}
+\definecolor{skyblue}{RGB}{108,166,205}
+\ltjsetparameter{jacharrange={-2,-3}}
+\renewcommand{\baselinestretch}{1.2}
+\newcommand\simpletheorem[2]{\rmfamily \textbf{#1}\; #2}
+\lstset{%
+    language={Python},
+    basicstyle={\ttfamily},%
+    keywordstyle={\color{red}\ttfamily\bfseries},%
+    commentstyle={\color{gray}\ttfamily},
+    stringstyle={\ttfamily},
+    xleftmargin=2em,
+}
+\pgfplotsset{%
+    compat=newest,
+    xlabel near ticks,
+    ylabel near ticks
+}
+\makeatletter
+\renewcommand\hrulefill{\leavevmode\leaders\hrule height 4pt\hfill\kern\z@}
+\makeatother
+\setlength\heavyrulewidth{3pt}
+\newcolumntype{C}{>{\centering\arraybackslash}X}
+\hypersetup{%
+    pdfinfo={%
+        CreationDate={D:20160306040000},
+        ModDate={D:20160306040000}
+    }
+}
+\title{ポスターのサンプル}
+\author{著者名}
+\institute{所属機関名}
+\date{\today}
+\begin{document}
+% fragile は listings を使うために必要
+% http://tex.stackexchange.com/questions/130109/cant-insert-code-in-my-beamer-slide
+\begin{frame}[fragile]
+\begin{columns}[t]
+    \begin{column}{.32\linewidth}
+        \begin{block}{はじめに}
+            \LaTeX{} (Beamer)でポスターを作りましょう．
+        \end{block}
+        \begin{block}{目次}
+            過去に作った\LaTeX ファイルがそのまま流用できます．
+
+            \bigskip
+            \bigskip
+
+            \begin{center}
+                \begin{tabularx}{0.5\textwidth}{CC}
+                    \toprule
+                             & スコア \\
+                    \midrule
+                    手法1    & 0.11   \\
+                    手法2    & 0.22   \\
+                    手法3    & 0.33   \\
+                    手法2    & 0.44   \\
+                    \bottomrule
+                \end{tabularx}
+            \end{center}
+        \end{block}
+
+        \begin{block}{数式}
+            \LaTeX{} で作るので数式の挿入が簡単にできます．
+
+            \bigskip
+            \bigskip
+
+            \simpletheorem{Lebesgueの収束定理}{%
+                $\sequence{f_n}$は $X$ 上可測関数列で，ある非負可積分関数 $g$ により
+                \begin{align*}
+                    \absolute{f_n\parentheses{x}} \leq g\parentheses{x} \quad \parentheses{x \in X}
+                \end{align*}
+                とする．極限 ${\displaystyle \lim_{n \to \infty}f_n\parentheses{x} = f\parentheses{x}}$ が存在するなら
+                \begin{align*}
+                    \int_X \lim_{n \to \infty}f\parentheses{x} \mu\parentheses{dx}
+                    = \lim_{n \to \infty}\int_X f_n \parentheses{x} \mu\parentheses{dx}
+                \end{align*}
+            }
+        \end{block}
+
+        必ず\texttt{beamercolorbox}の中に書かなければならない，というわけではありません．
+    \end{column}
+    \begin{column}{.32\linewidth}
+        \begin{block}{グラフ}
+            TikZでさくっとグラフを描きましょう．
+
+            \bigskip
+
+            \tikzset{%
+                declare function={%
+                    normcdf(\x,\m,\s)=1/(1 + exp(-0.07056*((\x-\m)/\s)^3 - 1.5976*(\x-\m)/\s));
+                },
+                % http://tex.stackexchange.com/questions/5461/is-it-possible-to-change-the-size-of-an-arrowhead-in-tikz-pgf
+                % TikZ manual p. 202
+                >={Straight Barb[width=5mm,length=5mm]}
+            }
+            \begin{center}
+                \begin{tikzpicture}
+                    \begin{axis}[
+                        samples=500,
+                        domain=-10:10,
+                        width=30cm, height=20cm,
+                        xmin=-10.5, xmax=10.5,
+                        ymin=-0.3, ymax=1.5,
+                        axis x line=center,
+                        axis y line=center,
+                        xlabel={$x$},
+                        ylabel={$y$},
+                        axis line style={->, ultra thick},
+                        xtick={-5,0,5},
+                        ytick={0,0.5}]
+                    \addplot[color=red,ultra thick] plot{normcdf(0.626657*x,0,1)} node[pos=0.4](cum){};
+                    \addplot[color=blue,ultra thick,dashed] plot (\x,{1/(1+exp((-1)*x))}) node[pos=0.6](a){} ;
+                    \node [color=blue,below right] at (a) {${\displaystyle y=\frac{1}{1+\exp(-x)}}$};
+                    \node [color=red,above left] at (cum) {${\displaystyle y=\varPhi\left(\sqrt{\frac{\pi}{8}}x\right)}$};
+                    \addplot[dashed,ultra thick] plot (\x,{1}) node[pos=0.5](b){};
+                    \node [above left] at (b) {$y=1$};
+                    \node at (0,0) [anchor=north west]{$O$};
+                    \end{axis}
+                \end{tikzpicture}
+            \end{center}
+        \end{block}
+
+        \begin{block}{プログラム}
+            \texttt{listings}パッケージを読み込んでプログラムのソースコードを書くことができます．
+            フレームに\texttt{fragile}オプションを渡す必要があるので気をつけましょう．
+
+            \bigskip
+
+            \hrulefill
+
+            \begin{lstlisting}
+# This function does not always work!
+def plural(word):
+    if word.endswith('y'):
+        return word[:-1] + 'ies'
+    elif word[-1] in 'sx':
+        return word + 'es'
+    else:
+        return word + 's'
+            \end{lstlisting}
+        \end{block}
+    \end{column}
+    \begin{column}{.32\linewidth}
+        \begin{block}{諸文字}
+            キリル文字やギリシャ文字なども自由に入れられます．
+
+            \bigskip
+            \bigskip
+
+            \begin{itemize}
+                \item いろはにほへとちりぬるを
+                    わかよたれそつねならむ
+                    うゐのおくやまけふこえて
+                    あさきゆめみしゑひもせす
+                \item The quick brown fox jumps over the lazy dog.
+                \item Falsches Üben von Xylophonmusik quält jeden größeren Zwerg.
+                \item Широкая электрификация южных губерний даст
+                    мощный толчок подъёму сельского хозяйства.
+                \item Ταχίστη αλώπηξ βαφής ψημένη γη, δρασκελίζει υπέρ νωθρού κυνός.
+            \end{itemize}
+        \end{block}
+
+        \begin{block}{発音記号}
+            \texttt{tipa}パッケージを使えば，複雑な発音記号の出力も簡単です．
+
+            \bigskip
+            \bigskip
+
+            \begingroup
+            \large
+            \ipa{
+                u \textupstep{}"v\~{e}tu
+                "nORt
+                \textupstep{}i u
+                sOl \textsubring{d}Sku"ti""\~{5}u
+                \textupstep{}k\textsubarch{u}al
+                duZ doiz
+                \textupstep{}"ERO maiS
+                \tone{13}fORtW
+                \textpipe\,\textupstep{}"k\textsubarch{u}\~{5}du
+                susW"deu p5"saR \~{u} vi5\textupstep"Z\~{5}tW
+                \textsubring{\~{W}}\textupstep{}"volt num5 \tone{31}kap5
+                }
+            \endgroup
+        \end{block}
+
+        \begin{block}{参考文献}
+            \begin{enumerate}
+                \item 小谷眞一「測度と確率」, 岩波書店 (2005).
+                \item 国際音声学会編, 竹林滋・神山孝夫訳「国際音声記号ガイドブッ
+
+                    ク」, 大修館書店 (2003).
+            \end{enumerate}
+        \end{block}
+
+        \href{https://github.com/deselaers/latex-beamerposter}{\texttt{beamerposter}パッケージ}
+        の\texttt{examples}を参考にして自分用の\texttt{.sty}ファイルを作成しましょう．
+    \end{column}
+\end{columns}
+\end{frame}
+\end{document}
