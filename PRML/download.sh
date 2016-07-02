@@ -9,7 +9,7 @@ do
     wget "http://research.microsoft.com/en-us/um/people/cmbishop/prml/prmlfigs-pdf/Figure4.${i}.pdf"
    mv "Figure4.${i}.pdf" "Figure4-${i}.pdf"
 done
-for i in "2a" "2b" "2c" "2d" "2e" "2f"
+for i in "1" "2a" "2b" "2c" "2d" "2e" "2f"
 do
     wget "http://research.microsoft.com/en-us/um/people/cmbishop/PRML/prmlfigs-pdf/Figure14.${i}.pdf"
     mv "Figure14.${i}.pdf" "Figure14-${i}.pdf"
