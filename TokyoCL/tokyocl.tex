@@ -1,0 +1,1428 @@
+\documentclass[11pt]{beamer}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,bm,mathrsfs}
+\usepackage{mathtools}
+\usepackage[safe,tone]{tipa}
+\usepackage{tikz}
+\usetikzlibrary{automata,shapes}
+\usepackage{calc}
+\newlength{\la}
+\settowidth{\la}{been shaped by the First World War}
+\newlength{\lb}
+\settowidth{\lb}{been influenced by the First World War}
+\usepackage{cases}
+\usepackage[many]{tcolorbox}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\newcolumntype{C}[1]{>{\hsize=#1\linewidth\centering\arraybackslash}X}
+\newcolumntype{L}[1]{>{\hsize=#1\linewidth\raggedright\arraybackslash}X}
+\newcolumntype{R}[1]{>{\hsize=#1\linewidth\raggedleft\arraybackslash}X}
+\usetheme{sakura}
+\usefonttheme{professionalfonts}
+\makeatletter
+\newif\ifpecora@japanese%
+\pecora@japanesetrue%
+\ifpecora@japanese%
+    \usepackage{luatexja-ruby}
+    \ltjsetparameter{jacharrange={-2,-3}}
+    \ltjsetparameter{alxspmode={`#,allow}}
+    \newcommand{\ten}{、}
+    \newcommand{\maru}{。}
+    \newcommand{\zenkakudash}{\hspace{.6pt}\rule[3.2pt]{13pt}{.5pt}\hspace{.6pt}}
+\fi
+\makeatother
+\usepackage{exscale}
+\usepackage[sort]{natbib}
+\renewcommand{\bibsection}{}
+\let\oldbibitem=\bibitem
+\renewcommand{\bibitem}[2][]{\label{#2}\oldbibitem[#1]{#2}}
+\let\oldcite=\citet
+\renewcommand\citet[1]{\hyperlink{#1}{\oldcite{#1}}}
+\let\oldcitep=\citep
+\renewcommand\citep[1]{\hyperlink{#1}{\oldcitep{#1}}}
+\usepackage{indent}
+\usepackage{framed}
+\usepackage{udline}
+\usepackage{listings}
+\usepackage[noend]{algpseudocode}
+\everymath{\displaystyle}
+\tcbset{%
+    coltext=sDarkGray,
+    colback=sLightGray,
+}
+\include{mathcommands}
+\newcommand\enumref[1]{\textcolor{sRed}{\ref{#1}}}
+\newcommand\metaphorical[1]{\textcolor{sRed}{\textbf{#1}}}
+\newcommand\literal[1]{\textcolor{sDarkBlue}{\textbf{#1}}}
+\DeclareMathOperator*{\salience}{salience}
+\newcommand\emoji[1]{\hspace{.25\zw}\raisebox{-2pt}{\href{https://commons.wikimedia.org/wiki/File:Emoji_#1.svg}{\includegraphics[height=11pt]{emoji/Emoji_#1.pdf}}\hspace{.25\zw}}}
+\newcommand\mikan{\emoji{u1f34a}}
+\newcommand\apple{\emoji{u1f34e}}
+\newcommand\grape{\emoji{u1f347}}
+\newcommand\brightness{\emoji{u1f506}}
+\newcommand\fire{\emoji{u1f525}}
+\newcommand\thc[1]{\multicolumn{1}{c}{\textbf{#1}}}
+\newcommand\marker[1]{\colorbox{sYellow}{#1}}
+\newcommand\bluemarker[1]{\colorbox{sLightBlue}{#1}}
+\newenvironment{xleftbar}[1][\hsize]{%
+    \def\FrameCommand{\vrule width 3pt \hspace{10pt}}%
+    \MakeFramed{\hsize#1\advance\hsize-\width\FrameRestore}%
+}
+{\endMakeFramed}
+\tikzset{%
+    state/.style={%
+        draw,
+        minimum height=2em,
+        inner sep=5pt,
+        text centered,
+    }
+}
+\hypersetup{%
+    unicode=true,
+    backref=true,
+    hidelinks=true
+}
+\pgfkeys{/metropolis/outer/.cd,
+    numbering=fraction,
+    progressbar=none
+}
+\pgfkeys{/metropolis/inner/.cd,
+    sectionpage=simple,
+    subsectionpage=simple
+}
+\makeatletter
+\newcommand*{\getlength}[1]{\strip@pt#1}
+\makeatother
+\title{自然言語処理でメタファーをどう扱うか}
+\subtitle{いくつかのモデルとデータの紹介}
+\institute{総研大/NII 宮尾研究室 博士前期2年}
+\author{宮澤 彬}
+\makeatletter
+\ifpecora@japanese%
+    \date{{\number\year}年{\number\month}月{\number\day}日}
+\else
+    \date{\today}
+\fi
+\makeatother
+\begin{document}
+
+\begin{frame}
+    \nocite{shutovaphdthesis}
+    \maketitle
+\end{frame}
+
+\begin{frame}
+\frametitle{メタファーの遍在性}
+メタファーは日常の言語表現にあふれている．
+{%
+    \footnotesize
+    \begin{leftbar}
+        「ディアク氏に近い\metaphorical{パイプ}を持っているから選んだのでは」との質問に対し、平岡氏は「ＩＯＣの委員にＰＲするわけで、その時に何の\metaphorical{パイプ}も持っていないコンサルを起用しても仕方がない」と話した。ただ「（ディアク氏側に）２億円が\metaphorical{流れる}ことは想定していない」と述べ、正当な支出だったと強調した。
+
+        日本経済新聞 2016年5月17日
+    \url{www.nikkei.com/article/DGXLZO02401500X10C16A5CC1000/}
+    \end{leftbar}
+
+}
+辞書（岩波国語辞典 第七版）を引くと
+{%
+    \footnotesize
+    \begin{leftbar}
+    \textbf{パイプ}
+    \vspace{-\topsep}
+    \begin{enumerate}
+        \item[①] 管{\maru}（水・ガスなどの）導管{\maru}
+            「{\zenkakudash}を通す」（\metaphorical{比喩的に{\ten}意思疎通の途をつける意にも}）
+            「{\zenkakudash}役」（仲介者）
+        \item[②] 首の大きい西洋風のキセル{\maru}巻きタバコの吸い口にも言う{\maru}
+    \end{enumerate}
+    \end{leftbar}
+}
+\end{frame}
+
+\begin{frame}
+\frametitle{用語の整理}
+\textbf{広義のメタファー（比喩，転義）} trope
+\begin{itemize}
+    \item \textbf{直喩} simile
+
+        あるものごとを明示的に（「〜のような」などの語を用いて）別なものごとになぞらえる表現．
+        「氷のような冷や汗」 % 夢野久作「少女地獄」
+
+    \item \textbf{メタファー（隠喩）} metaphor
+
+        あるものごとを非明示的に別なものごとになぞらえる表現．
+        「朝起きてからエンジンがかかるまで時間がかかる」
+        % 日本語のメタファー p. 183
+
+    \item \textbf{換喩} metonymy
+
+        道具や必然的な因果関係にあるものなど「隣接」するものごとを用いた比喩．
+        「ギターがいない」「冷たくなる（＝死ぬ）」
+        % 作例
+
+    \item \textbf{提喩} synecdoche
+
+        必要以上に大きい，あるいは小さい意味を持つことばを使う表現．
+
+        「空に白いもの（＝雪）が舞う」
+        % レトリック事典 p. 266
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{分類について}
+厳密に分けられないものも多い．「息をつく（＝落ち着く）」「東北の首都にあたる仙台」
+
+\bigskip
+
+古代ギリシアの時代から\textbf{レトリック（修辞学）}の分野で詳しく分析されており仔細な分類がある．
+このあたりは\citet{rhetorickankaku}や\citet{rhetoricjiten}を参照．
+
+\end{frame}
+
+\begin{frame}
+\frametitle{メタファーの重要性I}
+% Hungarian Phonology
+% s -> /S/
+% cs -> /tS/
+\setlength{\leftmargini}{0em}
+\begin{enumerate}
+    \item 小説や詩において想像力を掻き立てる効果
+
+        % kusumi
+        % rhetorickankaku
+        \begin{xleftbar}[\linewidth]
+            そして私はこの四五日、働く家をみつけに出掛けては、
+            \metaphorical{魚の\ltjruby{腸}{はらわた}のやうに疲れて帰って来てゐたのに}
+
+            \hfill 林芙美子『放浪記』第一部
+        \end{xleftbar}
+    \item 新しい語義の創造に不可欠\nocite{rhetorickankaku}
+
+        電源を\metaphorical{落とす}，ファイルを\metaphorical{落とす}
+
+        % 佐藤信夫
+    \item 抽象的思考を可能にする\nocite{lakoff1980}
+
+        問題が\metaphorical{くすぶる}，悪事に\metaphorical{メスを入れる}
+        % The metaphors come out of our clearly delineated and concrete experiences and
+        % allow us to construct highly abstract and elaborate concepts, like that of an argument.
+        % Metaphors We Live By Chapter 17
+
+    \item ものごとの見方を設定する機能
+
+        WAR IS A COMPETITIVE GAME→勝ち負けやスポーツ性が強調されがち\citep{lakoff1991}
+
+        %\framebreak
+
+\end{enumerate}
+\end{frame}
+
+\begin{frame}
+\frametitle{メタファーの重要性II}
+\setlength{\leftmargini}{0em}
+\begin{enumerate}
+\addtocounter{enumi}{4}
+    \item 普遍性 % kövecses
+
+        % universal?
+        % nu4huo3 n\super{w}uu \| x\super{w}oo v|
+        \begin{itemize}
+            \item[{\fire}] {\textsc{anger is heat}}:
+                \begin{itemize}
+                    \item burn with anger; make one’s blood boil; he erupted
+                    % \item arder de ira; la ira le quema
+                    \item arder de ira --- burn with anger
+                    \item пылать гневом --- burn with anger
+                    \item 怒りに燃える，復讐の炎に身を焦がす
+                    \item 怒火
+                    \item nóng như lửa --- as hot as fire “angry”
+                    \item öfke kaynıyor --- anger is boiling \citep{aksan}
+%                    \item hangus terbakar oleh kemarahannya \citep{yuditha2010}
+                        % --- he didn’t want to get burnt by his anger
+                \end{itemize}
+
+        % d.ā’a u Hans Wehr p. 757, p. 1379
+        % https://en.wiktionary.org/wiki/%D8%A3%D8%B6%D8%A7%D8%A1
+        % 教科書 p. 92
+        % 38 -hā her
+        %    \item[{\brightness}] \textbf{HAPPINESS IS BRIGHT}
+        %        \begin{itemize}
+        %            \item A smile lit up her face.
+        %            \item Ein Lächeln erhellte ihr Gesicht.
+                    % \item radiante de alegría
+        %            \item 彼女の顔が明るくなった．
+        %            \item Felderült az arca. --- His/her face brightened up. \citep{kövecses}
+                    % \item \mbox{\arb{ib"tisamaTuN 'a.dA|"'at" waj"hahA}} % arabluatex 4.5
+        %    \end{itemize}
+        % wajhan → wajha-hā cf. ’ilā madrasati-him
+        % https://en.wiktionary.org/wiki/%D9%88%D8%AC%D9%87
+        \end{itemize}
+        % \textcolor{sLightGray}{{\textipa{/5"gon\super{j} "gn\super{j}ev@/}}}
+        % http://allthearabicyouneverlearnedthefirsttimearound.com/p1/p1-ch3/possessive-pronouns/
+        % https://en.wiktionary.org/wiki/%D8%A7%D8%A8%D8%AA%D8%B3%D8%A7%D9%85%D8%A9
+        % nunation
+        これは基本的なメタファーが身体的経験（この場合は体温の上昇）を反映しているからだと考えられている．
+        %Deignan p.236
+        % Second language figurative proficiency: A comparative study of Malay and English
+        % https://www.researchgate.net/publication/249238128_Second_Language_Figurative_Proficiency_A_Comparative_Study_of_Malay_and_English
+    \end{enumerate}
+
+\end{frame}
+
+%\begin{frame}
+%\frametitle{メタファーの多様性の例}
+%        % https://books.google.co.jp/books?hl=ja&lr=&id=1dLgAwAAQBAJ&oi=fnd&pg=PA163&ots=-9aLya2wBZ&sig=2pH6ak00IY8xGV2y4i_AoOkX8io#v=onepage&q&f=false
+%        チャガ語\footnote[frame]{タンザニアで話されている言語の一つ．}では女性の性的な魅力を熱で表現する\citep{emanatian}．
+%
+%        % http://sal.research.pdx.edu/PDF/111Salone.pdf
+%        % é H
+%        % è L
+%        % ê falling
+%        % š rising
+%        \begin{itemize}
+%            \item She is sexually desirable.
+%            \begin{itemize}
+%                \item nékeókya --- \emph{She roasts.}
+%                \item nékehâ --- \emph{She burns.}
+%                \item náwoɹé ḿrike --- \emph{She has warmth.}
+%            \end{itemize}
+%
+%            \item She lacks desirable sexual attributes.
+%            \begin{itemize}
+%                \item nékechólóliâ --- \emph{She's cold.}
+%            \end{itemize}
+%    \end{itemize}
+%\end{frame}
+
+\begin{frame}
+\frametitle{何をメタファーとするか（メタファーの慣用化の問題）}
+慣用化が進むと元々の語義よりメタファー的な語義のほうが喚起されやすくなり，
+メタファーと感じにくくなる．
+以下は\citet{deignan}による分類．
+
+\bigskip
+
+\begingroup
+\footnotesize
+%\begin{tabularx}{\linewidth}{LLL}
+%    \toprule
+%    革新的メタファー     & 認定基準 & … the \metaphorical{lollipop} trees \\
+%    \midrule
+%    1. 革新的メタファー     & 語のコーパス用例1,000件中1件未満，
+%    あるいは用例全てが同一出典からの場合 & … the \metaphorical{lollipop} trees \\
+%    2. 慣用化したメタファー & コーパスの基準に照らし革新的でも歴史的でもないもの（1と4参照）．
+%    & The wind was \metaphorical{whispering} through the trees. \\
+%    3. 死んだメタファー     &  & \metaphorical{deep} 「色が濃い」 \\
+%    4. 歴史的メタファー     & 以前の字義がコーパスに示されない，もしくは意味がかなり変化し，現代の言語仕様者には同音意義とみなされる場合 & \metaphorical{comprehend} 「理解する」\metaphorical{ardent} 「熱烈な」 \\
+%    \bottomrule
+%\end{tabularx}
+\begin{tabularx}{\linewidth}{L{0.35}L{0.65}}
+    \toprule
+    \thc{分類} & \thc{用例} \\
+    \midrule
+    1. 革新的メタファー     & … the \metaphorical{lollipop} trees \\
+                            & He held five \metaphorical{icicles} in each hand.  \\
+    2. 慣用化したメタファー & The wind was \metaphorical{whispering} through the trees. \\
+                            & There is no \metaphorical{barrier} to our understanding. \\
+    3. 死んだメタファー     & \metaphorical{deep}「色が濃い」 \\
+                            & \metaphorical{crane} 「クレーン」 \\
+    4. 歴史的メタファー     & \metaphorical{comprehend} 「理解する」 \\
+                            & \metaphorical{ardent}「熱烈な」 \\
+    \bottomrule
+\end{tabularx}
+\endgroup
+\end{frame}
+
+\begin{frame}
+\frametitle{何をメタファーとするか（イディオムとの違い）}
+イディオムは以下のような性質を持つ\citep{deignan}．
+    \begin{itemize}
+
+        \item 2語以上で構成されている．
+
+        \item 意味が構成的でない．
+
+        \item 語彙的に固定されている．
+
+        \item 文法的に固定されている．
+
+    \end{itemize}
+典型的なものとして\emph{kick the bucket}や\emph{raining cats and dogs}などがある．
+ただしイディオムとされるものの中には
+\emph{blue joke/film/comedy}のように
+ある程度の語彙的な多様性をもつものもあり，
+メタファーと明確に区別できるわけではない．
+\end{frame}
+
+\begin{frame}
+\frametitle{自然言語処理におけるタスク}
+自然言語処理におけるメタファーそのものを対象とするタスクは大きく分けて2つある．
+\begin{enumerate}
+    \item \textbf{検出}
+
+    \item \textbf{理解}
+
+\end{enumerate}
+どの表現をメタファーとするか，
+何を以って「メタファーを理解した」と言うかは，定義やモデルによる．
+今日は2つのモデルを紹介する．
+
+\bigskip
+
+注意しなければならないのは，
+\textbf{人はメタファーを処理するとき，この2段階の過程を踏んでいないと考えられる}\citep{gibbs,giora2003}ことである．
+
+→人間の理解の仕方を分析したいのか，工学的な応用をしたいのか
+\end{frame}
+
+% \begin{frame}[allowframebreaks]
+\begin{frame}
+\frametitle{自然言語処理におけるメタファーの応用I}
+メタファー処理を他の自然言語処理タスクに応用する研究はほとんど行われていない．
+\textbf{何かいいアイディアがあれば教えてください．}
+\begin{enumerate}
+        % light  Collins COBUILD
+        % Shutova 博論
+    \item 情報検索
+
+        検索質問拡張とかで使えるのでは？
+
+
+    \item メタファー表現の生成，あるいはメタファー表現への言い換え
+
+        初心者向けの説明には「変数は箱だ．」
+        といったメタファーが多用されている．
+        メタファーを使えば文が平易になったり，理解しやすくなるかもしれない．
+        またつまらない文章を味のある文章に書き換えられるかもしれない．
+
+        % Cognitive Linguistics and Second Language Learning: Theoretical Basics and ...
+
+    % \framebreak 余白がなんかおかしい
+\end{enumerate}
+\end{frame}
+
+\begin{frame}
+\frametitle{自然言語処理におけるメタファーの応用II}
+\begin{enumerate}
+    \addtocounter{enumi}{2}
+    \item 機械翻訳
+
+        「彼の\metaphorical{気持ちを汲む}{\maru}」 →  ? “I scoop out his feelings.”
+
+        \bigskip
+
+        「汲む」の「推し測る」の語義は
+        使用される頻度も高く，辞書にも載っているのであまり問題ではないかもしれない．
+        一方で似た使われ方をする「\ltjruby{掬}{すく}う」については
+
+         \begin{itemize}
+            \item あまり頻度が高くない\footnote[frame]{Google検索で \texttt{"}\textmg{気持ちを汲む}\texttt{"} 約58,500件，\texttt{"}\textmg{気持ちを掬う}\texttt{"}約15,700件（2016年6月10日）}
+            \item 辞書に「推し測る」語義が載っていない\footnote[frame]{新明解国語辞典 第六版、岩波国語辞典 第七版}
+         \end{itemize}
+
+        人々はメタファー表現を新しく作ることができるので，このような表現はどんどん出てくる．
+        体系的な対応が必要．
+
+\end{enumerate}
+\end{frame}
+
+\section{メタファーのモデル}
+\subsection{顕現性落差モデル}
+\begin{frame}
+\frametitle{顕現性落差モデル}
+    \begin{leftbar}
+        % カムパネルラはまださびしさうにひとり口笛を吹き{\ten}
+        % 女の子は\metaphorical{まるで絹で包んだ\ruby{苹果}{りんご}のやうな顔いろ}をして
+        % ジョバンニの見る方をみてゐるのでした{\maru}
+        %
+        % \hfill 宮澤賢治「銀河鐵道の夜」
+        「しゆ、あんまり行つていけないつたら。」
+        \ltjruby{雪狼}{ゆきおいの}のうしろから白熊の毛皮の三角帽子をあみだにかぶり、
+        \metaphorical{顔を\ltjruby{苹果}{りんご}のやうにかがやかしながら}、
+        \ltjruby{雪童子}{ゆきわらす}がゆつくり歩いて来ました。
+
+        \hfill 宮澤賢治「水仙月の四日」
+    \end{leftbar}
+
+    \begin{itemize}
+        \item りんご{\apple}を持ち出すことで何を伝えたいのか？
+        \item なぜみかん{\mikan}やぶどう{\grape}ではなくりんご{\apple}なのか？
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{顕現性落差モデル}
+    \citet{tversky}や\citet{ortony}による\textbf{顕現性}salienceの理論
+
+    \begin{itemize}
+        \item りんご{\apple}を持ち出すこと\footnote[frame]{%
+                このように何かを説明するのに持ちだされるものを\textbf{vehicle}と呼ぶ．
+                一方説明されるほうは\textbf{topic}と呼ばれる．
+            }で何を伝えたいのか？
+
+        →りんごの特徴の中で赤さや丸さが際立っているから（\textbf{強度}）
+
+        \item なぜみかん{\mikan}やぶどう{\grape}ではなくりんご{\apple}なのか？
+
+        →同類のもの（果物）の中で赤さや丸さが目立っているから（\textbf{診断性}）
+    \end{itemize}
+
+    \citet{iwayama}は「$A$のような$B$」という直喩表現について，
+    このような理論に基づいて理解のモデルを提示している．
+\end{frame}
+
+\begin{frame}
+\frametitle{属性値集合}
+属性値（赤など）とその確率の対の集合を属性値集合と呼ぶ．
+概念 $*\parentheses{C}$ は属性名と属性値集合の対（性質）の集合で表現される．
+\begin{mcfamily}
+\begin{align*}
+    &*\parentheses{\text{りんご}} = \\
+    & \hspace{2em}\{ \\
+    & \hspace{4em}\text{色}:\:
+      \braces{%
+          \text{赤}:\: 0.8,\,
+          \text{緑}:\: 0.15,\,
+          \text{茶}:\: 0.05
+       },\,
+       \\
+    & \hspace{4em}\text{外形}:\:
+      \braces{%
+          \text{球状}:\: 0.95,\,
+          \text{円柱状}:\: 0.05
+      },\,
+      \\
+      & \hspace{4em}\text{表面}:\:
+      \braces{%
+          \text{滑らか}:\: 0.9,\,
+          \text{ざらざら}:\: 0.1
+        } \\
+    & \hspace{2em}\}
+\end{align*}
+\end{mcfamily}
+\end{frame}
+
+\begin{frame}
+\frametitle{顕現性落差理論の計算モデル（強度）}
+属性値集合
+$V_i := \braces{v_{i1}:\:w_{i1},\,v_{i2}:\:w_{i2},\,\ldots,\,v_{im}:\: w_{im}}$
+のエントロピーを
+\begin{align*}
+    H\parentheses{V_i} := - \sum_{j = 1}^m w_{ij} \log w_{ij}
+\end{align*}
+とし、冗長度（強度の指標）を
+\begin{align*}
+    r\parentheses{V_i} =
+        \begin{cases}
+            0 & \text{$m = 1$ のとき} \\
+            1 - \frac{H\parentheses{V_i}}{\log_2 m} & \text{それ以外のとき}
+        \end{cases}
+\end{align*}
+で定める．これはエントロピーと反対に増減するので，
+\textbf{ある1つの属性の確率が突出しているとき大きな値をとる}．
+\end{frame}
+
+\begin{frame}
+\frametitle{顕現性落差理論の計算モデル（強度）}
+\begin{mcfamily}
+\begin{itemize}
+    \item $V_\text{りんごの色} = \braces{\text{赤}:\: 0.8,\,\text{緑}:\: 0.15,\,\text{茶}:\: 0.05}$
+        \begin{align*}
+            r\parentheses{V_\text{りんごの色}} \approx 0.44
+        \end{align*}
+    \item $V_\text{ぶどうの色} = \braces{\text{紫}:\: 0.7,\,\text{黄緑}:\: 0.2,\,\text{茶}:\: 0.1}$
+        \begin{align*}
+            r\parentheses{V_\text{ぶどうの色}} \approx 0.27
+        \end{align*}
+\end{itemize}
+\end{mcfamily}
+りんごの最尤性質 {\mcfamily $\text{色}:\: \text{赤}$} は
+ぶどうの最尤性質 {\mcfamily $\text{色}:\: \text{紫}$} よりも強度が大きい．
+\end{frame}
+
+\begin{frame}
+\frametitle{顕現性落差理論の計算モデル（診断性）}
+概念 $*\parentheses{C}$ の性質 $S_i = a_i:\: V_i$
+の最尤性質を $S_{i,\,\max} := a_i:\: \hat{v}$ とし，
+その差異度（診断性の指標）を以下のように定める．
+\begin{align*}
+    &d\parentheses{*\parentheses{C},\,S_{i,\,\max}} :=
+    \frac{r\parentheses{V_i}}{\displaystyle
+        \sum_{*\parentheses{C_j} \in *\parentheses{C} \cup \parentheses{%
+            \text{$*\parentheses{C}$ の兄弟概念}}
+        }r'\parentheses{*\parentheses{C_j},\,S_{i,\,\max}}
+    },\\
+    & r'\parentheses{*\parentheses{C_j},\,S_{i,\,\max}} \\
+    & :=
+    \begin{cases}
+        r\parentheses{V_k} & \text{$*\parentheses{C_j}$ の性質 $S_k$ が $S_{i,\,\max} = S_{k,\,\max}$ をみたすとき} \\
+        0 & \text{それ以外のとき}
+    \end{cases}
+\end{align*}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{顕現性落差理論の計算モデル（診断性）}
+
+競合するものが小さい性質は分母が小さくなるため差異度が大きくなりやすい．
+{\mcfamily%
+\begin{align*}
+    d\parentheses{*\parentheses{\text{りんご}},\,\text{色}:\:\text{赤}} =
+    \frac{r\parentheses{V_\text{りんごの色}}}{r\parentheses{V_{\text{りんごの色}}} + r\parentheses{V_{\text{いちごの色}}}}
+\end{align*}
+}
+
+\bigskip
+
+逆に競合するものが多いと差異度は小さくなりやすい．
+{\mcfamily%
+\begin{align*}
+    & d\parentheses{*\parentheses{\text{りんご}},\,\text{表面}:\:\text{滑らか}} \\
+    & = \frac{r\parentheses{V_\text{りんごの表面}}}{r\parentheses{V_{\text{りんごの表面}}} + r\parentheses{V_{\text{バナナの表面}}} + r\parentheses{V_\text{ぶどうの表面}}}
+\end{align*}
+}
+\end{frame}
+
+\begin{frame}
+\frametitle{顕現性落差理論の計算モデル（顕現性）}
+概念 $*\parentheses{C}$ の最尤性質 $S_{i,\,\max}$ の\textbf{顕現性}salienceは次のように計算される．
+\begin{align*}
+    \salience\parentheses{*\parentheses{C},\,S_{i,\,\max}}
+        := r\parentheses{V_i} \times d\parentheses{*\parentheses{C},\,S_{i,\,\max}}
+\end{align*}
+
+「$A$ は $B$ のようだ」という表現は，$*\parentheses{B}$ の顕現性の大きい最尤性質を使って
+$*\parentheses{A}$ の最尤属性値を強調し，他の属性値を目立たなくするものと捉えられる．
+\end{frame}
+
+\begin{frame}
+\frametitle{顕現性落差理論の計算モデル（顕現性）}
+例えば，以下で顕現性の閾値を $0.1$ とすると，{\mcfamily $\text{has\_a}:\: \text{種}$} は使われない．
+\begin{mcfamily}
+\begin{align*}
+    & \salience\parentheses{*\parentheses{\text{りんご}}, \text{色}:\: \text{赤}} = 0.20 \\
+    & \salience\parentheses{*\parentheses{\text{りんご}}, \text{表面}:\: \text{滑らか}} = 0.15 \\
+    & \salience\parentheses{*\parentheses{\text{りんご}}, \text{形状}:\: \text{球状}} = 0.14 \\
+    & \salience\parentheses{*\parentheses{\text{りんご}}, \text{味}:\: \text{甘酸っぱい}} = 0.11 \\
+    & \salience\parentheses{*\parentheses{\text{りんご}}, \text{has\_a}:\: \text{種}} = 0.06
+\end{align*}
+\end{mcfamily}
+\end{frame}
+
+\begin{frame}
+\frametitle{顕現性落差理論の計算モデル（比喩の理解）}
+このモデルにおける「少女の頬はりんごのようだ」という
+比喩表現の理解は以下のようになる\footnote[frame]{ここで{\mcfamily $*\parentheses{\text{頬}}$} は
+味の性質を持っていないと仮定した．このとき
+{\mcfamily $*\parentheses{\text{りんご}}$} の味の最尤性質
+{\mcfamily $\text{味}:\: \text{甘酸っぱい}$}
+は使われない．
+}．
+\begin{mcfamily}
+\begin{align*}
+    & *\parentheses{\text{頬}} \backslash *\parentheses{\text{りんご}} = \\
+    & \hspace{2em}\{ \\
+    & \hspace{4em}\text{色}:\:
+      \braces{%
+          \text{肌色}:\: 0,\,
+          \text{\metaphorical{赤}}:\: 1,\,
+          \text{青白}:\: 0
+       },\,
+       \\
+    & \hspace{4em}\text{外形}:\:
+      \braces{%
+          \text{\metaphorical{球状}}:\: 1,\,
+          \text{平面上}:\: 0
+      },\,
+      \\
+      & \hspace{4em}\text{表面}:\:
+      \braces{%
+          \text{\metaphorical{滑らか}}:\: 1,\,
+          \text{ざらざら}:\: 0
+        } \\
+    & \hspace{2em}\}
+\end{align*}
+\end{mcfamily}
+\end{frame}
+
+\begingroup
+\footnotesize
+\begin{frame}
+    \frametitle{心理実験によるモデルの検証}
+    \citet{tokunaga}は上述のモデルと人の感覚の違いを検証している．
+
+    \begin{enumerate}
+        \item\label{metgen} 「$N_1$のような$N_2$」という形式で頻出する$N_1$, $N_2$について
+            被験者32名に\ul{「{$N_1$}のような{$N_2$}」という比喩を作成してもらう}．
+            →312種類の比喩表現を獲得
+
+        \item\label{adjgen}\relax\enumref{metgen}で生成された比喩のうち頻度の高い26表現を
+            \enumref{metgen}とは別の被験者31名に提示し，
+            \ul{比喩，{$N_1$}, {$N_2$}の性質を形容詞または形容動詞で3個以上回答するとともに，
+            それがどの程度あてはまるかを7段階で評定してもらう}．
+            評定値が4以上のものを以降の分析の対象とする．
+
+        \item 比喩によって\ul{どの性質が強調されるかモデルによって推定する}．
+
+        \item \enumref{metgen}, \enumref{adjgen}とは別の被験者25名に，
+            比喩と$N_1$, $N_2$, それらの性質を提示する．
+            \ul{比喩，{$N_1$}, {$N_2$}のそれぞれに性質がどの程度あてはまるかを7段階で回答してもらう}．
+    \end{enumerate}
+\end{frame}
+\endgroup
+
+\begin{frame}
+    \frametitle{心理実験によるモデルの検証}
+    「忙しい」や「大変な」といった
+    「山」で顕現性の低かった性質が，
+    「山のような仕事」では高くなっている（\textbf{創発特徴}）．
+    \begin{figure}[h]
+        \centering
+        \includegraphics[page=4,clip,width=0.9\textwidth,trim=100 340 120 300]{629.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{このモデルの問題}
+このモデルはメタファーの理解の定式化として自然ではあるが，以下のような問題がある．
+\begin{itemize}
+    \item 大規模なデータを作りにくい
+    \item 出力形式が他のシステムで扱いにくい
+    \item 創発特徴がうまく扱えない\footnote[frame]{%
+            \citet{utsumi1998}がこのような場合を考慮した拡張を行っている．
+        }
+\end{itemize}
+\end{frame}
+
+\subsection{概念写像モデル}
+\begin{frame}
+    \frametitle{概念写像モデル（概念メタファー）}
+    私たちはお金に関して述べるとき，
+    「公的資金注入」，「金融資産の枯渇」
+    のように，液体に関する語を使うことが多い．
+
+\bigskip
+
+Lakoff\footnote[frame]{例えば\citet{lakoff1980}や\citet{lakoff1990women}を参照．}はメタファー表現が持つこのような体系性の背景に
+\textbf{概念メタファー}という認知的な機構があると主張する．
+概念メタファーは，ある領域(source domain)から別な領域(target domain)への写像として定義される．
+\begin{center}
+    \begin{tikzpicture}[line width=1pt]
+        \draw [color=sLightBlue] (0,0) circle (25pt);
+        \node (A) at (0,0) {\textsc{\textbf{liquid}}};
+        \node at (0,-1.2) {\small source domain};
+        \draw [color=sLightBlue] (4,0) circle (25pt);
+        \node (B) at (4,0) {\textsc{\textbf{money}}};
+        \node at (4,-1.2) {\small target domain};
+        \draw [->,color=sLightBlue] (A) edge [bend left] (B);
+    \end{tikzpicture}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{概念メタファーの性質}
+概念メタファーは“\textsc{money is a liquid}”のように“$T$ \textsc{is/are} $S$”の形で表記される．
+Source domainは具体的でtarget domainは抽象的なことが多い．
+
+\bigskip
+
+以下に\citet{mastermetaphorlist}の概念メタファーの例を挙げる．
+
+\begingroup
+\scriptsize
+\begin{table}
+\centering
+    \begin{tabular}{ll}
+        \toprule
+        \thc{概念メタファー} & \thc{メタファー表現の例} \\
+        \midrule
+        \textsc{anger is fire}        & His temper flared up / His eyes smouldered with rage \\
+        \textsc{money is a liquid}    & liquid assets / cash flow / frozen assets \\
+        \textsc{life is a journey}    & He’s lost his way / We’ve come a long way \\
+        \textsc{desire is hunger}     & She thirsts for recognition / sexual appetite \\
+        \textsc{hope is light}        & He has bright hopes / I have a very dim hope \\
+        \textsc{emotions are forces}  & I was moved by the poem / pushed into depression \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+\endgroup
+
+\end{frame}
+
+\begin{frame}
+\frametitle{概念メタファーの性質}
+概念メタファーは生産的であり，また体系をなしている．
+\begin{itemize}
+    \item 資金が潤う / 資金が枯渇する / 資金が凍結される
+\end{itemize}
+これを利用してメタファー表現同士の関係を記述したり，
+言語の習得に役立てたりすることが考えられる．
+またメタファー表現を生成するのに向いているだろう．
+
+\bigskip
+
+ただし完全な体系をなすわけではない．
+\begin{itemize}
+    \item ?*資金をこぼす / ?*資金が乾く
+\end{itemize}
+
+また領域の選び方の恣意性が生じてしまう問題がある．
+\end{frame}
+
+\begin{frame}
+\frametitle{自然言語処理における概念メタファーの利用}
+% SU"t@Uv@?
+概念メタファーを自然言語処理に応用する研究は多くあるが，ここでは\citet{shutova2013}を紹介する．
+これは動詞の比喩の検出と理解を実現するモデルの提案とその実装を行っている．
+\begin{itemize}
+    \item 検出
+
+        出力：文中のメタファー的に使われているVを含むSVまたはVO
+
+
+        （例）… and then \textbf{\metaphorical{swallow} his anger} and play tennis.
+
+    \item 理解
+
+        出力：字義通り解釈できる動詞による置き換え
+
+        （例）… and then \textbf{\textcolor{sDarkBlue}{suppress} his anger} and play tennis.
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}[allowframebreaks]
+\frametitle{メタファー検出の方法}
+\setlength{\leftmargini}{0em}
+\begin{enumerate}
+    \item\label{seed} Vがメタファー的なSV対またはVO対をBNCコーパスから手動で抽出する．
+
+        （例）\metaphorical{cast} doubt, campaign \metaphorical{surged} （計62組）
+
+    \item BNCコーパスの最頻2000個の名詞とVerbNetの1610個の動詞についてクラスタリングをする．
+        \begin{align*}
+            & C_1^N = \braces{\mathrm{doubt},\,\mathrm{fear},\,\mathrm{passion},\, \ldots},\,\ldots \\
+            & C_1^V = \braces{\mathrm{cast},\,\mathrm{catch},\,\mathrm{spark},\,\ldots},\,\ldots
+        \end{align*}
+
+\begin{samepage}
+\item \enumref{seed}で得られた対を利用して $C^V_i$ と $C^N_j$ を結びつける（概念メタファーに対応）．
+        動詞は具体的なのでsource domainに対応させている．
+        \begin{center}
+            \begin{tikzpicture}[line width=1pt]
+                \draw [color=sLightBlue] (0,0) circle (25pt);
+                \node (A) at (0,0) {\small $C_1^V = \braces{\mathrm{cast},\,\ldots}$};
+                \draw [color=sLightBlue] (4,0) circle (25pt);
+                \node (B) at (4,0) {\small $C_1^N = \braces{\mathrm{doubt},\,\ldots}$};
+                \draw [->,color=sLightBlue] (A) edge [bend left] node [above] {\metaphorical{cast} doubt}  (B);
+            \end{tikzpicture}
+        \end{center}
+\end{samepage}
+    \item コーパスからSVまたはVOの組を見つける．
+        名詞と動詞それぞれの所属するクラスタが結びついているならば
+        動詞がメタファー的に使われていると判断する．
+
+    \item Selectional preference strength
+        の小さいものをメタファー的に使われている動詞の候補から除く．
+        つまり多くの名詞クラスと同程度に共起するような動詞，
+        例えば\emph{remember}や\emph{influence}などが除外される．
+        \begin{align*}
+            S_R\parentheses{v}
+            = \sum_{c} \condp{c}{v}\log\frac{\condp{c}{v}}{P\parentheses{c}}
+        \end{align*}
+\end{enumerate}
+\end{frame}
+
+\begin{frame}
+\frametitle{検出結果}
+
+    システムによって4,456個のメタファー表現が抽出された．以下はその例である．
+    \begingroup
+    \scriptsize
+    \begin{center}
+        \begin{tabular}{lll}
+        \toprule
+        \thc{Seed phrase} &
+            \thc{Harvested metaphors} &
+            \thc{BNC frequency} \\
+        \midrule
+        \textbf{cast doubt} (V-O)   & cast doubt       & 197 \\
+                                    & cast fear        & 3   \\
+                                    & cast suspicion   & 2   \\
+                                    & catch feeling    & 3   \\
+                                    & catch suspicion  & 2   \\
+                                    & catch enthusiasm & 1   \\
+                                    & catch emotion    & 1   \\
+                                    & spark fear       & 10   \\
+                                    & spark enthusiasm & 3   \\
+                                    & spark passion    & 1   \\
+                                    & spark feeling    & 1   \\
+        \bottomrule
+        \end{tabular}
+    \end{center}
+    \endgroup
+\end{frame}
+
+\begin{frame}
+\frametitle{検出の評価}
+ランダムに抽出した78事例について，
+英語を母語とする非専門家5人に次のような問に答えてもらい，多数派の回答を正解とする．
+
+\rule{\textwidth}{1pt}
+\vspace{-\topsep}
+\begin{enumerate}
+    \item Time and time again he would stare at the ground, hand on hip,
+        if he thought he had received a bad call,
+        and then \tikz[baseline=(T.base)]{%
+            \fill [sYellow] (-4.3em,-1.09ex) rectangle (4.3em,1.41ex);
+            \node (T) at (0,0) {\underline{\textbf{swallow}} his anger};
+        }
+        and play tennis.
+
+    \textcolor{sBrown}{> Metaphorical (X) / Literal (\phantom{X})}
+\end{enumerate}
+\rule{\textwidth}{1pt}
+
+基準は個人の直感に委ねる．
+ただし参考のためAmsterdam Metaphor Corpusのガイドラインを渡してある．
+
+\end{frame}
+
+\begin{frame}
+\frametitle{検出の評価}
+人手で作ったデータの一致率は0.63であり，
+主に\emph{convey}や\emph{decline}のような\textbf{慣用化したメタファー}
+について意見が割れた．
+
+\bigskip
+
+このデータで計った提案手法の精度は0.79であった．
+一方，ベースラインとして，WordNetの類義語によって種を展開して作ったデータは0.44だった．
+
+\end{frame}
+
+\begin{frame}
+\frametitle{メタファーの理解}
+このモデルでは\textbf{メタファー表現の理解をメタファー的に使われている単語を
+字義通りに通じる単語に置き換えることとみなす}．
+
+（例）\metaphorical{stir} excitement → \literal{provoke} excitement
+
+\bigskip
+
+以下のことに注意する．
+\begin{itemize}
+    \item 語義はあらかじめ定義されているわけではない．
+    \item 置き換えに用いる語は，字義的な，
+        あるいは少なくとも元の語より慣用化した語でなければならない．
+    \item 置き換えに用いる語は，メタファー的な語の類義語であってはならない．
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{メタファー理解の方法I}
+\setlength{\leftmargini}{0em}
+\begin{enumerate}
+    \item メタファー的に使われている動詞をただ1つ含む文脈を受け取る．
+
+        （例）All of this \metaphorical{stirred} an uncontrollable excitement in her.
+
+    \item 言い換え候補の尤度によるランキングを作成する．
+
+        動詞の任意の解釈（言い換えに用いる動詞）$i$について，
+        文脈中の語とその文法的関係の組の列$\anglebrackets{\parentheses{w_j,\,r_j}}_{j = 1}^N$との
+        尤度を求める．
+        \begin{align*}
+            L = P\parentheses{i,\,\parentheses{w_1,\,r_1},\,\ldots,\,\parentheses{w_N,\,r_N}}
+        \end{align*}
+        実際には独立性を仮定し，各確率をコーパス中の頻度で置き換えて計算をする．
+        \begin{align*}
+            L = \frac{\prod_{n = 1}^N f\parentheses{w_n,\,r_n,\,i}}{%
+            \parentheses{{f\parentheses{i}}}^{N - 1}\sum_k f\parentheses{i_k}}
+        \end{align*}
+
+\end{enumerate}
+\end{frame}
+
+\begin{frame}
+\frametitle{メタファー理解の方法II}
+    例えば \metaphorical{stir} excitement について次のようなランキングを得る．
+
+    \begingroup
+    \scriptsize
+    \begin{center}
+        \begin{tabular}{ll}
+            \toprule
+            \thc{Log-likelihood} &
+                \thc{Replacement} \\
+            \midrule
+            -14.28 & create \\
+            -14.84 & \underline{provoke} \\
+            -15.53 & make \\
+            -15.53 & elicit \\
+            -15.53 & arouse \\
+            -16.23 & stimulate \\
+            -16.23 & raise \\
+            -16.23 & excite \\
+            -16.23 & conjure \\
+            \bottomrule
+        \end{tabular}
+    \end{center}
+    \endgroup
+\end{frame}
+
+\begin{frame}
+\frametitle{メタファー理解の方法III}
+\setlength{\leftmargini}{0em}
+\begin{enumerate}
+\addtocounter{enumi}{2}
+    \item WordNetを使ったフィルタリング
+
+        候補の中から，元の語と何ら共通の性質を持たないものを除外する．
+
+    \item\label{selectionalassociation} Selectional associationによる再ランキング
+
+        SまたはOとなっている名詞と
+        よく使われている動詞をよい言い換えの候補とみなす\footnote{%
+            Target domain（今回であればSまたはOとして使われる名詞）に「近い」動詞のほうが
+            メタファー的でなく，言い換えの候補としてふさわしいという予想に基づく．
+        }．
+        尺度としてはselectional associationを用いる．
+        \begin{align*}
+            A_R\parentheses{v,\, c}
+            &= \frac{1}{S_R\parentheses{v}}
+            \condp{c}{v}\log \frac{\condp{c}{v}}{P\parentheses{c}}
+        \end{align*}
+\end{enumerate}
+\end{frame}
+
+\begin{frame}
+\frametitle{メタファー理解の方法IV}
+    例えば \metaphorical{stir} excitement についてselectional associationを
+    用いたランキングは次のようになる．
+
+    \bigskip
+
+    \begingroup
+    \scriptsize
+    \begin{center}
+        \begin{tabular}{ll}
+            \toprule
+            \thc{Association} &
+                \thc{Replacement} \\
+            \midrule
+            0.0696 & \underline{provoke} \\
+            0.0245 & elicit \\
+            0.0194 & arouse \\
+            0.0061 & conjure \\
+            0.0028 & create \\
+            0.0001 & stimulate \\
+            ≈ 0    & raise \\
+            ≈ 0    & make \\
+            ≈ 0    & excite \\
+            \bottomrule
+        \end{tabular}
+    \end{center}
+    \endgroup
+\end{frame}
+
+\begin{frame}
+\frametitle{理解の評価（システムの出力の直接的な評価）}
+英語を母語とする非専門家7人に，
+メタファーを含む文とシステムの出力を見せる．
+言い換えの前後で意味が保たれていて，
+かつ言い換えられた表現が字義通りに使われていればYES，
+そうでなければNOで回答してもらう．
+
+片方はベースライン\footnote[frame]{\enumref{selectionalassociation}の再ランキングを省いたシステム．}の出力である．
+\rule{\textwidth}{1pt}
+\vspace{-\topsep}
+\begin{enumerate}
+    \item She couldn’t \tikz[baseline=(T.base)]{%
+        \fill [sYellow] (-4.6em,-1.09ex) rectangle (4.6em,1.41ex);
+        \node (T) at (0,0) {\underline{\textbf{hold}} the truth \underline{\textbf{back}}};
+    }.
+
+    \begin{tabular}{ccc}
+        & \textcolor{sBrown}{conceal the truth} & \textcolor{sBrown}{YES/NO} \\
+        & \textcolor{sBrown}{contain the truth} & \textcolor{sBrown}{YES/NO} \\
+    \end{tabular}
+
+\end{enumerate}
+\rule{\textwidth}{1pt}
+\end{frame}
+
+\begin{frame}
+\frametitle{理解の評価（システムの出力の直接的な評価）}
+回答のκは0.62であった．またシステムの精度は平均0.81という結果になった．
+\begin{figure}[t]
+\centering
+\begin{tabularx}{0.7\textwidth}{C{0.3}C{0.2}C{0.2}}
+    \toprule
+    \thc{Relation} & \thc{System} & \thc{Baseline} \\
+    \midrule
+    VO             &        0.79  &         0.52   \\
+    SV             &        0.83  &         0.57   \\
+    \midrule
+    Average         &       0.81  &         0.55   \\
+    \bottomrule
+\end{tabularx}
+\end{figure}
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{理解の評価（人による言い換えとの比較）}
+前の理解の評価の回答者とは別の英語話者5人に，
+メタファー表現を含む文を見せ，適切な言い換えを書いてもらう．
+
+例えば“\metaphorical{brushed aside} the accusations”という
+表現に対し\emph{rejected},
+\emph{ignored},
+\emph{disregarded},
+\emph{dismissed},
+\emph{overlooked},
+\emph{discarded}
+のような回答を得る．
+
+\end{frame}
+
+\begingroup
+\footnotesize
+\begin{frame}
+\frametitle{理解の評価（人による言い換えとの比較）}
+MAP (mean average precision)を求めて評価する．
+\begin{align*}
+    \mathrm{MAP} = \frac{1}{M}\sum_{j = 1}^M \frac{1}{N_j}\sum_{i = 1}^{N_j}P_{ji}
+\end{align*}
+ここで$M$はメタファー表現の数，
+$N_j$は各メタファー表現$j$の正しい言い換えの数，
+$P_{ji}$はそれぞれの正しい言い換えについての精度である．
+\begin{figure}[t]
+\centering
+\begin{tabularx}{0.9\textwidth}{C{0.3}C{0.3}C{0.3}}
+    \toprule
+    \thc{Relation} & \thc{System MAP} & \thc{Baseline MAP} \\
+    \midrule
+    VO             &        0.60  &         0.54   \\
+    SV             &        0.66  &         0.57   \\
+    \midrule
+    Average         &       0.62  &         0.56   \\
+    \bottomrule
+\end{tabularx}
+\end{figure}
+人が思いつく言い換えは偏っているので，MAPは低くなってしまう（システムの出力“provoke”が正しくても，人はこの単語をなかなか思い浮かべられない．）．
+\end{frame}
+\endgroup
+
+\begingroup
+\footnotesize
+\begin{frame}
+\frametitle{検出と理解の総合評価}
+各事例について，
+英語を母語とする非専門家3人に次のような問に答えてもらい，多数派の回答を正解とする．
+
+\begin{itemize}
+    \item[A.] His `fascist' \marker{ideas had} first
+\tikz[baseline=(T.base)]{%
+    \fill [sYellow] (-0.45 * \la,-0.97ex) rectangle (0.45 * \la,1.8ex);
+    \node (T) at (0,0) {been \underline{\textbf{shaped}} by the First World War};
+},
+which he felt Britain should not have entered.
+
+    \item[B.] His `fascist' \bluemarker{ideas had} first
+\tikz[baseline=(T.base)]{%
+    \fill [sLightBlue] (-0.45 * \lb,-1.2ex) rectangle (0.45 * \lb,1.6ex);
+    \node (T) at (0,0) {been \underline{\textbf{influenced}} by the First World War};
+},
+which he felt Britain should not have entered.
+\end{itemize}
+
+\begin{enumerate}
+\item\label{q1} Do the highlighted expressions have the same meaning?
+    % \begin{itemize}
+    %     \item YES (X) / NO (\phantom{X})
+    % \end{itemize}
+
+    \textcolor{sBrown}{> YES (X) / NO (\phantom{X})}
+\item\label{q2} Is the \underline{\textbf{verb}} in the first sentence used
+
+    % \begin{itemize}
+    %     \item metaphorically? (X) / literally? (\phantom{X})
+    % \end{itemize}
+    \textcolor{sBrown}{> metaphorically? (X) / literally? (\phantom{X})}
+\item\label{q3} Is the \underline{\textbf{verb}} in the second sentence used
+
+    % \begin{itemize}
+    %     \item metaphorically? (X) / literally? (\phantom{X})
+    % \end{itemize}
+    \textcolor{sBrown}{> metaphorically? (\phantom{X}) / literally? (X)}
+\end{enumerate}
+\end{frame}
+\endgroup
+
+\begin{frame}
+\frametitle{検出と理解の総合評価}
+\setlength{\leftmargini}{0em}
+\begin{enumerate}
+\item 回答者を3人，事例数を35としたとき
+
+人による判断の一致率は\enumref{q1}が0.53，
+\enumref{q2}, \enumref{q3}が0.63であった．
+\begin{align*}
+    \frac{\text{\# same, m→l}}{\text{\# instances}} = \text{0.66,}\quad
+    \frac{\text{\# same, m→l or l→l}}{\text{\# instances}} = \text{0.71}
+\end{align*}
+
+\item 回答者を1人，事例数を600としたとき
+
+人による判断の一致率は\enumref{q1}が0.59，
+\enumref{q2}, \enumref{q3}が0.54であった（35事例，4人で計算）．
+\begin{align*}
+    \frac{\text{\# same, m→l}}{\text{\# instances}} = \text{0.54,}\quad
+    \frac{\text{\# same, m→l or l→l}}{\text{\# instances}} = \text{0.67}
+\end{align*}
+
+\end{enumerate}
+\end{frame}
+
+\begin{frame}
+\frametitle{理解の課題}
+\setlength{\leftmargini}{0em}
+\begin{itemize}
+    \item Selectional Preferenceがばらついた語は字義通りに使われやすいのに，
+        再ランキングで排除している．
+
+        （例）“\metaphorical{mend} marriage”に対し“\literal{improve} …”ではなく
+        “\metaphorical{repair} …”が選ばれてしまう．
+
+    \item 慣用的なメタファーを構成する組み合わせは共起頻度が高く，再ランキングで上位に来やすい．
+
+        （例）“\metaphorical{tackle} a question”に対して
+        “\metaphorical{confront} …”を出力してしまう．
+
+    \item 違う意味の語を選ばれることがある．（WordNetの影響か）
+
+        （例）“tension \metaphorical{mounted}”に対して
+        “… \metaphorical{lifted}”が出力される．
+
+    \item 狭い範囲の文脈しか見ていない．
+
+        （例）“scientists \metaphorical{focus}”に対して
+        “… \literal{study}”ではなく
+        “… \literal{think}”を出力してしまう．
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{\citet{shutova2013}の特徴}
+% \setlength{\leftmargini}{0em}
+全体的な短所としては
+\begin{itemize}
+    \item 統語構造がSVとVOに限られていること
+    \item 種が少ないため被覆率が低いこと
+\end{itemize}
+などが挙げられる．
+
+\bigskip
+
+最大の長所は，
+\textbf{他のタスクとの連携させやすい設計になっている}ことである．
+\begin{itemize}
+    \item 自動化された部分が大きい
+
+    \item 検出と理解を両方扱うことができる
+
+    \item 解釈（理解）が語として出力される
+\end{itemize}
+\end{frame}
+
+\section{メタファーのデータ}
+
+\begin{frame}
+    \frametitle{メタファーの認定基準とそれに基づくデータの必要性}
+
+
+    文化や政治，教育など特定の観点から興味深いメタファーを分析する際には，
+    テキスト中のそれらの観点から重要でないメタファーは抜け落ちてしまっても仕方がないといえる．
+
+    しかし，テキスト中のメタファーを包括的に分析する，
+    あるいは\textbf{複数のテキストのメタファーを比較する際には，
+    一貫性をもったメタファーの認定基準が必要}になってくる．
+    % \citet{veale}
+    % Shutova Metaphor, A Computational Perspective Chapter 4 Metaphor Annotation
+
+    \bigskip
+
+    NLPにおけるメタファー研究では，
+    自分たちでデータを作って評価する研究が多い．
+    これは再現性の観点から好ましくないはずである．
+    \textbf{明確な基準を以って作られた共通の評価用データがほしい}．
+%    \cite{tsvetkov2014}は英語のデータを
+%    のデータで作ったメタファー識別器を
+%    スペイン語，ペルシア語，ロシア語
+%    に応用している．
+%    身体的基盤をもつメタファーなどについては抑えられる可能性が高いが，
+%    多様性はどうか？
+\end{frame}
+
+\begin{frame}
+    \frametitle{メタファーのデータ(NLP)}
+    メタファー検出のために作られて公開されているデータ
+    \begin{itemize}
+        \item Trofi Example Base \citep{birke2006,birke2007}
+            \begin{itemize}
+                \item メタファー識別システムTrofiを構築するのに用いられた能動学習のデータ
+                \item Wall Street Journal Corpusが元
+                \item 50個の英語の動詞についてliteral/nonliteralのラベル
+            \end{itemize}
+        \item \citet{tsvetkov2014}
+            \begin{itemize}
+                \item メタファー識別器の訓練用データ
+                \item literal/metaphoricalそれぞれ884個のAdj-N対（英語）
+                \item コードも公開されている\footnote[frame]{%
+                        \url{https://github.com/ytsvetko/metaphor}
+                    }
+            \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{メタファーのデータ（汎用）}
+%    \href{http://ota.ox.ac.uk/desc/2541}{VU Amsterdam Metaphor Corpus} \citep{pragglejaz2007, steen2010}
+    \href{http://ota.ox.ac.uk/desc/2541}{VU Amsterdam Metaphor Corpus} \citep{steen2010}
+        \begin{itemize}
+            \item BNC Babyコーパスの一部約50,000語
+
+            \item ニュース・会話・フィクション・学術の4つのレジスター
+
+            \item メタファーと判定するための詳細なガイドラインが存在
+
+                → ある程度\textbf{慣用的なメタファーへの対処ができている}．
+        \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{VUAMCのガイドラインの適用例}
+    \begingroup
+    \footnotesize
+    ガイドラインの骨子は以下の手順である．
+    \begin{enumerate}
+        \item \textbf{文脈語義}を特定する．
+        \item 文脈語義より\textbf{基礎的な語義}\footnote[frame]{具体的であったり，想像したり見たり触ったりすることが容易なものを指す語義．}が存在するか確認する.
+        \item それらが十分に異なるか判断する．
+        \item それらに\textbf{ある種の類似性}が認められるか検討する.
+    \end{enumerate}
+
+    例えば以下の文中の“struck”にアノテーションを行うとする．
+    \begin{center}
+        % VUAMC l. 215054
+        His speech \textbf{struck} me as the feeblest of the day.
+    \end{center}
+
+    % strike ~ as 句動詞だがタグが PRP なので別々に分析
+    \begin{leftbar}
+        \textbf{strike} \textipa{/straIk/} \hfill\textcolor{gray}{\emph{Macmillan Dictionary}}
+        \vspace{-\topsep}
+        \begin{enumerate}
+            \item to hit against, or to crash into, someone or something
+                \onslide<3->{← 文脈語義より基礎的な語義}
+            \item to make someone have a particular opinion or feeling
+                \onslide<2->{← 文脈語義}
+        \end{enumerate}
+    \end{leftbar}
+    \endgroup
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{VUAMCのアノテーションの例}
+\lstset{%
+  basicstyle=\ttfamily,
+  showstringspaces=false,
+  commentstyle=\color{gray}\upshape
+}
+\lstdefinelanguage{XML}{%
+  moredelim=[s][\textcolor{sDarkGray}]{>}{<},
+  moredelim=[is][\textcolor{sDarkBlue}]{|}{|},
+  morestring=[s]{"}{"},
+  stringstyle=\textcolor{sDarkRed},
+  keywordstyle=\textcolor{sPurple},
+  identifierstyle=\textcolor{sDarkBlue},
+  morekeywords={s,c,w,seg}
+}
+\begingroup
+\tiny
+\begin{lstlisting}[language=XML]
+<s n="594">
+  <w |lemma|="north" |type|="NN1">North </w>
+  <w |lemma|="tyneside" |type|="NP0">Tyneside </w>
+  <w |lemma|="council" |type|="NN1">council </w>
+  <w |lemma|="say" |type|="VVZ">
+    <seg |function|="mrw" |subtype|="PP" |type|="met" |vici|:|morph|="n">says</seg>
+  </w>
+  <w |lemma|="it" |type|="PNP">it </w>
+  <w |lemma|="be" |type|="VBZ">is </w>
+  <w |lemma|="too" |type|="AV0">too </w>
+  <w |lemma|="starved" |type|="AJ0">
+    <seg function="mrw" |type|="met" |vici|:|morph|="n">starved</seg>
+  </w>
+  <w |lemma|="of" |type|="PRF">of </w>
+  <w |lemma|="fund" |type|="NN2">funds </w>
+  <w |lemma|="by" |type|="PRP">by </w>
+  <w |lemma|="central" |type|="AJ0">
+    <seg |function|="mrw" |type|="met" |vici|:|morph|="n">central</seg>
+  </w>
+  <w |lemma|="government" |type|="NN1">government </w>
+  <w |lemma|="to" |type|="TO0">to </w>
+  <w |lemma|="do" |type|="VDI">
+    <seg |function|="mrw" |subtype|="PP" |type|="met" |vici|:|morph|="n">do</seg>
+  </w>
+  <w |lemma|="much" |type|="DT0">much</w>
+  <c |type|="PUN">.</c>
+</s>
+\end{lstlisting}
+\endgroup
+\end{frame}
+
+\section{まとめ}
+\begin{frame}
+\frametitle{まとめ}
+    自然言語処理におけるメタファーの扱いについて
+    代表的なモデルとデータを紹介した．
+    \begin{itemize}
+        \item メタファーとは何か
+        \item メタファーのモデル
+            \begin{itemize}
+                \item 顕現性の理論\citep{tversky, ortony}
+
+                    理解の定式化への応用\citep{iwayama}
+
+                \item 概念写像の理論\citep{lakoff1980}
+
+                    検出・理解を行うシステムへの応用\citep{shutova2013}
+
+            \end{itemize}
+        \item メタファーのデータ
+            \begin{itemize}
+                \item VU Amsterdam Metaphor Corpus \citep{steen2010}
+            \end{itemize}
+    \end{itemize}
+    メタファーの計算モデルについては\citet{utsumi}が歴史的な流れの説明や，
+    それぞれの比較を行っている．
+\end{frame}
+
+\begin{frame}[allowframebreaks]
+\frametitle{参考文献}
+\begingroup
+\scriptsize
+    \setbeamertemplate{bibliography item}[triangle]
+    \bibliographystyle{j}
+    \bibliography{tokyocl}
+\endgroup
+\end{frame}
+
+\end{document}
