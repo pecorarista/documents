@@ -1,0 +1,516 @@
+\documentclass[11pt,usepdftitle=false]{beamer}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,bm,mathrsfs}
+\usepackage{booktabs}
+\usepackage{ulem}
+\usepackage{framed}
+\usepackage{indent}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{wrapfig}
+\usepackage{tikz}
+\usepackage[sort]{natbib}
+\include{mathcommands}
+\usetheme{sakura}
+\usefonttheme{professionalfonts}
+\makeatletter
+\newif\if@japanese%
+\@japanesetrue%
+\if@japanese%
+    \usepackage{luatexja-ruby}
+    \ltjsetparameter{jacharrange={-2,-3}}
+    \ltjsetparameter{alxspmode={`#,allow}}
+    \newcommand{\ten}{、}
+    \newcommand{\maru}{。}
+\fi
+\makeatother
+\usepackage{gb4e,cgloss4e}
+\noautomath%
+\hypersetup{%
+    unicode=true,
+    backref=true,
+    hidelinks=true,
+    pdfinfo={%
+        Title={Metaphor Detection with Topic Transition, Emotion and Cognition in Context},
+        Author={Miyazawa Akira}
+    }
+}
+\title{Metaphor Detection with Topic Transition, Emotion and Cognition in Context}
+\subtitle{Hyeju Jang, Yohan Jo, Qinlan Shen, Michael Miller, Seungwhan Moon, Carolyn P. Rosé}
+\institute{総研大/NII 宮尾研究室 M2}
+\author{宮澤 彬}
+\makeatletter
+\if@japanese%
+    \date{{\number\year}年{\number\month}月{\number\day}日}
+\else
+    \date{\today}
+\fi
+\makeatother
+% \newfontfamily\phonetic{Times LT Std Phonetic}
+% \newfontfamily\phonetic{Doulos SIL}
+\let\phonetic\relax
+\newcommand\firstref[1]{\textcolor{sLightBlue}{\sout{\textbf{#1}}}\textsuperscript{1}}
+\newcommand\secondref[1]{\textcolor{sPink}{\sout{\textbf{#1}}}\textsuperscript{2}}
+\newcommand\thirdref[1]{\textcolor{sYellow}{\sout{\textbf{#1}}}\textsuperscript{3}}
+\newcommand\fourthref[1]{\textcolor{sPurple}{\sout{\textbf{#1}}}\textsuperscript{4}}
+\newcommand\stress[1]{\textcolor{sRed}{\textbf{#1}}}
+\newcommand\metaphorical[1]{\textcolor{sRed}{\textbf{#1}}}
+\newcommand\literal[1]{\textcolor{sDarkBlue}{\textbf{#1}}}
+\newcommand\abbr[1]{\textcolor{sForestGreen}{#1}}
+\newcommand\headword[1]{\textcolor{sDarkBlue}{\textbf{#1}}}
+\newcommand\misc[1]{\textcolor{sLightGray2}{(\textit{#1})}}
+\newcommand\tableheader[1]{\multicolumn{1}{c}{\textbf{#1}}}
+\newcommand\papertitle[1]{\textit{#1}}
+\newcommand\emoji[1]{\hspace{.25\zw}\raisebox{-2pt}{\href{https://commons.wikimedia.org/wiki/File:Emoji_#1.svg}{\includegraphics[height=11pt]{emoji/Emoji_#1.pdf}}\hspace{.25\zw}}}
+\newcommand\apple{\emoji{u1f34e}}
+\newcommand\fire{\emoji{u1f525}}
+\newcommand\fist{\emoji{u270a}}
+\newenvironment{wideitemize}{\itemize\addtolength{\itemsep}{1em}}{\enditemize}
+\newenvironment{wideenumerate}{\enumerate\addtolength{\itemsep}{1em}}{\endenumerate}
+\let\oldcite=\citet
+\renewcommand\citet[1]{\hyperlink{#1}{\oldcite{#1}}}
+\let\oldcitep=\citep
+\renewcommand\citep[1]{\hyperlink{#1}{\oldcitep{#1}}}
+\begin{document}
+% 発表スライドおよびトークは日本語もしくは英語でご準備下さい。
+% 発表１件あたりの時間は20分で、発表に12～15分、質疑応答・討論の時間に5～8分を想定しています
+\begin{frame}
+    \nocite{hyeju2016}
+    \maketitle
+\end{frame}
+
+\begin{frame}
+    \frametitle{概要}
+    以下の2つの仮説に基づいて，メタファーを検出するための新しい手法を提案している．
+
+    \begin{enumerate}
+        \item 周囲の文脈の話題から外れた文にメタファーが多い．
+
+        \item 感情の記述にメタファーが多い．
+
+    \end{enumerate}
+
+    \bigskip
+
+    その提案手法を\papertitle{Breast Cancer Discussion Forum}の投稿\citep{jang2015}
+    に適用して，既存手法を上回ることを示した．
+
+\end{frame}
+
+\section{背景}
+\begin{frame}
+\frametitle{NLPにおけるメタファー研究 I}
+主に2つのタスクがある．
+\setlength{\leftmargini}{1.3em}
+\begin{enumerate}
+    \item \textbf{検出}
+
+        メタファー的に使われている語や句を見つける．
+        メタファーの定義は研究によって異なる．
+        % メタファーを扱うタスクとしては比較的盛んである．
+        % メタファーの基準は研究によって様々あるが，しばしば
+        % \href{http://ota.ox.ac.uk/desc/2541}{VU Amsterdam Metaphor Corpus} \citep{steen2010}
+        % のアノテーションガイドラインが使われる．
+
+        \bigskip
+
+
+        （例）(…) these technical terms are not at all easy to \metaphorical{grasp}.
+
+        \bigskip
+
+        \textbf{想定される応用}
+        \begin{itemize}
+
+            \item テキストや演説などのメタファーを分析する際に補助的に使う．
+
+            \item メタファー理解するタスクの前段階として使う．
+
+            \item 情報検索，語義曖昧性解消など他のタスクの改善に役立てる．
+        \end{itemize}
+\end{enumerate}
+\end{frame}
+
+\begin{frame}
+\frametitle{NLPにおけるメタファー研究 II}
+\setlength{\leftmargini}{1.3em}
+\begin{enumerate}
+    \addtocounter{enumi}{1}
+    \item \textbf{理解}
+
+        共通したタスクの定義があるわけではない．
+
+        \begin{wideitemize}
+            \item \textbf{言い換え} \citep{shutova2013}
+
+                “(…) easy to \metaphorical{grasp} ”\fist{} → “(…) easy to \literal{understand}”
+
+            \item \textbf{対応する概念写像の提示} \citep{shutova2013}
+
+                “That \metaphorical{kindled my ire}.” \fire{} → \textsc{anger is fire}
+
+            \item \textbf{性質の変化の理解} \citep{utsumi1998}
+
+                「林檎のような頬」\apple{} → 赤さや丸さの強調
+        \end{wideitemize}
+
+\end{enumerate}
+%NLPではどのような研究があるか？
+%\begin{itemize}
+%    \item \href{http://www.morganclaypoolpublishers.com/catalog_Orig/product_info.php?cPath=22&series=29&products_id=918}{\papertitle{Metaphor -- A Computational Perspective}}という本が詳しい．
+%    \item \href{https://speakerdeck.com/pecorarista/zi-ran-yan-yu-chu-li-demetahuawodouxi-uka}{私が以前作ったスライド}に簡単にまとめたものがある．
+%\end{itemize}
+\end{frame}
+
+% \begin{frame}
+% \frametitle{NLPにおけるメタファー研究は最近\ruby{流行}{はや}りつつある}
+% NAACL 2016
+% \begin{itemize}
+%     \item \href{http://aclanthology.info/papers/black-holes-and-white-rabbits-metaphor-identification-with-visual-features}{\papertitle{Black Holes and White Rabbits: \stress{Metaphor} Identification with Visual Features}}
+% \end{itemize}
+% ACL 2016
+% \begin{itemize}
+%     \item \href{http://aclanthology.info/papers/literal-and-metaphorical-senses-in-compositional-distributional-semantic-models}{\papertitle{Literal and \stress{Metaphorical} Senses in Compositional Distributional Semantic Models}}
+%     \item \href{http://aclanthology.info/papers/metaphor-detection-with-topic-transition-emotion-and-cognition-in-context}{\papertitle{\stress{Metaphor} Detection with Topic Transition, Emotion and Cognition in Context}} ← 今回紹介する論文
+%     \item \href{http://aclanthology.info/papers/semantic-classifications-for-detection-of-verb-metaphors}{\papertitle{Semantic Classifications for Detection of Verb \stress{Metaphors}}}
+% \end{itemize}
+% \end{frame}
+
+\section{既存研究}
+\begin{frame}
+\frametitle{既存研究におけるメタファー検出へのアプローチ I}
+    メタファーの検出に関しては，多くの既存研究がある．
+    それらについて詳しく知りたければ\citet{veale2016}を参照するとよい．
+
+    本論文のように，話題の転換を手がかりするものとして
+    \citet{broadwell2013}がある．
+    この提案手法は，
+    周囲から参照されたり，繰り返し使用されたりする
+    名詞句はメタファーの可能性が低いという考察に基づいている．
+
+    \smallskip
+
+    \begingroup
+    \small
+    \begin{leftbar}
+        These \firstref{qualities}
+        have helped \fourthref{him}
+        navigate the labyrinthine federal bureaucracy in his demanding
+        \$191,300-a-year job as the top federal \thirdref{official}
+        responsible for bolstering airline, \secondref{border},
+        port and rail security against a second catastrophic terrorist attack.
+        But those same personal \firstref{qualities} also explain
+        why the 55-year-old Cabinet \thirdref{officer} has alienated
+        so many Texans along the U.S.-Mexico \secondref{border} with
+        \fourthref{his} relentless implementation (…)
+    \end{leftbar}
+    \endgroup
+    % Strzałkowski ʐvw
+\end{frame}
+
+\begin{frame}
+    \frametitle{既存研究におけるメタファー検出へのアプローチ II}
+    また本論文のように，LDAのトピックを用いるものとしては\citet{heintz2013}がある．
+    ただし，これはトピックを概念写像のドメインに対応するものとして利用している．
+
+    \begin{leftbar}
+        \textbf{Dems}${}_T$ like \textbf{rats}${}_S$ sometimes attack when cornered (…)
+    \end{leftbar}
+
+    \begin{center}
+        \begin{tikzpicture}[line width=1pt]
+            \draw [color=sLightBlue] (0,0) circle (25pt);
+            \node (A) at (0,0) {\textbf{\textsc{animal}}};
+            \node at (0,-1.2) {\small source domain $S$};
+            \draw [color=sLightBlue] (4,0) circle (25pt);
+            \node (B) at (4,0) {\textbf{\textsc{governance}}};
+            \node at (4,-1.2) {\small target domain $T$};
+            \draw [->,color=sLightBlue] (A) edge [bend left] (B);
+        \end{tikzpicture}
+    \end{center}
+
+    % 例えば\citet{birke2007}, \citet{li2010}, \citet{shutova2013}, \citet{tsvetkov2014}などがある．
+\end{frame}
+
+\section{提案手法}
+\begin{frame}
+\frametitle{メタファーに関する直感}
+例えば医療の話の中で “boat” が出たらメタファーの可能性が高い．
+\begin{leftbar}
+    \begin{wrapfigure}[7]{r}{0.3\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{4185145998_0aed3f43b2_o_d.jpg}
+    \captionsetup{font=scriptsize}
+    \caption*{\href{https://www.flickr.com/photos/sebadorn/4185145998/in/photolist-7nPY6C-8jDzHw-pn8eY3-HR3vBv-o1HZQF-oph6dL-bCc6C4-9v3Bep-f7D7Vh-4VP8Cr-pgiMKA-6UFukX-dChf6J-oXFcG9-nSLS9D-6mn7RN-3aX8tL-7CEmyn-7KeW2i-h21Dgq-nrT8ZS-nhpe7T-rKYLm-6VskiC-rGyU3e-8gPNfW-8EmjdH-neBGnK-g7svjC-5b5hLj-gj5MDe-aEW8TE-fjHVzv-ccemKm-7B6sf2-4A74GB-norgrd-6QWgS3-rwZs8y-eTbNEs-9AJnaX-5ZHyDc-7iH9bq-7Sx6JX-519bvM-4xZSgU-4sVnuU-6w2yUX-8KTXzr-nkPCbj}{\raisebox{-0.8pt}{\copyright}\:2009 Sebastian Dorn}}
+\end{wrapfigure}
+When my brain mets\footnote{\headword{met} \textit{abbreviation} \abbr{metastasis} {\phonetic /mɪˈtæstəsɪs/}（癌などの）転移} were discovered last year, I had to see a neurosurgeon.
+    He asked if I understood that my treatment was palliative\footnote{\headword{palliative} \textit{adjective} {\phonetic /ˈpæliətɪv/} 一時的に和らげる} care.
+    \textit{Boy, did it \metaphorical{rock my boat}\footnote{\normalfont \headword{rock the ˈboat} \misc{informal} to do something that upsets a situation and causes problems (OALD)} to hear that phrase!}
+    I agree with Fitz, palliative treatment is to help with pain and alleviate symptoms.....but definitely different than hospice care.
+\end{leftbar}
+\end{frame}
+
+\begin{frame}
+\frametitle{トピックを利用した手法 I}
+周囲の文脈の話題から外れた文にメタファーが多い．
+
+→ \textbf{Sentence LDA} \citep{jo2011}を利用する．
+
+\bigskip
+
+素性として以下の5つを用いる．
+\begin{enumerate}
+    \item Target Sentence Topic (\texttt{TargetTopic} in $\braces{0,\,1}^T$)
+
+        注目している語を含む文のトピック
+
+    \item Topic Difference (\texttt{TopicDiff} in  $\braces{0,\,1}^2$)
+
+        注目している語を含む文のトピックと，
+        直前/直後の文のトピックが異なるかどうか
+
+\end{enumerate}
+\end{frame}
+
+\begin{frame}
+\frametitle{トピックを利用した手法 I}
+\begin{enumerate}
+    \addtocounter{enumi}{2}
+    \item Topic Similarity (\texttt{TopicSim} in $\brackets{0,\,1}^2$)
+
+        注目している語を含む文のトピックと，
+        直前/直後の文のトピックの類似度\footnote{各トピックの語の分布を表すベクトルの間のコサイン類似度}
+    \item Topic Transition (\texttt{TopicTrans} in $\braces{0,\,1}^{2T}$)
+
+        注目している語を含む文のトピックと，
+        直前/直後の最も近い位置にってトピックが異なる文のトピック
+
+    \item Topic Transition Similarity (\texttt{TopicTransSim} in $\brackets{0,\,1}^{2T}$)
+
+        注目している語を含む文のトピックと，
+        直前/直後の最も近い位置にってトピックが異なる文のトピックとの類似度
+\end{enumerate}
+\end{frame}
+
+\begin{frame}
+    \frametitle{感情とメタファーに関する考察}
+
+    私たちは抽象なことについて語るときメタファーを使うことが多い．
+
+    （例）問題の｛芽を摘む，根が深い，抱える，背負う，乗り越える，…｝
+    \begin{wrapfigure}[6]{r}{0.28\linewidth}
+    \centering
+    \includegraphics[width=0.7\linewidth]{3438933381_a7709fc2e5_o.jpg}
+    \captionsetup{font=scriptsize}
+    \caption*{\href{https://www.flickr.com/photos/sk8geek/3438933381/in/photolist-6eTr5R-WmG5-dvtenR-6cuu94-8xZB1p-z7hin-feLn6-gJqK3u-CvRsA-bAZab-bqoGk3-6TE4wm-FEbrC-4Rz1vp-7FjaiM-FrVkX-4Mokdp-6HZjQ-bJHRC-mEztZ6-bDcEa9-Bf8Fi4-nXnJjP-FU7p9d-c3WdmA-Hznn3o-bE3vd1-c3WKi1-mwEAoY-6aJYqq-HTH9WN-681vjS-96dxWt-pZ7aEX-8PWJN6-mWMcHj-8vqmsZ-bthub-4FNsYi-CLAfW-FfyUD-EMPcSw-9GuygY-3Wqy5-81e4FX-nyzN52-8hQzRq-rnAGnQ-8kxzES-4M3xYz}{\raisebox{-0.8pt}{\copyright}\:2009 Steven Lilley}}
+    \end{wrapfigure}
+
+    実際，\citet{fainsilber1987}は，
+    行動の説明より感情の説明のほうに
+    より多くメタファーが多く含まれることを示している．
+
+    \bigskip
+
+    このため，メタファー検出において抽象度や想像しやすさが
+    しばしば素性として使われている\citep{tsvetkov2014,broadwell2013}．
+\end{frame}
+
+\begin{frame}
+    \frametitle{感情に関する素性}
+%    \begin{leftbar}
+%        i have such a long \metaphorical{road} i just wonder what to do with myself.
+%    \end{leftbar}
+    局所的な文脈（着目してる語を含む文，及びその前後の文）と
+    大域的な文脈（投稿全体）で
+    \textbf{LIWC} \citep{tausczik2010}
+    の各カテゴリーに含まれる語の出現回数を数える．
+    \begingroup
+    \small
+    \begin{table}
+        \caption{Selected LIWC categories.}
+        \begin{tabular}{ll}
+            \toprule
+            \tableheader{LIWC category} & \tableheader{Example Terms} \\
+            \midrule
+            affect               & ache, like, sweet      \\
+            positive emotion     & passion, agree, giving \\
+            negative emotion     & agony, annoy, miss     \\
+            anxiety              & embarrass, avoid       \\
+            anger                & assault, offend        \\
+            sadness              & despair, grim          \\
+%            cognitive mechanisms & if, could              \\
+%            insight              & believe, aware         \\
+%            cause                & make, pick             \\
+            \bottomrule
+        \end{tabular}
+    \end{table}
+    \endgroup
+\end{frame}
+
+\section{実験}
+\begin{frame}
+    \frametitle{実験の設定}
+    \setlength{\leftmargini}{1.3em}
+    \begin{itemize}
+        \item タスク
+
+            メタファーの候補となる語を含む文章において，その語が
+            メタファー的に使われているかそうでないか識別する．
+
+        \item データ
+
+            \papertitle{Breast Cancer Discussion Forum}の投稿のうち，
+            以下の7種類の語を含むもの．
+            \begin{center}
+               “boat”, “candle”, “light”, “ride”, “road”, “spice”, “train”
+            \end{center}
+            これらには\citet{jang2015}によってアノテーションが付与されている．
+
+        \item 識別器
+
+            次数2の多項式カーネルを用いたSVM
+
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{実験結果}
+    提案手法がすべての項目で既存手法を上回った．
+    \begin{table}
+        \centering
+        \scriptsize
+        \caption{Performance on metaphor identification task.}
+        \begin{tabular}{lccccccc}
+            \toprule
+            \tableheader{Model} &
+            \tableheader{κ}     &
+            \tableheader{F1}    &
+            \tableheader{P-L}   &
+            \tableheader{R-L}   &
+            \tableheader{P-M}   &
+            \tableheader{R-M}   &
+            \tableheader{A}     \\
+            \midrule
+            Unigram                 & .435 & .714 & .701 & .434 & .845 & .943 & .824 \\
+            U + Topic + LIWC        & .533 & .765 & .728 & .550 & .872 & .937 & .847 \\
+            U + MM Topic + MM LIWC  & .543 & .770 & .754 & .546 & .872 & .946 & .852 \\
+            \midrule
+            \citet{jang2015}        & .575 & .786 & .758 & .587 & .882 & .943 & .859 \\
+            J + Topic + LIWC        & .609 & .804 & .772 & .626 & .892 & .943 & .869 \\
+            J + MM Topic            & .619 & .809 & .784 & .630 & .893 & .947 & .873 \\
+            J + MM LIWC             & .575 & .787 & .757 & .589 & .882 & .942 & .859 \\
+            J + MM Topic + MM LIWC  &
+            \textbf{.631} &
+            \textbf{.815} &
+            \textbf{.792} &
+            \textbf{.642} &
+            \textbf{.896} &
+            \textbf{.948} &
+            \textbf{.876} \\
+            \bottomrule
+        \end{tabular}
+    \end{table}
+\end{frame}
+
+\begin{frame}
+    \frametitle{トピック}
+    トピックの数は10が最適で，以下のようなトピックが得られた．
+    \begin{table}
+        \centering \scriptsize
+        \caption{Topics learned by Sentence LDA.}
+        \begin{tabular}{lll}
+            \toprule
+              & \tableheader{Topic} & \tableheader{Example Sentences} \\
+            \midrule
+            0 & Disease/Treatment & I’m scared of chemo and ct scans … \\
+            1 & Food              & *Martha’s Way* Stuff a miniature marshmallow … \\
+            2 & Emotions          & Too funny. / You’re so cute! \\
+            3 & Time              & I am now 45, and just had my ONE year … \\
+            4 & Greetings/Thanks  & Thank you so much for the story!! \\
+            5 & People            & She has three children and her twin sister … \\
+            6 & Support           & YAY! / lol. / I wish you all good luck and peace. \\
+            7 & Relation          & I just read your message and I wondered about you. \\
+            8 & Religion          & Dear Lord, I come to you with a friend … \\
+            9 & Diagnosis         & I was 64 when diagnosed with pure DCIS … \\
+            \bottomrule
+        \end{tabular}
+    \end{table}
+\end{frame}
+
+\begin{frame}
+    \frametitle{トピック別に見た文の分布 (\texttt{TargetTopic})}
+    \begin{figure}
+        \centering
+        \caption{Topic Distribution of Target Sentences}
+        \includegraphics[page=6,clip,width=0.9\linewidth,trim={310 460 80 297}]{paper.pdf}
+        \label{topic-distribution-of-target-sentences}
+    \end{figure}
+
+    T0 (Disease/Treatment)やT7 (Relation)でメタファーの割合が大きくなっている．
+    一方T5 (People)はメタファーの割合が小さい．
+\end{frame}
+
+\begin{frame}
+    \frametitle{トピックの変化がメタファーの生じ方に与える影響 (\texttt{TopicTrans})}
+    \begin{figure}
+        \centering
+        \caption{Topic Distribution of the Sentences Nearest to the
+            Target Sentence and with a Different Topic}
+            \includegraphics[page=7,clip,width=0.9\linewidth,trim={72 337 308 422}]{paper.pdf}
+    \end{figure}
+
+    T5 (People)の前後はメタファー的になりやすい．
+    一方T0 (Disease/Treatment)の前後はメタファー的になりにくい．
+\end{frame}
+
+\begin{frame}
+    \frametitle{トピックの変化が与える影響 (\texttt{TopicTrans})}
+    \begin{figure}
+        \centering
+        \caption{Proportions of Target Sentences with a Diffent Topic from Context}
+        \includegraphics[page=7,clip,width=0.9\linewidth,trim={305 337 75 422}]{paper.pdf}
+    \end{figure}
+
+    前後と異なるトピックの文はメタファーの割合が大きい\footnote{前後で同じトピックの場合がどうなのか記述がない？}．
+\end{frame}
+
+\begin{frame}
+    \frametitle{トピックの変化が与える影響 (\texttt{TopicTransSim})}
+    \begin{figure}
+        \centering
+        \caption{Topic Similarity Between Target Sentence and Context}
+        \includegraphics[page=8,clip,width=0.9\linewidth,trim={70 670 308 87}]{paper.pdf}
+    \end{figure}
+    メタファーを含む文のほうが前後と大きくトピックが異なる．
+\end{frame}
+
+\begin{frame}
+    \frametitle{トピックの変化が与える影響 (\texttt{TopicTransSim})}
+    \begin{figure}
+        \centering
+        \caption{Topic Similarity Between Target Sentence and Context}
+        \includegraphics[page=8,clip,width=0.9\linewidth,trim={80 450 308 307}]{paper.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{まとめ}
+    メタファーを発見するときには，
+    話題の転換や感情の表現がよい手がかりになるという考えに基づき，
+    前者をSentence LDAで，後者をLIWCでエンコードする検出の仕組みを示した．
+
+    \papertitle{Breast Cancer Discussion Forum}のデータで行った実験では，
+    \citet{jang2015}を大きく上回る性能を示した．
+
+    他のドメインへの適用が今後の課題である．
+\end{frame}
+
+\begin{frame}[allowframebreaks]
+\frametitle{参考文献}
+    \scriptsize
+    \setbeamertemplate{bibliography item}[triangle]
+    \bibliographystyle{j}
+    \bibliography{metaphor-detection-with-topic-transition}
+\end{frame}
+
+\end{document}
