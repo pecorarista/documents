@@ -1,6 +1,6 @@
 \documentclass[11pt,usepdftitle=false]{beamer}
 \usepackage{lmodern}
-\usepackage{amsmath,amssymb,bm,mathrsfs}
+\usepackage{amsmath,amssymb,bm,mathrsfs,latexsym}
 \usepackage{booktabs}
 \usepackage{ulem}
 \usepackage{framed}
@@ -32,7 +32,9 @@
     hidelinks=true,
     pdfinfo={%
         Title={Metaphor Detection with Topic Transition, Emotion and Cognition in Context},
-        Author={Miyazawa Akira}
+        Author={Miyazawa Akira},
+        CreationDate={D:20160912000000},
+        ModDate={D:20160912080000}
     }
 }
 \title{Metaphor Detection with Topic Transition, Emotion and Cognition in Context}
@@ -63,6 +65,7 @@
 \newcommand\papertitle[1]{\textit{#1}}
 \newcommand\emoji[1]{\hspace{.25\zw}\raisebox{-2pt}{\href{https://commons.wikimedia.org/wiki/File:Emoji_#1.svg}{\includegraphics[height=11pt]{emoji/Emoji_#1.pdf}}\hspace{.25\zw}}}
 \newcommand\apple{\emoji{u1f34e}}
+\newcommand\meat{\emoji{u1f356}}
 \newcommand\fire{\emoji{u1f525}}
 \newcommand\fist{\emoji{u270a}}
 \newenvironment{wideitemize}{\itemize\addtolength{\itemsep}{1em}}{\enditemize}
@@ -107,10 +110,6 @@
 
         メタファー的に使われている語や句を見つける．
         メタファーの定義は研究によって異なる．
-        % メタファーを扱うタスクとしては比較的盛んである．
-        % メタファーの基準は研究によって様々あるが，しばしば
-        % \href{http://ota.ox.ac.uk/desc/2541}{VU Amsterdam Metaphor Corpus} \citep{steen2010}
-        % のアノテーションガイドラインが使われる．
 
         \bigskip
 
@@ -152,6 +151,11 @@
             \item \textbf{性質の変化の理解} \citep{utsumi1998}
 
                 「林檎のような頬」\apple{} → 赤さや丸さの強調
+
+            \item \textbf{語を表すベクトルの合成} \citep{kintsch2000}
+
+                “My surgeon is \metaphorical{a butcher}.” \meat{} → “surgeon” $\leadsto$ “axe”
+
         \end{wideitemize}
 
 \end{enumerate}
@@ -162,19 +166,19 @@
 %\end{itemize}
 \end{frame}
 
-% \begin{frame}
-% \frametitle{NLPにおけるメタファー研究は最近\ruby{流行}{はや}りつつある}
-% NAACL 2016
-% \begin{itemize}
-%     \item \href{http://aclanthology.info/papers/black-holes-and-white-rabbits-metaphor-identification-with-visual-features}{\papertitle{Black Holes and White Rabbits: \stress{Metaphor} Identification with Visual Features}}
-% \end{itemize}
-% ACL 2016
-% \begin{itemize}
-%     \item \href{http://aclanthology.info/papers/literal-and-metaphorical-senses-in-compositional-distributional-semantic-models}{\papertitle{Literal and \stress{Metaphorical} Senses in Compositional Distributional Semantic Models}}
-%     \item \href{http://aclanthology.info/papers/metaphor-detection-with-topic-transition-emotion-and-cognition-in-context}{\papertitle{\stress{Metaphor} Detection with Topic Transition, Emotion and Cognition in Context}} ← 今回紹介する論文
-%     \item \href{http://aclanthology.info/papers/semantic-classifications-for-detection-of-verb-metaphors}{\papertitle{Semantic Classifications for Detection of Verb \stress{Metaphors}}}
-% \end{itemize}
-% \end{frame}
+\begin{frame}
+  \frametitle{NLPにおけるメタファー研究は最近\ruby{流行}{はや}りつつある}
+  NAACL 2016
+  \begin{itemize}
+      \item \href{http://aclanthology.info/papers/black-holes-and-white-rabbits-metaphor-identification-with-visual-features}{\papertitle{Black Holes and White Rabbits: \stress{Metaphor} Identification with Visual Features}}
+  \end{itemize}
+  ACL 2016
+  \begin{itemize}
+      \item \href{http://aclanthology.info/papers/literal-and-metaphorical-senses-in-compositional-distributional-semantic-models}{\papertitle{Literal and \stress{Metaphorical} Senses in Compositional Distributional Semantic Models}}
+      \item \href{http://aclanthology.info/papers/metaphor-detection-with-topic-transition-emotion-and-cognition-in-context}{\papertitle{\stress{Metaphor} Detection with Topic Transition, Emotion and Cognition in Context}} ← 今回紹介する論文
+      \item \href{http://aclanthology.info/papers/semantic-classifications-for-detection-of-verb-metaphors}{\papertitle{Semantic Classifications for Detection of Verb \stress{Metaphors}}}
+  \end{itemize}
+\end{frame}
 
 \section{既存研究}
 \begin{frame}
@@ -347,7 +351,7 @@ When my brain mets\footnote{\headword{met} \textit{abbreviation} \abbr{metastasi
     \endgroup
 \end{frame}
 
-\section{実験}
+\section{実験と評価}
 \begin{frame}
     \frametitle{実験の設定}
     \setlength{\leftmargini}{1.3em}
@@ -488,21 +492,36 @@ When my brain mets\footnote{\headword{met} \textit{abbreviation} \abbr{metastasi
     \frametitle{トピックの変化が与える影響 (\texttt{TopicTransSim})}
     \begin{figure}
         \centering
-        \caption{Topic Similarity Between Target Sentence and Context}
+        \caption{Topic Similarity Between Target Sentence and Nearest Transitioning Context}
         \includegraphics[page=8,clip,width=0.9\linewidth,trim={80 450 308 307}]{paper.pdf}
     \end{figure}
+    注目する文とトピックが異なる直近の文でのトピックの類似度の比較は，
+    後続との比較のみがメタファー検出に有効だった．
 \end{frame}
 
 \begin{frame}
     \frametitle{まとめ}
     メタファーを発見するときには，
     話題の転換や感情の表現がよい手がかりになるという考えに基づき，
-    前者をSentence LDAで，後者をLIWCでエンコードする検出の仕組みを示した．
+    Sentence LDAとLIWCを用いた新しい検出の仕組みを示した．
 
     \papertitle{Breast Cancer Discussion Forum}のデータで行った実験では，
     \citet{jang2015}を大きく上回る性能を示した．
 
     他のドメインへの適用が今後の課題である．
+\end{frame}
+
+\section{感想}
+\begin{frame}
+    \frametitle{感想}
+    検出して何をしたいんだろう．
+
+    2値分類で工学的な評価をしやすいことが理由の1つならば，
+    \citet{steen2010}や\citet{tsvetkov2014}のような
+    もう少し広く使われているデータで実験してほしかった．
+
+
+
 \end{frame}
 
 \begin{frame}[allowframebreaks]
