@@ -34,7 +34,8 @@
         Title={Metaphor Detection with Topic Transition, Emotion and Cognition in Context},
         Author={Miyazawa Akira},
         CreationDate={D:20160912000000},
-        ModDate={D:20160912080000}
+        ModDate={D:20160912080000},
+        Keywords={論文紹介}
     }
 }
 \title{Metaphor Detection with Topic Transition, Emotion and Cognition in Context}
@@ -48,8 +49,6 @@
     \date{\today}
 \fi
 \makeatother
-% \newfontfamily\phonetic{Times LT Std Phonetic}
-% \newfontfamily\phonetic{Doulos SIL}
 \let\phonetic\relax
 \newcommand\firstref[1]{\textcolor{sLightBlue}{\sout{\textbf{#1}}}\textsuperscript{1}}
 \newcommand\secondref[1]{\textcolor{sPink}{\sout{\textbf{#1}}}\textsuperscript{2}}
@@ -258,7 +257,9 @@ When my brain mets\footnote{\headword{met} \textit{abbreviation} \abbr{metastasi
 \frametitle{トピックを利用した手法 I}
 周囲の文脈の話題から外れた文にメタファーが多い．
 
-→ \textbf{Sentence LDA} \citep{jo2011}を利用する．
+→ 論文によると通常のLDAはうまくいかなかったらしい．
+
+→ かわりに\textbf{Sentence LDA} \citep{jo2011}を利用する．
 
 \bigskip
 
@@ -500,6 +501,23 @@ When my brain mets\footnote{\headword{met} \textit{abbreviation} \abbr{metastasi
 \end{frame}
 
 \begin{frame}
+    \frametitle{感情に関する素性の効果}
+    LIWCの効果は特定の語と感情の組に限定的であった．
+
+    例えば “boat”, “candle”, “light”, “ride”, “ride”, “spice”, “train”は
+    “bumpy road”, “rollercoaster ride”など\textit{anxiety} に関連したメタファーに現れやすい．
+
+    \smallskip
+
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.5\linewidth]{1070785383_23ceaf0080_o_d.jpg}
+        \captionsetup{font=scriptsize}
+        \caption*{\href{https://www.flickr.com/photos/hamzahydri/1070785383/in/photolist-2CC4bX-4nMLfE-quQzzJ-n7xdmk-7VCgsg-5Dfw2A-rgnv34-7xZad-hkCVpY-nVDu4w-pkBdb-ccSrT-5CwjAU-56Yzj1-n7joZ-aeJXkm-4dG7aj-4yipLJ-bmhvns-cBmWT-482gXC-4JCdnm-cXu6bQ-6rPcF9-6iP5h8-2QTJNA-7nSmwL-oe76fW-bpJLcb-2xQoC1-5FVXqf-5dFswx-o9pVMR-Dhdcm-6atNCU-6gq6HR-5fRxQ-8zsuXQ-6Q4vR7-dTPURU-6TjtMQ-5dc9Zt-fcFEPg-5Bxgr6-aBqjXw-6rgEdE-7SJRu-21PL8v-fcFvgF-JhCwnb}{\raisebox{-0.8pt}{\copyright}\:2007 Hamza Hydri Syed}}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
     \frametitle{まとめ}
     メタファーを発見するときには，
     話題の転換や感情の表現がよい手がかりになるという考えに基づき，
@@ -528,7 +546,7 @@ When my brain mets\footnote{\headword{met} \textit{abbreviation} \abbr{metastasi
 \frametitle{参考文献}
     \scriptsize
     \setbeamertemplate{bibliography item}[triangle]
-    \bibliographystyle{j}
+    \bibliographystyle{apalike}
     \bibliography{metaphor-detection-with-topic-transition}
 \end{frame}
 
