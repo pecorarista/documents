@@ -1,0 +1,1108 @@
+\documentclass[12pt,usepdftitle=false]{beamer}
+\usepackage[sort]{natbib}
+\usepackage{tikz}
+\usepackage{colortbl}
+\usepackage{ccicons}
+\usepackage{booktabs}
+\usepackage{framed}
+\usepackage{amssymb}
+\usepackage{luatexja-ruby}
+\usepackage[no-math]{fontspec}
+\newfontfamily\phonetic{Times LT Std Phonetic}
+\ltjsetparameter{%
+    jacharrange={%
+        -2, % Exclude Greek and Cyrillic letters.
+        -3  % Punctuations and Miscellaneous symbols.
+    },
+    alxspmode={`#,allow},
+    alxspmode={`/,allow}
+}
+\usetheme{sakura}
+\usepackage[bottom,flushmargin,hang,multiple]{footmisc}
+\newcommand\emoji[1]{\hspace{.25\zw}\raisebox{-2pt}{\includegraphics[height=11pt]{#1.pdf}}\hspace{.25\zw}}
+\newcommand\header[1]{\multicolumn{1}{c}{\textbf{#1}}}
+\newcommand\tightlist{\itemsep1pt\parskip0pt\parsep0pt}
+\definecolor{sDarkBlue}{HTML}{3B55CD}
+\setbeamerfont{subtitle}{size=\LARGE,series=\bfseries}
+\title{メタファーの自動生成に向けた}
+\subtitle{客観的評価指標の検討}
+\institute{総合研究大学院大学/国立情報学研究所}
+\author{\underline{宮澤 彬}\hspace{3em}宮尾 祐介}
+\date{2017年5月16日}
+\usepackage{gb4e,cgloss4e}
+\noautomath%
+\let\eachwordtwo=\sffamily
+\let\eachwordthree=\sffamily
+
+% https://tex.stackexchange.com/questions/24136/natbib-and-hyperref-for-author-year-style-produces-two-links
+\usepackage{etoolbox}
+\makeatletter
+
+\pretocmd{\NAT@citex}{%
+  \let\NAT@hyper@\NAT@hyper@citex
+  \def\NAT@postnote{#2}%
+  \setcounter{NAT@total@cites}{0}%
+  \setcounter{NAT@count@cites}{0}%
+  \forcsvlist{\stepcounter{NAT@total@cites}\@gobble}{#3}}{}{}
+\newcounter{NAT@total@cites}
+\newcounter{NAT@count@cites}
+\def\NAT@postnote{}
+
+% include postnote and \citet closing bracket in hyperlink
+\def\NAT@hyper@citex#1{%
+  \stepcounter{NAT@count@cites}%
+  \hyper@natlinkstart{\@citeb\@extra@b@citeb}#1%
+  \ifnumequal{\value{NAT@count@cites}}{\value{NAT@total@cites}}
+    {\ifNAT@swa\else\if*\NAT@postnote*\else%
+     \NAT@cmt\NAT@postnote\global\def\NAT@postnote{}\fi\fi}{}%
+  \ifNAT@swa\else\if\relax\NAT@date\relax
+  \else\NAT@@close\global\let\NAT@nm\@empty\fi\fi% avoid compact citations
+  \hyper@natlinkend}
+\renewcommand\hyper@natlinkbreak[2]{#1}
+
+% avoid extraneous postnotes, closing brackets
+\patchcmd{\NAT@citex}
+  {\ifNAT@swa\else\if*#2*\else\NAT@cmt#2\fi
+   \if\relax\NAT@date\relax\else\NAT@@close\fi\fi}{}{}{}
+\patchcmd{\NAT@citex}
+  {\if\relax\NAT@date\relax\NAT@def@citea\else\NAT@def@citea@close\fi}
+  {\if\relax\NAT@date\relax\NAT@def@citea\else\NAT@def@citea@space\fi}{}{}
+
+\makeatother
+\hypersetup{%
+    unicode,
+    colorlinks,
+    allcolors=sDarkBlue,
+    pdfinfo={%
+        Title={メタファーの自動生成に向けた客観的評価指標の検討},
+        Author={宮澤 彬},
+        Keywords={自然言語処理, メタファー, 生成}
+    }
+}
+\begin{document}
+
+\begin{frame}
+    \maketitle
+\end{frame}
+
+
+\section{はじめに}
+\begin{frame}
+\frametitle{日常表現に溢れるメタファー}
+\textbf{メタファー}は感情など抽象的なものを理解する上で不可欠である．
+例えば以下のような表現が慣用的に使われている．
+
+    \begin{itemize}
+        \item 愛情を注ぐ \emoji{love}\emoji{needle}
+%        \item 欲望に溺れる \emoji{love}\emoji{needle}
+        \item 優越感に\ruby{浸}{ひた}る \emoji{hokkori}\emoji{bathing}
+        \item 不満を漏らす \emoji{confused}\emoji{drop}
+        \item 勇気が湧く \emoji{boast}\emoji{fountain}
+        \item 怒りに油を注ぐ \emoji{angry}\emoji{gasoline}
+        \item 憎悪の炎 \emoji{grimace}\emoji{fire}
+        \item 爆発する \emoji{explosion}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{メタファー生成の必要性}
+    既に定形表現になっているものも多いが，
+    メタファーは新たな語義を生みだす創造的な言語活動である．
+
+    （例）「炎上」\emoji{fire}の新しい用法
+
+    \bigskip
+
+    メタファー的な表現は，非メタファー的な表現と比較して，
+    感情に及ぼす影響が大きい\citep{mohammad2016}．
+
+    \bigskip
+
+    政治的な発言の説得力を高める手段にもなる\citep{black2011}．
+    \bigskip
+
+    詩や小説の執筆支援や，演説の原稿作成の支援などの応用が考えられる．
+\end{frame}
+
+\begin{frame}
+    \frametitle{本研究の動機と概要}
+
+    \textbf{動機}
+
+    メタファー生成では直喩（「\emph{S}のような\emph{T}」など）が中心に研究されてきた．
+    一般のメタファーの生成ではどのようなメタファーを生成すべきなのか？
+
+    （例）「?憎悪を注ぐ」
+
+    \bigskip
+
+    \textbf{概要}
+
+    本研究では生成すべき「よいメタファー」が満たすべき性質（評価指標）を提案する．
+
+    \bigskip
+
+    クラウドソーシングを用いた実験により，
+    提案する指標が評価可能であること，
+    そして「よいメタファー」の発見に有効であることを示す．
+
+\end{frame}
+
+\section{先行研究のタスク設定}
+\begin{frame}
+    \frametitle{既存のメタファー生成タスク}
+
+    \cite{jakitada2001}
+    \addtolength{\leftmargini}{-1\zw}
+    \begin{itemize}
+        \item 入力：「\emph{X}は\emph{Y}」（\emph{Y}は動詞または形容詞）という形式の文
+
+            （例）「彼の心は澄んでいる」
+
+        \item 出力：「\emph{Z}のように」や「\emph{Z}のようだ」を挿入した文
+
+            （例）「彼の心は\textbf{青い海のように}澄んでいる」
+
+    \end{itemize}
+
+    \bigskip
+
+    \citet{abe2006}
+
+    \begin{itemize}
+
+        \item 入力：``\emph{S} like \emph{T}''の\emph{S}と，\emph{T}が持つ性質
+
+            （例）\emph{S} = ``the character'',\newline
+             \hspace{2.5\zw}\emph{T}: ``young, innocent and fine character''
+
+        \item 出力：\emph{T}の候補
+
+            （例）``puppy''や``cat''
+
+    \end{itemize}
+\end{frame}
+
+
+\begin{frame}
+    \frametitle{先行研究における評価指標}
+    \citet{jakitada2001}は「メタファーとしてのよさ」を人手で評価している．
+    また生成過程で以下を考慮している．
+    \begin{enumerate}
+        \item 主題との共起度（理解のしやすさに影響）
+        \item 主題とのカテゴリ間類似度$\text{\emph{R}}_\text{\emph{C}}$（斬新さに影響）
+
+            （例）$\text{\emph{R}}_\text{\emph{C}}$ (``心'', ``頭脳'') > $\text{\emph{R}}_\text{\emph{C}}$ (``心'', ``水'')
+
+        \item 主題との情緒的類似度$\text{\emph{R}}_\text{\emph{S}}$（理解のしやすさに影響）
+
+            （例）$\text{\emph{R}}_\text{\emph{S}}$ (``心'', ``頭脳'') < $\text{\emph{R}}_\text{\emph{S}}$ (``心'', ``水'')
+    \end{enumerate}
+
+    \bigskip
+
+    \citet{abe2006}は以下の4点を人手で評価している．
+    \begin{enumerate}
+        \item 適切さ(adequacy)
+
+        \item 映像化の容易性(ease of visualization)
+
+        \item おもしろさ(amusingness)
+
+        \item 新規性(novelty)
+
+    \end{enumerate}
+\end{frame}
+
+\begin{frame}
+    \frametitle{メタファーの定義}
+
+    認知言語学では概念間の写像として定義されることが多い\citep{lakoff1999}．
+
+    \bigskip
+
+    例えば「快楽に溺れる」や「勇気が湧く」は，
+    水に関連した概念を用いて感情について記述している．
+    これらの背後にはという「水」の概念から「感情」の概念への写像があると考える．
+
+    \bigskip
+
+     \begin{figure}[b]
+         \begin{tikzpicture}[line width=1pt]
+             \draw [color=sDarkBlue] (0,0) circle (25pt);
+             \node (A) at (0,0) {\textsc{\textbf{水}}};
+             \node at (0,-1.2) {\small 根源領域};
+             \draw [color=sDarkBlue] (4,0) circle (25pt);
+             \node (B) at (4,0) {\textsc{\textbf{感情}}};
+             \node at (4,-1.2) {\small 対象領域};
+             \draw [->,color=sDarkBlue] (A) edge [bend left] (B);
+         \end{tikzpicture}
+         \caption{メタファーを写像として捉えた場合の図．}
+     \end{figure}
+
+\end{frame}
+
+\begin{frame}[plain,noframenumbering]
+    \frametitle{メタファー性の判断に関する先行研究}
+
+    先の定義は，単にメタファーかどうかの判断をするためには不向きである．
+    その目的のためには\citet{steen2010}のガイドライン(MIPVU)が利用できる．
+
+	\bigskip
+
+    \textbf{MIPVUの手順の概要}
+
+    \begin{enumerate}
+        \item \textbf{文脈語義}を特定する．
+        \item 文脈語義より\textbf{基礎的な語義}\footnote[frame]{具体的であったり，想像したり見たり触ったりすることが容易なものを指す語義．}が存在するか確認する.
+        \item それらが十分に異なるか判断する．
+        \item それらに\textbf{ある種の類似性}が認められるか検討する.
+    \end{enumerate}
+\end{frame}
+
+\begin{frame}
+    \frametitle{MIPVUの詳細}
+    例えば以下の文中の``struck''にアノテーションを行うとする．
+    \begin{center}
+        % VUAMC l. 215054
+        His speech \textbf{struck} me as the feeblest of the day.
+    \end{center}
+
+    % strike ~ as 句動詞だがタグが PRP なので別々に分析
+    \begin{leftbar}
+        \textbf{strike} {\phonetic /straɪk/} \textsc{verb}
+        \begin{enumerate}
+            \item to hit against, or to crash into, someone or something
+                \onslide<3->{← 文脈語義より基礎的な語義}
+            \item to make someone have a particular opinion or feeling
+                \onslide<2->{← 文脈語義}
+        \end{enumerate}
+
+         \hfill\textcolor{gray}{\emph{Macmillan Dictionary}}
+    \end{leftbar}
+
+	\onslide<4-> この``struck''はメタファー(metaphor-related word)である．
+\end{frame}
+
+
+\begin{frame}
+    \frametitle{メタファー写像の妥当性を検証する研究}
+
+	\citet{kuroda2005}や\citet{nabeshima2011}は
+	写像モデルの体系性や生産性について検証するため
+    根源領域の語と対象領域の語を組み合わせ
+	その容認度を求めている．
+
+    \begin{table}
+        \footnotesize
+        \setlength\extrarowheight{2pt}
+        \begin{tabular}{|c|c|c|c|c|c|}
+            \hline
+            & 水 & 感情 & 気持ち & 不満 & 勇気 \\
+            \hline
+            \emph{X}が溢れる & \cellcolor{sDarkRed}\textcolor{white}{4.0} & \cellcolor{sDarkRed}\textcolor{white}{3.7} & \cellcolor{sDarkRed}\textcolor{white}{3.8} & \cellcolor{sDarkRed}\textcolor{white}{3.8} & \cellcolor{sDarkRed}\textcolor{white}{3.3} \\
+            \hline
+            \emph{X}がこぼれる & \cellcolor{sDarkRed}\textcolor{white}{4.0} & \cellcolor{sOrange}\textcolor{white}{2.5} & \cellcolor{sOrange}\textcolor{white}{2.7} & \cellcolor{sDarkRed}\textcolor{white}{3.2} & \cellcolor{sBlonde}1.0 \\
+            \hline
+            \emph{X}を撒き散らす & \cellcolor{sDarkRed}\textcolor{white}{3.8} &
+\cellcolor{sDarkRed}\textcolor{white}{3.2}
+            & \cellcolor{sOrange}\textcolor{white}{2.8} & \cellcolor{sDarkRed}\textcolor{white}{3.5} & \cellcolor{sBlonde}1.2 \\
+            \hline
+            \emph{X}が漏れる & \cellcolor{sDarkRed}\textcolor{white}{4.0} & \cellcolor{sDarkRed}\textcolor{white}{3.0} & \cellcolor{sBlonde}{1.3} & \cellcolor{sDarkRed}\textcolor{white}{3.8} & \cellcolor{sBlonde}1.0 \\
+            \hline
+%            \emph{X}を注ぐ & \cellcolor{sDarkRed}\textcolor{white}{3.3} & \cellcolor{sOrange}\textcolor{white}{2.5} & \cellcolor{sOrange}\textcolor{white}{2.7} & \cellcolor{sBlonde}1.2 & \cellcolor{sBlonde}1.8 \\
+%            \hline
+            \emph{X}が濁る & \cellcolor{sDarkRed}\textcolor{white}{4.0} & \cellcolor{sOrange}\textcolor{white}{2.2} & \cellcolor{sOrange}\textcolor{white}{2.8} & 0.3 & 0.7 \\
+            \hline
+            \emph{X}が滴る & \cellcolor{sDarkRed}\textcolor{white}{3.3} & \cellcolor{sBlonde}1.3 & 0.7 & \cellcolor{sBlonde}1.3 & 0.5 \\
+            \hline
+            \emph{X}が滲む & \cellcolor{sBlonde}{1.8} & \cellcolor{sBlonde}1.2 & 0.5 & 0.8 & 0.3 \\
+            \hline
+        \end{tabular}
+        \caption{\citet{nabeshima2011}が《感情は水》の妥当性の検証に用いた表の一部．}
+    \end{table}
+\end{frame}
+
+% \begin{frame}
+%     \frametitle{本研究で提案する評価指標と先行研究との関連}
+%
+%     \begin{enumerate}
+%         \item \textbf{メタファー性}
+%
+%             直喩の生成においてはあまり重要視されてこなかった
+%             ため本研究で導入する．
+%
+%         \item \textbf{理解可能性}
+%
+%             \citet{jakitada2001}の情緒的類似度，
+%             \citet{abe2006}の適切さと映像化の容易性に対応する．
+%
+%         \item \textbf{新規性}
+%
+%             \citet{jakitada2001}の共起度とカテゴリ間差異，
+%             \citet{abe2006}のおもしろさと新規性に対応する．
+%
+%         \item \textbf{総合評価}
+%
+%             本研究で新たに導入する．
+%
+%     \end{enumerate}
+% \end{frame}
+
+\section{提案指標}
+\begin{frame}
+    \frametitle{提案指標}
+    本研究では以下の4つの指標を導入する．
+
+     \begin{enumerate}
+         \item \textbf{メタファー性}
+
+         \item \textbf{理解可能性}
+
+         \item \textbf{新規性}
+
+         \item \textbf{総合評価}
+
+     \end{enumerate}
+
+     \bigskip
+
+     重視する性質によって生成される表現を
+     変更できるよう，
+     複数の指標を用いる．
+\end{frame}
+
+\begin{frame}
+    \frametitle{提案指標1 メタファー性}
+    生成された表現がどの程度メタファーらしいか．
+
+    （例）水を注ぐ→メタファー性が低い\newline
+     \phantom{（例）}\hspace{0.5\zw}愛情を注ぐ→メタファー性が高い
+
+     \bigskip
+
+    直喩の生成においてはあまり重要視
+    されてこなかったため本研究で導入する．
+
+	\bigskip
+
+	MIPVUのような厳密な方法では，
+	訓練や言語学の知識が必要になりコストが高い．
+
+	→今回はクラウドソーシングで評価を行う．
+
+	\bigskip
+
+	今後応用を行うにおいて
+    自動化が必要な場合は
+    メタファーの検出の手法（\citet{shutova2011}など）が利用できる．
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{提案指標2 新規性}
+    生成された表現がどの程度新しいと感じられるか．
+
+    （例）心を汲み取る→新規性が低い\newline
+     \phantom{（例）}\hspace{0.5\zw}頭脳を汲み取る→新規性が高い
+
+    \bigskip
+
+    詩などの創作活動において，
+    日常的な使用法からの逸脱は重要で，
+    メタファーはそのための手段の1つである\citep{leech2014}．
+
+    \bigskip
+
+    \citet{jakitada2001}のカテゴリ間類似度，
+    \citet{abe2006}のおもしろさと新規性に対応する．
+
+    \bigskip
+
+%    \begin{leftbar}
+%        \ldots\ Antony would \ldots\ put a tongue
+%
+%        In Every wound of Caesar, that should move
+%
+%        The stones of Rome to rise and mutiny.
+%
+%        \hfill \textcolor{gray}{William Shakespeare's \emph{Julius Caesar}}
+%    \end{leftbar}
+
+    今回はどの程度新しいと感じるかを人手（クラウドソーシング）で評価する．
+    将来的には頻度などを用いて自動で評価する．
+\end{frame}
+
+\begin{frame}
+    \frametitle{提案指標3 理解可能性}
+    生成された表現がどの程度理解しやすいか．
+
+    （例）心を汲み取る→理解可能性が高い\newline
+     \phantom{（例）}\hspace{0.5\zw}頭脳を汲み取る→理解可能性が低い
+
+     \bigskip
+
+     理解しにくい表現は
+     書き手の意図が伝わらないため，
+     執筆支援システムとして
+     生成すべき表現とは異なる．
+
+     \bigskip
+
+    \citet{jakitada2001}の情緒的類似度，
+    \citet{abe2006}の適切さと映像化の容易性に対応する．
+
+    \bigskip
+
+    表現がどの程度理解しやすいかを人手で評価する．
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{提案指標4 総合評価}
+
+    重視すべき性質が決まっていない場合に
+    どのようなメタファーを生成すべきか？
+
+    \bigskip
+
+    \textbf{総合評価}というものを導入する．
+    今回は以下のように単純な和で定義する．
+    \begin{align*}
+        \text{総合評価}=\text{メタファー性}+\text{新規性}+\text{理解可能性}
+    \end{align*}
+
+\end{frame}
+
+\section{実験}
+\begin{frame}
+    \frametitle{実験の概要}
+
+    2つの実験を行う．
+
+    \bigskip
+
+    \textbf{実験1}
+
+    クラウドソーシングを用いて，
+    各指標について評価可能であることを検証する．
+
+    \bigskip
+
+    \textbf{実験2}
+
+    総合評価で上位になった表現が
+    「よいメタファー」になっていることを検証する．
+    ボランティアの大学院生1名と筆者によって行う．
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{実験で使用した名詞の一覧}
+    基本的には，
+    \citet{nabeshima2011}が
+    水のメタファー（特に《感情は水》）の
+    生産性を検証するのに用いた語を使用した．
+    ただし\citet{nabeshima2011}には
+    具体的な感情を表す語が少なかったため，
+    太字の28の名詞を追加し，計40の名詞を利用した．
+
+    \begin{table}
+        \footnotesize
+        \begin{tabular}{lllll}
+            \toprule
+            水 & 油 & 砂 & 岩 & \textbf{泥} \\
+            感情 & 気持ち & \textbf{意図} & \textbf{理解} & \textbf{睡眠} \\
+            情報 & 言葉 & \textbf{声} & \textbf{音} & \textbf{光} \\
+            金銭 & 空気 & \textbf{時間} & \textbf{労働} & \textbf{におい} \\
+            勇気 & 不満 & \textbf{嫉妬} & \textbf{安心} & \textbf{不安} \\
+            \textbf{羞恥心}  & \textbf{怒り} & \textbf{憎悪} & \textbf{快楽} & \textbf{喜び} \\
+            \textbf{楽しさ} & \textbf{愛} & \textbf{情熱} & \textbf{希望} & \textbf{絶望} \\
+            \textbf{悲しみ} & \textbf{恐怖} & \textbf{ネコ} & \textbf{アリ} & \textbf{ケーキ} \\
+            \bottomrule
+        \end{tabular}
+        \caption{評価対象の表現を作成するために使用した名詞の一覧．}
+    \end{table}
+\end{frame}
+
+\begin{frame}
+    \frametitle{実験で使用した動詞句の一覧}
+    動詞句は，
+    太字の6つの動詞句を追加し，合計34の動詞句を利用した．
+
+    \begin{table}
+        \footnotesize
+        \begin{tabular}{llll}
+            \toprule
+            \emph{X}が\ruby{溢}{あふ}れる
+            & \emph{X}がこぼれる & \emph{X}を撒き散らす & \emph{X}が溜まる \\
+            \emph{X}が漏れる & \emph{X}が満ちる & \emph{X}を搾り出す & \emph{X}が渦巻く\\
+            \emph{X}が湧く & \emph{X}が流れる & \emph{X}に溺れる & \emph{X}をかける \\
+            \emph{X}を注ぐ & \emph{X}に\ruby{浸}{ひた}る & \emph{X}を浴びせる & \emph{X}が濁る \\
+            \emph{X}が淀む & \emph{X}を撒く & \emph{X}が澄む & \emph{X}がしみる \\
+            \emph{X}に浸す & \emph{X}を垂らす & \emph{X}に漬かる & \emph{X}がほとばしる \\
+            \emph{X}が滴る & \emph{X}に浮く & \emph{X}が滲む & \emph{X}ですすぐ \\
+            \textbf{\emph{X}を飲む} & \textbf{\emph{X}を啜る} & \textbf{\emph{X}に沈む} & \textbf{\emph{X}を汲み取る} \\
+            \textbf{\emph{X}が流れ出る} & \textbf{\emph{X}が沸騰する} & & \\
+            \bottomrule
+        \end{tabular}
+        \caption{評価対象の表現を作成するために使用した動詞句の一覧．}
+    \end{table}
+\end{frame}
+
+\begin{frame}
+    \frametitle{実験1の設定}
+    Yahoo!クラウドソーシングを利用して
+    募集した作業者に，
+    各指標について5段階で評価をしてもらった．
+
+    \bigskip
+
+    10名の回答の平均を\textbf{得点}として，分析に利用する．
+    なお集計の際には\citet{nabeshima2011}と比較するために0から4に補正した．
+
+    \bigskip
+
+    \begin{figure}[b]
+        \centering
+        \includegraphics[width=0.7\textwidth]{screenshot.png}
+        \caption{質問の例．}
+    \end{figure}
+
+\end{frame}
+
+%\begin{frame}
+%    \frametitle{実験1の設定II}
+%    \addtolength{\leftmargini}{-1\zw}
+%    \begin{itemize}
+%        \item \textbf{メタファー性} 次の表現を比喩だと感じますか．
+%
+%                \begin{enumerate}
+%                    \item[5.] 比喩だと感じる
+%
+%                    \item[1.] 比喩だとは感じない
+%                \end{enumerate}
+%
+%        \smallskip
+%
+%        \item \textbf{理解可能性} 次の表現は理解しやすいですか．
+%
+%                \begin{enumerate}
+%                    \item[5.] 問題なく理解できる
+%
+%                    \item[1.] まったく理解できない
+%                \end{enumerate}
+%
+%        \smallskip
+%
+%        \item \textbf{新規性} 次の表現は新しい表現ですか．
+%
+%            \begin{enumerate}
+%                \item[5.] 使ったこと，見聞きしたことがない新しい表現である
+%
+%                \item[1.] 広く使われている慣用的な表現である
+%            \end{enumerate}
+%
+%    \end{itemize}
+%\end{frame}
+%
+
+
+
+\begin{frame}
+    \frametitle{メタファー性の実験結果I}
+    \begin{figure}[h]\centering
+        \vfill
+        \includegraphics[width=0.95\textwidth]{metaphoricity-ja}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{メタファー性の実験結果II}
+
+     全体的にメタファー性がうまく捉えられているように見受けられるが，
+     「情熱を注ぐ」のような慣用的なメタファーについて
+     評価値が小さくなってしまう傾向がある．
+
+    \begin{table}\centering
+        \footnotesize
+        \begin{tabular}{|c|c|c|c|c|c|c|c|c|}
+        \hline
+            & 愛 & 希望 & 情熱 & 嫉妬 & 不満 & ネコ & 水 \\
+        \hline
+        \emph{X}に溺れる & \cellcolor{sOrange}\textcolor{white}{2.4} & \cellcolor{sOrange}\textcolor{white}{2.6} & \cellcolor{sBlonde}1.7 & \cellcolor{sDarkRed}\textcolor{white}{3.4} & \cellcolor{sDarkRed}\textcolor{white}{3.0} & \cellcolor{sBlonde}1.9 & 0.3 \\
+        \hline
+        \emph{X}が沸騰する & \cellcolor{sOrange}\textcolor{white}{2.9} & \cellcolor{sOrange}\textcolor{white}{2.3} & \cellcolor{sOrange}\textcolor{white}{2.5} & \cellcolor{sOrange}\textcolor{white}{2.4} & \cellcolor{sOrange}\textcolor{white}{2.4} & \cellcolor{sOrange}\textcolor{white}{2.1} & 0.0 \\
+        \hline
+        \emph{X}を注ぐ & \cellcolor{sOrange}\textcolor{white}{2.0} & \cellcolor{sOrange}\textcolor{white}{2.5} & 0.4 & \cellcolor{sOrange}\textcolor{white}{2.9} & \cellcolor{sBlonde}1.9 & \cellcolor{sBlonde}1.7 & 0.6 \\
+        \hline
+        \emph{X}が満ちる & \cellcolor{sOrange}\textcolor{white}{2.7} & \cellcolor{sOrange}\textcolor{white}{2.1} & \cellcolor{sOrange}\textcolor{white}{2.3} & \cellcolor{sBlonde}1.5 & \cellcolor{sBlonde}1.7 & \cellcolor{sOrange}\textcolor{white}{2.8} & 0.6 \\
+        \hline
+        \emph{X}が漏れる & \cellcolor{sOrange}\textcolor{white}{2.7} & \cellcolor{sBlonde}1.9 & \cellcolor{sBlonde}1.7 & \cellcolor{sBlonde}1.9 & \cellcolor{sBlonde}1.0 & \cellcolor{sOrange}\textcolor{white}{2.0} & 0.7 \\
+        \hline
+        \emph{X}が濁る & \cellcolor{sOrange}\textcolor{white}{2.6} & 0.6 & \cellcolor{sOrange}\textcolor{white}{2.2} & \cellcolor{sOrange}\textcolor{white}{2.0} & \cellcolor{sBlonde}1.6 & \cellcolor{sBlonde}1.7 & 0.8 \\
+        \hline
+            \emph{X}が溢れる & \cellcolor{sBlonde}1.6 & \cellcolor{sBlonde}1.4 & \cellcolor{sBlonde}1.9 & \cellcolor{sDarkRed}\textcolor{white}{3.2} & \cellcolor{sBlonde}1.0 & \cellcolor{sBlonde}1.2 & \cellcolor{sBlonde}1.0 \\
+        \hline
+        \emph{X}を撒き散らす & \cellcolor{sOrange}\textcolor{white}{2.5} & \cellcolor{sOrange}\textcolor{white}{2.4} & \cellcolor{sOrange}\textcolor{white}{2.0} & \cellcolor{sBlonde}1.8 & \cellcolor{sBlonde}1.1 & \cellcolor{sOrange}\textcolor{white}{2.1} & 0.8 \\
+        \hline
+        \emph{X}を汲み取る & \cellcolor{sBlonde}1.8 & \cellcolor{sBlonde}1.4 & \cellcolor{sOrange}\textcolor{white}{2.5} & \cellcolor{sOrange}\textcolor{white}{2.4} & \cellcolor{sBlonde}1.5 & \cellcolor{sBlonde}1.6 & 0.1 \\
+        \hline
+        \end{tabular}
+        \caption{メタファー性のヒートマップの一部を抜粋し拡大したもの．}
+    \end{table}
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{メタファー性の実験結果III}
+    \begin{columns}
+        \begin{column}{0.55\textwidth}
+            \begin{table}[t]
+                \centering\footnotesize
+                \begin{tabular}{rllc}
+                    \toprule%
+                    \header{順位} & \header{名詞} & \header{動詞} & \header{得点} \\
+                    \midrule%
+                    1             & 言葉          & \emph{X}が沸騰する   & 3.9           \\
+                    2             & 感情          & \emph{X}に溺れる     & 3.8           \\
+                    3             & 絶望          & \emph{X}が溢れる     & 3.7           \\
+                    4             & 音            & \emph{X}がしみる     & 3.6           \\
+                    %5             & 恐怖          & \emph{X}が流れ出る   & 3.5           \\
+                    %5             & 絶望          & \emph{X}がこぼれる   & 3.5           \\
+                    5             & 絶望          & \emph{X}を撒き散らす & 3.5           \\
+                    %5             & 絶望          & \emph{X}が漏れる     & 3.5           \\[-1pt]
+                    \multicolumn{4}{c}{$\vdots$} \\[2pt]
+                    %1351          & 水            & \emph{X}が流れ出る   & 0.2           \\
+                    %1351          & 水            & \emph{X}が湧く       & 0.2           \\
+                    %1355          & 水            & \emph{X}を汲み取る   & 0.1           \\
+                    1356          & 声            & \emph{X}をかける     & 0.0           \\
+                    1356          & 水            & \emph{X}を啜る       & 0.0           \\
+                    1356          & 水            & \emph{X}が沸騰する   & 0.0           \\
+                    1356          & 水            & \emph{X}が流れる     & 0.0           \\
+                    1356          & 水            & \emph{X}を飲む       & 0.0           \\
+                    \bottomrule%
+                \end{tabular}
+                \caption{メタファー性の上位と下位．}\label{tab:metrank}
+            \end{table}
+        \end{column}
+        \begin{column}{0.45\textwidth}
+            \small
+            \textbf{傾向}
+            \begin{itemize}
+                \item 上位にはメタファーらしい表現が並ぶ
+                \item 下位には「水」を使った表現が多い
+            \end{itemize}
+
+     上位の表現が実際にメタファーかどうかを筆者がMIPVUに従って判定した結果，8/10がメタファー（動詞の語義がメタファー的）と判断された．
+     メタファーでなかった2件は「言葉が沸騰する」と「絶望がこぼれる」で，
+     いずれも文脈語義が不明であった．
+
+        \end{column}
+    \end{columns}
+\end{frame}
+
+
+\begin{frame}
+    \frametitle{理解可能性の実験結果I}
+    \begin{figure}[h]\centering
+        \vfill
+        \includegraphics[width=0.95\textwidth]{comprehensibility-ja}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{理解可能性の実験結果II}
+    \citet{nabeshima2011}の容認度との比較を行ったところ，
+    相関係数が0.81で，
+    対応する項目の得点差の絶対値の平均が0.64と
+    非常に近い結果になった．
+
+    \begin{table}[h]\centering
+        \footnotesize
+        \begin{tabular}{|c|c|c|c|c|c|c|c|c|}
+        \hline
+        & 水 & 不満 & 愛 & 情熱 & 怒り & 希望 & 嫉妬 & ネコ \\
+        \hline
+            \emph{X}が溢れる & \cellcolor{sDarkRed}\textcolor{white}{3.6} & \cellcolor{sDarkRed}\textcolor{white}{3.8} & \cellcolor{sDarkRed}\textcolor{white}{3.7} & \cellcolor{sDarkRed}\textcolor{white}{4.0} & \cellcolor{sDarkRed}\textcolor{white}{3.6} & \cellcolor{sDarkRed}\textcolor{white}{3.3} & \cellcolor{sDarkRed}\textcolor{white}{3.5} & \cellcolor{sOrange}\textcolor{white}{2.1} \\
+        \hline
+            \emph{X}が満ちる & \cellcolor{sDarkRed}\textcolor{white}{3.8} & \cellcolor{sDarkRed}\textcolor{white}{3.2} & \cellcolor{sDarkRed}\textcolor{white}{3.4} & \cellcolor{sOrange}\textcolor{white}{2.5} & \cellcolor{sDarkRed}\textcolor{white}{3.3} & \cellcolor{sDarkRed}\textcolor{white}{3.6} & \cellcolor{sOrange}\textcolor{white}{2.2} & \cellcolor{sBlonde}1.0 \\
+        \hline
+            \emph{X}を撒き散らす & \cellcolor{sDarkRed}\textcolor{white}{3.5} & \cellcolor{sDarkRed}\textcolor{white}{3.9} & \cellcolor{sOrange}\textcolor{white}{2.9} & \cellcolor{sOrange}\textcolor{white}{2.2} & \cellcolor{sDarkRed}\textcolor{white}{3.1} & \cellcolor{sOrange}\textcolor{white}{2.2} & \cellcolor{sOrange}\textcolor{white}{2.6} & 0.4 \\
+        \hline
+            \emph{X}に溺れる & \cellcolor{sDarkRed}\textcolor{white}{3.9} & \cellcolor{sBlonde}1.0 & \cellcolor{sDarkRed}\textcolor{white}{4.0} & \cellcolor{sOrange}\textcolor{white}{2.9} & \cellcolor{sBlonde}1.8 & \cellcolor{sBlonde}1.1 & \cellcolor{sOrange}\textcolor{white}{2.7} & \cellcolor{sOrange}\textcolor{white}{2.5} \\
+        \hline
+            \emph{X}が漏れる & \cellcolor{sDarkRed}\textcolor{white}{3.9} & \cellcolor{sDarkRed}\textcolor{white}{3.8} & \cellcolor{sOrange}\textcolor{white}{2.1} & \cellcolor{sBlonde}1.6 & \cellcolor{sOrange}\textcolor{white}{2.3} & 0.9 & \cellcolor{sBlonde}1.9 & 0.4 \\
+        \hline
+            \emph{X}を注ぐ & \cellcolor{sDarkRed}\textcolor{white}{3.7} & \cellcolor{sBlonde}1.3 & \cellcolor{sDarkRed}\textcolor{white}{3.6} & \cellcolor{sDarkRed}\textcolor{white}{4.0} & \cellcolor{sOrange}\textcolor{white}{2.1} & \cellcolor{sOrange}\textcolor{white}{2.3} & \cellcolor{sBlonde}1.4 & 0.1 \\
+        \hline
+            \emph{X}が濁る & \cellcolor{sDarkRed}\textcolor{white}{3.7} & \cellcolor{sBlonde}1.4 & \cellcolor{sBlonde}1.5 & \cellcolor{sBlonde}1.7 & 0.9 & 0.8 & 0.4 & 0.1 \\
+        \hline
+            \emph{X}が沸騰する & \cellcolor{sDarkRed}\textcolor{white}{4.0} & \cellcolor{sOrange}\textcolor{white}{2.1} & \cellcolor{sOrange}\textcolor{white}{2.0} & \cellcolor{sOrange}\textcolor{white}{2.1} & \cellcolor{sDarkRed}\textcolor{white}{3.2} & \cellcolor{sBlonde}1.2 & \cellcolor{sOrange}\textcolor{white}{2.0} & 0.3 \\
+        \hline
+        \end{tabular}
+        \caption{理解可能性のヒートマップの一部を抜粋し拡大したもの．}
+    \end{table}
+\end{frame}
+
+\begin{frame}
+    \frametitle{理解可能性の実験結果III}
+    \begin{columns}
+        \begin{column}{0.55\textwidth}
+            \begin{table}[t]
+                \centering\footnotesize
+                \begin{tabular}{rllc}
+                    \toprule%
+                    \header{順位} & \header{名詞} & \header{動詞} & \header{得点} \\
+                    \midrule%
+                    % 1             & 不満          & \emph{X}が溜まる     & 4.0           \\
+                    1             & 悲しみ        & \emph{X}が溢れる     & 4.0           \\
+                    1             & 情熱          & \emph{X}を注ぐ       & 4.0           \\
+                    % 1             & 情熱          & \emph{X}が溢れる     & 4.0           \\
+                    1             & 愛            & \emph{X}に溺れる     & 4.0           \\
+                    % 1             & 感情          & \emph{X}を汲み取る   & 4.0           \\
+                    1             & 水            & \emph{X}ですすぐ     & 4.0           \\
+                    1             & 水            & \emph{X}をかける     & 4.0           \\[-1pt]
+                    \multicolumn{4}{c}{$\vdots$} \\[2pt]
+                    1341          & 睡眠          & \emph{X}が滲む       & 0.1           \\
+                    1341          & 絶望          & \emph{X}が澄む       & 0.1           \\
+                    1341          & ネコ          & \emph{X}を注ぐ       & 0.1           \\
+                    % 1356          & アリ          & \emph{X}がしみる     & 0.0           \\
+                    % 1356          & ケーキ        & \emph{X}を注ぐ       & 0.0           \\
+                    % 1356          & 岩            & \emph{X}を啜る       & 0.0           \\
+                    1356          & 怒り          & \emph{X}を啜る       & 0.0           \\
+                    1356          & 憎悪          & \emph{X}ですすぐ     & 0.0           \\
+                    \bottomrule%
+                \end{tabular}
+                \caption{理解可能性の上位と下位．}\label{tab:comprank}
+            \end{table}
+        \end{column}
+        \begin{column}{0.45\textwidth}
+            \noindent \textbf{傾向}
+            \begin{itemize}
+                \item 上位には慣用表現と「水」を使った表現が多い．
+                \item 下位には「憎悪ですすぐ」など見慣れない表現が並ぶ．
+            \end{itemize}
+
+
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}
+    \frametitle{新規性の実験結果I}
+    \begin{figure}[h]\centering
+        \vfill
+        \includegraphics[width=0.95\textwidth]{novelty-ja}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{新規性の実験結果II}
+    理解可能性と対照的な結果になっている．
+
+    \begin{table}\centering
+        \footnotesize
+        \begin{tabular}{|c|c|c|c|c|c|c|c|c|}
+            \hline
+ & 水 & 不満 & 愛 & 情熱 & 怒り & 希望 & 嫉妬 & ネコ \\
+            \hline
+\emph{X}が溢れる & 0.9 & 0.6 & 0.5 & 0.4 & \cellcolor{sBlonde}1.3 & 0.8 & 0.6 & \cellcolor{sOrange}\textcolor{white}{2.4} \\
+            \hline
+\emph{X}が満ちる & 0.9 & \cellcolor{sBlonde}1.8 & \cellcolor{sBlonde}1.6 & \cellcolor{sBlonde}1.9 & \cellcolor{sBlonde}1.5 & 0.7 & \cellcolor{sOrange}\textcolor{white}{2.6} & \cellcolor{sDarkRed}\textcolor{white}{3.7} \\
+            \hline
+\emph{X}を撒き散らす & 0.5 & 0.3 & \cellcolor{sOrange}\textcolor{white}{2.7} & \cellcolor{sOrange}\textcolor{white}{2.6} & \cellcolor{sOrange}\textcolor{white}{2.1} & \cellcolor{sOrange}\textcolor{white}{2.6} & \cellcolor{sOrange}\textcolor{white}{2.3} & \cellcolor{sDarkRed}\textcolor{white}{3.9} \\
+            \hline
+\emph{X}に溺れる & 0.2 & \cellcolor{sDarkRed}\textcolor{white}{3.5} & 0.1 & \cellcolor{sOrange}\textcolor{white}{2.2} & \cellcolor{sOrange}\textcolor{white}{2.7} & \cellcolor{sDarkRed}\textcolor{white}{3.4} & \cellcolor{sBlonde}1.9 & \cellcolor{sBlonde}1.9 \\
+            \hline
+\emph{X}が漏れる & 0.5 & 0.3 & \cellcolor{sOrange}\textcolor{white}{2.6} & \cellcolor{sOrange}\textcolor{white}{2.7} & \cellcolor{sOrange}\textcolor{white}{2.7} & \cellcolor{sOrange}\textcolor{white}{2.7} & \cellcolor{sDarkRed}\textcolor{white}{3.0} & \cellcolor{sDarkRed}\textcolor{white}{3.7} \\
+            \hline
+\emph{X}が沸騰する & 0.0 & \cellcolor{sOrange}\textcolor{white}{2.4} & \cellcolor{sDarkRed}\textcolor{white}{3.4} & \cellcolor{sOrange}\textcolor{white}{2.7} & \cellcolor{sBlonde}1.9 & \cellcolor{sDarkRed}\textcolor{white}{3.3} & \cellcolor{sDarkRed}\textcolor{white}{3.3} & \cellcolor{sDarkRed}\textcolor{white}{3.7} \\
+            \hline
+\emph{X}を注ぐ & 0.5 & \cellcolor{sDarkRed}\textcolor{white}{3.0} & 0.6 & 0.0 & \cellcolor{sOrange}\textcolor{white}{2.6} & \cellcolor{sOrange}\textcolor{white}{2.3} & \cellcolor{sDarkRed}\textcolor{white}{3.3} & \cellcolor{sDarkRed}\textcolor{white}{3.7} \\
+            \hline
+\emph{X}が濁る & 0.3 & \cellcolor{sDarkRed}\textcolor{white}{3.6} & \cellcolor{sDarkRed}\textcolor{white}{3.0} & \cellcolor{sDarkRed}\textcolor{white}{3.0} & \cellcolor{sDarkRed}\textcolor{white}{3.3} & \cellcolor{sDarkRed}\textcolor{white}{3.0} & \cellcolor{sDarkRed}\textcolor{white}{3.9} & \cellcolor{sDarkRed}\textcolor{white}{3.9} \\
+            \hline
+        \end{tabular}
+        \caption{新規性のヒートマップの一部を抜粋し拡大したもの．}
+    \end{table}
+\end{frame}
+
+\begin{frame}
+    \frametitle{新規性の実験結果III}
+    \begin{columns}
+        \begin{column}{0.6\textwidth}
+            \begin{table}[t]
+                \centering\footnotesize
+                \begin{tabular}{rllc}
+                    \toprule%
+                    \header{順位} & \header{名詞} & \header{動詞} & \header{得点} \\
+                    \midrule%
+                    % 1             & アリ          & \emph{X}がしみる     & 4.0           \\
+                    % 1             & ネコ          & \emph{X}を搾り出す   & 4.0           \\
+                    1             & ネコ          & \emph{X}が流れ出る   & 4.0           \\
+                    1             & 勇気          & \emph{X}が漏れる     & 4.0           \\
+                    %1             & 岩            & \emph{X}を啜る       & 4.0           \\
+                    1             & 憎悪          & \emph{X}ですすぐ     & 4.0           \\
+                    1             & 時間          & \emph{X}が沸騰する   & 4.0           \\
+                    1             & 楽しさ        & \emph{X}ですすぐ     & 4.0           \\[-1pt]
+                    \multicolumn{4}{c}{$\vdots$} \\[2pt]
+                    1353          & 情熱          & \emph{X}を注ぐ       & 0.0           \\
+                    %1353          & 時間          & \emph{X}をかける     & 0.0           \\
+                    % 1353          & 水            & \emph{X}をかける     & 0.0           \\
+                    %1353          & 水            & \emph{X}が沸騰する   & 0.0           \\
+                    1353          & 水            & \emph{X}が流れる     & 0.0           \\
+                    1353          & 水            & \emph{X}が湧く       & 0.0           \\
+                    1353          & 水            & \emph{X}を飲む       & 0.0           \\
+                    1353          & 言葉          & \emph{X}をかける     & 0.0           \\
+                    \bottomrule%
+                \end{tabular}
+                \caption{新規性の上位と下位．}\label{tab:novrank}
+            \end{table}
+        \end{column}
+        \begin{column}{0.4\textwidth}
+            \textbf{傾向}
+            \begin{itemize}
+                \item 上位には，「ネコ」など具体的なものを指す名詞を含む表現が多い．
+                \item 下位には，水に関する表現と，「情熱を注ぐ」などの慣用句が並ぶ．
+            \end{itemize}
+
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}
+    \frametitle{各指標間の関係}
+    \begin{table}[t]
+        \centering\footnotesize
+        \begin{tabular}{lccc}
+            \toprule
+                         & \header{メタファー性}
+                         & \header{理解可能性}
+                         & \header{新規性} \\
+            \midrule
+            \textbf{メタファー性} & 1.0   & −0.19 & 0.28  \\
+            \textbf{理解可能性}   & −0.19 & 1.0   & −0.92 \\
+            \textbf{新規性}       & 0.28  & −0.92 & 1.0  \\
+            \bottomrule
+        \end{tabular}
+        \caption{各指標間の相関係数．}\label{corr}
+    \end{table}
+    新規性と理解可能性の間に強い負の相関がある．
+
+    \bigskip
+
+    片方だけで十分なのではないか．
+
+    →どちらも高い表現もあり、そうとも言い切れない．
+
+    （例）「不満を飲む」 （理解可能性：3.3，新規性：2.6）\newline
+    \phantom{（例）}「羞恥心が湧く」 （理解可能性：3.1，新規性：2.4）
+\end{frame}
+
+\begin{frame}
+    \frametitle{総合評価}
+    \begin{columns}
+        \begin{column}{0.6\textwidth}
+            \begin{table}[t]
+                \centering\footnotesize
+                \begin{tabular}{rllr}
+                    \toprule%
+                    \header{順位} & \header{名詞} & \header{動詞} & \header{得点} \\
+                    \midrule%
+                    1             & 空気          & \emph{X}に沈む       & 8.9           \\
+                    2             & 気持ち        & \emph{X}が沸騰する   & 8.8           \\
+                    3             & 恐怖          & \emph{X}が流れ出る   & 8.7           \\
+                    4             & 感情          & \emph{X}が沸騰する   & 8.6           \\
+                    4             & 羞恥心        & \emph{X}がこぼれる   & 8.6           \\
+                    \multicolumn{4}{c}{$\vdots$} \\[2pt]
+                    1356          & ケーキ        & \emph{X}を注ぐ       & 4.0           \\
+                    1356          & 水            & \emph{X}が沸騰する   & 4.0           \\
+                    1356          & 水            & \emph{X}が流れる     & 4.0           \\
+                    1356          & 水            & \emph{X}を飲む       & 4.0           \\
+                    1360          & 声            & \emph{X}をかける     & 3.8           \\
+                    \bottomrule%
+                \end{tabular}
+                \caption{総合評価の上位と下位．}\label{tab:ranking}
+            \end{table}
+        \end{column}
+        \begin{column}{0.4\textwidth}
+            上位には，あまり見かけないが
+            意味を解釈できる表現が並ぶ．
+
+            \bigskip
+
+            例えば，「空気に沈む」は
+            「雰囲気によって落ち込む」のように解釈できる．
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}
+    \frametitle{総合評価の有効性I}
+    総合評価の有効性を確認するためには，
+    上位の表現が実際に「よいメタファー」になっているかどうかを検証する必要がある．
+
+    \begin{itemize}
+        \item よい→より使いたいと感じる
+        \item メタファー→MIPVUの基準で動詞がメタファー的かどうか
+    \end{itemize}
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{総合評価の有効性II}
+    \textbf{よさの評価方法}
+    \begin{enumerate}
+        \item 総合評価のランキングに基づき，
+              すべての表現を上位10\%のグループと下位90\%のグループに分ける．
+
+        \item 各グループからランダムに表現を1つずつ抽出し10個のペアを作る．
+
+        \item 作業者1名\footnote[frame]{%
+            言語学の知識をもつ大学院生．}
+            に，より使いたいと感じる表現を各ペアから1つ選んでもらう．
+            このとき表現がメタファーかどうかは考慮しない．
+
+        \item 最後に上位グループのものが，より使いたい表現に選ばれることを確認する．
+
+    \end{enumerate}
+\end{frame}
+
+\begin{frame}
+    \frametitle{総合評価の有効性III}
+    \begin{table}[t]
+        \centering\footnotesize
+        \begin{tabular}{llc}
+            \toprule%
+            \header{上位10\%}
+            & \header{下位90\%}
+            & \header{上位がより好ましい} \\
+            \midrule
+            不満を飲む(23)       & 油を汲み取る(1087)    & $\checkmark$ \\
+            怒りがこぼれる(6)    & 岩に溺れる(1117)      & $\checkmark$ \\
+            羞恥心が溜まる(44)   & 羞恥心を注ぐ(856)     & $\checkmark$ \\
+            情報が濁る(106)      & 空気を撒き散らす(212) & $\checkmark$ \\
+            悲しみがしみる(32)   & 理解が流れる(721)     & $\checkmark$ \\
+            \textbf{楽しさが渦巻く}(81)   & \textbf{不満に漬かる}(1241)    & − \\
+            \textbf{言葉が滲む}(14)       & \textbf{恐怖が流れる}(307)     & − \\
+            感情を注ぐ(44)       & 意図に漬かる(654)     & $\checkmark$ \\
+            不安が流れ出る(44)   & 情熱を汲み取る(165)   & $\checkmark$ \\
+            情報に溺れる(23)     & 油が溜まる(1241)      & $\checkmark$ \\
+            \bottomrule
+        \end{tabular}
+        \caption{総合評価とより使いたいと感じる表現の対応．
+                括弧内の数字は総合評価の順位である．
+                作業者にはどちらが上位か分からないように提示した．}\label{tab:human}
+    \end{table}
+\end{frame}
+
+\begin{frame}
+    \frametitle{総合評価の有効性IV}
+    上位グループの境界を上位20\%, 30\%, 40\%, 50\%に変更した場合の検証も同様に行ったが，
+    大きな変化は見られなかった．
+
+    \bigskip
+
+    \begin{table}[t]
+        \footnotesize
+        \begin{tabular}{cc}
+            \toprule
+            \header{上位と下位の境界} & \header{上位のほうが好ましい} \\
+            \midrule
+            10\%/90\% & 8/10 \\
+            20\%/80\% & 6/10 \\
+            30\%/70\% & 6/10 \\
+            40\%/60\% & 6/10 \\
+            50\%/50\% & 7/10 \\
+            \bottomrule
+        \end{tabular}
+        \caption{境界を変更した場合の上位・下位と好ましさの対応．}
+    \end{table}
+\end{frame}
+
+\begin{frame}
+    \frametitle{総合評価の有効性V}
+    \textbf{メタファーであることの評価方法}
+
+    抽出された上位の表現に関して，メタファーであるかどうかを筆者1名が判定した．
+    結果，以下の6個の表現を除いた44個の表現がメタファーと判断された．
+
+    \bigskip
+
+    \begin{table}
+        \centering\footnotesize
+        \begin{tabular}{ll}
+            \toprule
+            \header{非メタファー表現} & \header{動詞の意味の理解が難しい表現} \\
+            \midrule
+            においをかける & ?岩が滴る \\
+            油に沈む       & ?岩が滲む  \\
+            岩を飲む       & ?砂が滴る  \\
+            \bottomrule
+        \end{tabular}
+        \caption{抽出された上位の表現のうちメタファーでなかった表現．}\label{tab:ismet}
+    \end{table}
+
+    具体的なものを指す名詞が多い．
+    →「名詞の具体性」など総合評価に加えることで改善される可能性がある．
+\end{frame}
+
+\begin{frame}
+    \frametitle{総合評価のまとめ}
+   総合評価は「よいメタファー」を見つけるために有効である．
+    \begin{itemize}
+        \item よさに関して
+
+            33/50ペアで上位の表現がより使いたいと判断された．
+        \item メタファーであることに関して
+
+            44/50ペアで上位の表現がメタファーであると判断された．
+    \end{itemize}
+\end{frame}
+
+\section{まとめ}
+\begin{frame}
+    \frametitle{まとめ}
+    \addtolength{\leftmargini}{-1\zw}
+    \begin{enumerate}
+        \item 直喩に限定されないメタファーの生成において，
+            生成された表現を評価するための指標を提案した．
+        \item クラウドソーシングを用いて各指標について適切に評価できることを示した．
+        \item クラウドソーシングの結果から各指標間の関係を示した．
+        \item 提案指標が「よいメタファー」の発見に有効であることを示した．
+    \end{enumerate}
+\end{frame}
+
+\section{今後の課題}
+\begin{frame}
+    \frametitle{今後の課題}
+    \addtolength{\leftmargini}{-1\zw}
+    \begin{itemize}
+		\item 《感情は水》以外のメタファーで
+            同様の評価を行い，指標の一般性を検証する．
+
+        \item 評価指標の改善を検討する．
+
+            （例）「岩が滴る」のような表現を除くために
+            「名詞の具体性」を利用するなど．
+
+        \item 生成を行うシステムを開発し，
+            その生成結果を今回提案した指標で評価する．
+    \end{itemize}
+\end{frame}
+
+\section{参考文献}
+\begin{frame}[plain,noframenumbering,allowframebreaks]
+\frametitle{参考文献}
+\begingroup
+\footnotesize
+    \setbeamertemplate{bibliography item}[triangle]
+    \bibliographystyle{jecon}
+    \bibliography{nlp}
+\endgroup
+% https://tex.stackexchange.com/questions/167419/avoid-frame-numbering-in-references-that-span-more-than-one-frame-in-beamer
+\addtocounter{framenumber}{-1}
+\end{frame}
+
+\end{document}
