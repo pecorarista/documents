@@ -1,0 +1,63 @@
+%% This is file `beamercolorthemesakura.sty',
+%%
+%% The original source files were:
+%%
+%% beamercolorthememetropolis.dtx  (with options: `package')
+%% ---------------------------------------------------------------------------
+%% Copyright 2015 Matthias Vogelgesang and the LaTeX community. A full list of
+%% contributors can be found at
+%%
+%%     https://github.com/matze/mtheme/graphs/contributors
+%%
+%% and the original template was based on the HSRM theme by Benjamin Weiss.
+%%
+%% This work is licensed under a Creative Commons Attribution-ShareAlike 4.0
+%% International License (https://creativecommons.org/licenses/by-sa/4.0/).
+%% ---------------------------------------------------------------------------
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{beamercolorthemesakura}[2016/06/09 Sakura color theme]
+\definecolor{sDarkRed}{HTML}{B30101}
+\definecolor{sPurple}{HTML}{755692}
+\definecolor{sLightPurple}{HTML}{C296D5}
+\definecolor{sLightBlue}{HTML}{86B5C7}
+\definecolor{sDarkBlue}{HTML}{5070D7}
+\definecolor{sOrange}{HTML}{F66820}
+\definecolor{sDarkGray}{HTML}{312D2E}
+\definecolor{sRed}{HTML}{DC2B2B}
+\definecolor{sPink}{HTML}{F0C2B5}
+\definecolor{sBlonde}{HTML}{FFCE98}
+\definecolor{sLightGray}{gray}{0.3}
+\definecolor{sLighterGray}{gray}{0.7}
+\definecolor{sBrown}{HTML}{664F49}
+\definecolor{sLightBrown}{HTML}{DAB27D}
+\definecolor{sYellow}{HTML}{FBE381}
+\setbeamercolor{normal text}{%
+    fg=sDarkGray
+}
+\setbeamercolor{alerted text}{%
+  fg=sLightBrown
+}
+\setbeamercolor{titlelike}{use=normal text, parent=normal text}
+\setbeamercolor{author}{use=normal text, parent=normal text}
+\setbeamercolor{date}{use=normal text, parent=normal text}
+\setbeamercolor{institute}{use=normal text, parent=normal text}
+\setbeamercolor{structure}{use=normal text, fg=normal text.fg}
+\setbeamercolor{palette primary}{%
+  use=normal text,
+  fg=normal text.fg,
+  bg=normal text.bg
+}
+\setbeamercolor{palette secondary}{%
+  fg=white,
+  bg=sPurple
+}
+\setbeamercolor{frametitle}{%
+  use=palette secondary,
+  parent=palette secondary
+}
+\setbeamercolor{footline}{%
+  fg=sDarkGray
+}
+\setbeamercolor{block body alerted}{use=block body, parent=block body}
+\mode<all>
+%% End of file `beamercolorthemesakura.sty'.
