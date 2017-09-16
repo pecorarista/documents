@@ -15,7 +15,7 @@
             maxcitenames=2,
             firstinits]{biblatex}
 \ExecuteBibliographyOptions{doi=false,url=false}
-\AtBeginBibliography{\scriptsize}
+\AtBeginBibliography{\small}
 \newbibmacro{string+doi}[1]{%
     \iffieldundef{doi}{%
         \iffieldundef{url}{%
@@ -583,7 +583,7 @@
 \end{frame}
 
 \section{Bibliography}
-\begin{frame}[plain,noframenumbering,allowframebreaks]
+\begin{frame}[plain,noframenumbering]
 \frametitle{参考文献}
     \setbeamertemplate{bibliography item}[text]
     \printbibliography
