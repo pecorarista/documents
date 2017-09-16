@@ -1,0 +1,592 @@
+\documentclass[12pt,noamssymb,usepdftitle=false]{beamer}
+\usepackage{etex}
+\usetheme{sakura}
+\setmainfont{Times LT Pro}
+\usepackage[mtphrb,%
+            %mtpccal,%
+            mtpscr,%
+            mtpfrak,%
+            slantedGreek,%
+            subscriptcorrection,%
+            zswash]{mtpro2}
+\usepackage[natbib,%
+            backend=biber,
+            style=authoryear,
+            maxcitenames=2,
+            firstinits]{biblatex}
+\ExecuteBibliographyOptions{doi=false,url=false}
+\AtBeginBibliography{\scriptsize}
+\newbibmacro{string+doi}[1]{%
+    \iffieldundef{doi}{%
+        \iffieldundef{url}{%
+            #1
+        }{%
+            \href{\thefield{url}}{#1}
+        }
+    }{%
+        \href{https://doi.org/\thefield{doi}}{#1}
+    }
+}
+\DeclareFieldFormat[inproceedings]{title}{\usebibmacro{string+doi}{\mkbibquote{#1}}}
+\addbibresource{reference.bib}
+\usepackage{booktabs}
+\usepackage{subcaption}
+\usepackage{multirow,makecell}
+\usepackage{colortbl}
+\usepackage[hang,flushmargin]{footmisc}
+\usepackage{calc}
+\usepackage{tikz}
+\usetikzlibrary{positioning}
+\usepackage[noend]{algpseudocode}
+\newcommand\header[1]{\multicolumn{1}{c}{\textbf{#1}}}
+\newcommand{\braces}[1]{\left\{#1\right\}}
+\newcommand{\fword}{F_\text{\rmfamily word}}
+\newcommand{\causestart}[1]{\textcolor{sDarkRed}{\textbf{#1}}}
+\newcommand{\causegoal}[1]{\textcolor{sDarkBlue}{\textbf{#1}}}
+\newjfontfamily\chinese{Hiragino Sans GB}
+\newfontfamily\phonetic{Times LT Std Phonetic}
+\ltjsetparameter{%
+    jacharrange={%
+        -2, % Greek and Cyrillic letters
+        -3  % Punctuations and Miscellaneous symbols
+    },
+    alxspmode={`#,allow},
+    alxspmode={`/,allow}
+}
+% https://tex.stackexchange.com/questions/15951/hyperlink-name-with-biblatex-authoryear-biblatex-1-4b
+\DeclareFieldFormat{citehyperref}{%
+  \DeclareFieldAlias{bibhyperref}{noformat}% Avoid nested links
+  \bibhyperref{#1}}
+
+\DeclareFieldFormat{textcitehyperref}{%
+  \DeclareFieldAlias{bibhyperref}{noformat}% Avoid nested links
+  \bibhyperref{%
+    #1%
+    \ifbool{cbx:parens}
+      {\bibcloseparen\global\boolfalse{cbx:parens}}
+      {}}}
+
+\savebibmacro{cite}
+\savebibmacro{textcite}
+
+\renewbibmacro*{cite}{%
+  \printtext[citehyperref]{%
+    \restorebibmacro{cite}%
+    \usebibmacro{cite}}}
+
+\renewbibmacro*{textcite}{%
+  \ifboolexpr{
+    ( not test {\iffieldundef{prenote}} and
+      test {\ifnumequal{\value{citecount}}{1}} )
+    or
+    ( not test {\iffieldundef{postnote}} and
+      test {\ifnumequal{\value{citecount}}{\value{citetotal}}} )
+  }
+    {\DeclareFieldAlias{textcitehyperref}{noformat}}
+    {}%
+  \printtext[textcitehyperref]{%
+    \restorebibmacro{textcite}%
+    \usebibmacro{textcite}}}
+%
+\newlength\relnamelength
+\newcommand\cause[1]{%
+    \hspace{-0.5em}
+    \setlength{\relnamelength}{\widthof{\scriptsize\itshape #1}}
+    \begin{tikzpicture}[baseline=-0.5ex,line width=0.24mm]
+    \draw (0,1.1mm) -- (0,-1.1mm);
+    \node (E) at ({\relnamelength + 2mm}, 0) {};
+    \draw (0,0) -- node[midway,above] {\scriptsize\itshape #1} (E.east);
+    \node (N) at ({\relnamelength + 0.95mm}, 1.2mm) {};
+    \node (S) at ({\relnamelength + 0.95mm}, -1.2mm) {};
+    \draw (N.east) -- (E.east) -- (S.east);
+    \end{tikzpicture}
+    \hspace{-0.5em}
+}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\newcommand\emoji[1]{\raisebox{-1.5pt}{\hspace{.15em}\includegraphics[height=11pt]{emoji-#1}\hspace{.15em}}}
+% Time-series
+\title{Detecting and Explaining Causes From Text for a Time Series Event}
+\subtitle{by Dongyeop Kang, Varun Gangal, Ang Lu, Zheng Chen, and Eduard Hovy}
+\author{読む人：宮澤 彬}
+\hypersetup{%
+    unicode,
+    hidelinks,
+    colorlinks,
+    allcolors=sDarkBlue,
+    pdfinfo={%
+        Title={論文紹介: Detecting and Explaining Causes From Text for a Time Series Event},
+        Author={宮澤 彬}
+    }
+    keywords={最先端NLP勉強会, 論文紹介, テキスト生成, 時系列データ, 因果}
+}
+\begin{document}
+
+\nocite{dongyeop2017}
+\maketitle
+
+\begin{frame}
+    \frametitle{読もうと思った理由}
+    メタファーの論文があまりなかった\emoji{u1f610}．
+
+    \bigskip
+
+    \href{https://aistairc.github.io/plu/index.html}{産総研PLUグループ}
+    で時系列データの分析をやっており，それに関連してそうだったから．
+
+    \bigskip
+
+    \emph{cf.}\ \href{http://aclanthology.info/papers/P17-1126/learning-to-generate-market-comments-from-stock-prices}{\mkbibquote{\citefield{murakami2017}{title}}} by Murakami et al.\ (2017).
+
+    \bigskip
+
+    \begin{columns}[onlytextwidth,c]
+        \begin{column}{0.55\textwidth}
+            \raggedright
+            \includegraphics[width=\hsize]{news-example}
+        \end{column}
+        \begin{column}{0.45\textwidth}
+            \scriptsize
+            \raggedleft
+            \begin{tabular}{l@{\hspace{1\zw}}l}
+                \toprule
+                \multicolumn{2}{c}{\textbf{概況テキスト}} \\
+                \midrule
+                (1) & 日経平均、続落で始まる \\
+                (2) & 日経平均、上げに転じる \\
+                (3) & 日経平均、続落 \\
+                    & 前引けは5円安の19,386円 \\
+                (4) & 日経平均、午後は上昇で始まる \\
+                (5) & 日経平均、上げ幅100円超える \\
+                (6) & 日経平均、反発 \\
+                    & 大引けは102円高の19,494円 \\
+                \bottomrule
+            \end{tabular}
+            \vspace{2ex}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\section{概要}
+\begin{frame}
+    \frametitle{概要I}
+    株価の変動の\textbf{要因}を説明するテキストを生成する研究．
+    \begin{figure}
+        \centering
+        \includegraphics[page=1,clip,width=0.8\textwidth,trim={300 520 60 210}]{paper.pdf}
+        \caption{Facebookの株価と原因となる特徴量．}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{概要II}
+    より詳しくいうと株価の変動に対する\textbf{因果の説明}(causal explanation)を生成する．
+
+    \begin{figure}
+        \begin{flushleft}
+            \causestart{party}
+            \cause{cut}
+            budget\_cuts
+            \cause{lower}
+            budget\_bill
+
+            \cause{decreas}
+            republicans
+            \cause{caus}
+            obama
+            \cause{leadto}
+            facebook\_polls
+
+            \cause{caus}
+            \causegoal{facebook's stock} ↓
+        \end{flushleft}
+        \caption{因果の説明の例．}
+    \end{figure}
+
+    ここでいう「因果」は必ずしも「原因と結果」ではない．
+    \begin{itemize}
+        \item Granger因果性
+        \item \emph{agent} vs.\ \emph{patient}のような意味合いでの「因果」
+    \end{itemize}
+\end{frame}
+
+\section{CS\textsc{pikes}: Temporal Causality Detection from Textual Features}
+\begin{frame}
+    \frametitle{テキスト特徴量を利用した因果性検出}
+    与えられた時系列$y$に対して，
+    \textbf{因果性}(causality)が最大となるような
+    テキストから抽出した特徴量を探す．
+    \begin{align}
+        \argmax_{F \subseteq X} {C}\PARENS{y, \Phi\PARENS{F,y}}
+    \end{align}
+    ここで記号の意味は以下の通り．
+    \begin{itemize}
+        \item ${C}$: 因果性
+        \item $X$: テキストから抽出した特徴量全体の集合
+        \item $F:=\braces{f_i}_i \subseteq X$
+        \item $\Phi$: $\braces{f_i}_i$の線型結合を作る関数（対象の時系列$y$に依存）
+    \end{itemize}
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{Granger因果性I}
+    \textbf{Granger因果性}\parencite{granger1988}
+    という時系列解析の割と古典的な手法を用いる\footnote[frame]{%
+        \textcite{hamilton1994}（定番の教科書）にも載っている．
+    }．
+
+    \bigskip
+
+    背景にある考えは「ある時系列$x$が対象の時系列$y$の原因となっているならば，
+    $x$の情報を使ったほうが$y_t$をより正確に予測できる」というもの．
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{Granger因果性II}
+    時系列$y$が以下の外生変数付きの自己回帰モデルに従うとする．
+    \begin{align}
+        y_t &= \alpha y_{t - \ell} + \beta \PARENS{f_{1, t - \ell} + \cdots + f_{k, t - \ell}} + \varepsilon_t
+    \end{align}
+    もし$\beta_k = 0$ならば$f_k$は予測に役立っていない．
+
+    \bigskip
+
+    $\Delta\PARENS{\beta_{y,f,\ell}}$をラグ$\ell$で特徴量$f$をいれたときの
+    $\beta$の分散（の絶対値？）の増減とする．このとき
+    \begin{align*}
+        C\PARENS{y,F} = \sum_{k, \ell} \Delta\PARENS{\beta_{y,f,\ell}}
+    \end{align*}
+    を$F$について最大化する．
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{テキスト特徴量}
+    3つの特徴量を利用する．
+    \begin{itemize}
+        \item $F_{\text{\rmfamily words}}$
+
+            日毎のNグラムの出現頻度の列．定常的なものは除外．
+
+            （例）$x^{\text{\rmfamily Michael\_Jordan}} = \PARENS{12, 51, \ldots}$
+
+        \item $F_{\text{\rmfamily topic}}$
+
+            LDAにより得られた各トピックの頻出語の出現頻度の列．
+
+            （例）{\rmfamily
+                     $x^{\text{healthcare}}, \text{healthcare} = \braces{\text{insurance}, \text{obamacare}, \ldots}$
+                  }
+
+        \item $F_{\text{\rmfamily senti}}$
+
+            ポジティブな語とネガティブな語の割合の列．
+    \end{itemize}
+\end{frame}
+
+\section{CG\textsc{raph} Construction}
+\begin{frame}
+    \frametitle{因果関係のグラフ(CG\textsc{raph})の構築I}
+    原因の時系列$x$と結果の時系列$y$が与えられたとき，
+    それらをつなぐ因果の経路を求めたい．
+    \begin{align}
+        \PARENS{x \mapsto e_1}, \PARENS{e_1 \mapsto e_2}, \ldots, \PARENS{e_t \mapsto y}
+    \end{align}
+    原因と結果をノード，関係をエッジとみなした
+    \emph{cause-effect graph} (CG\textsc{raph})を作る．
+
+
+    （例）obama \cause{attracts (C\textsc{ause}\_\textsc{motion})} more educated voters
+\end{frame}
+
+
+\begin{frame}
+    \frametitle{因果関係のグラフ(CG\textsc{raph})の構築II}
+    \setlength{\leftmargini}{1em}
+    \begin{enumerate}
+        \item \href{http://www.cs.cmu.edu/~ark/SEMAFOR/}{SEMAFOR}で
+            New York Timesなどの文を解析し
+            \href{https://framenet.icsi.berkeley.edu/fndrupal/}{FrameNet}のラベルを付与する．
+
+            \begin{table}
+                \renewcommand{\arraystretch}{1.5}
+                \scriptsize
+                \begin{tabular}{cccccc}
+                    Obama  & \textbf{attracts} & \textbf{more} & educated & voters & . \\
+                    \noalign{\global\arrayrulewidth=0.8mm}\arrayrulecolor{white}\hline
+                           & \textcolor{sLightGray}{C\textsc{ause\_motion}} &
+                             \textcolor{sLightGray}{I\textsc{ncrement}}
+                           & & & \\
+                    \cellcolor{sLightGray} & & \cellcolor{sLightGray} & \cellcolor{sLighterGray}Class \\
+                    \noalign{\global\arrayrulewidth=0.8mm}\arrayrulecolor{white}\hline
+                    \cellcolor{sLighterGray}Agent & \cellcolor{sLightGray} & \multicolumn{3}{c}{\cellcolor{sLighterGray}{Theme}} \\
+                \end{tabular}
+            \end{table}
+
+        \smallskip
+
+        \item C\textsc{ause\_change}やC\textsc{ause\_motion}などの関係を抽出し，
+            それぞれの始点と終点で原因・関係・結果の組を作る．
+
+            \smallskip
+
+        \item 上の手順で集めた組を文字列マッチングで繋げることでグラフを構築する．
+            このときFreebaseのノードとリンクさせ，表層は異なるが
+            意味としては近いものがまとまるようにする．
+
+    \end{enumerate}
+
+\end{frame}
+
+\section{Causal Reasoning}
+\begin{frame}[fragile]
+    \frametitle{因果関係のグラフ(CG\textsc{raph})を使った因果推論}
+    CG\textsc{raph}は巨大なので効率的な探索の方法を提案している．
+
+    \bigskip
+
+    \begingroup
+    \centering
+    \small\rmfamily
+    \begin{algorithmic}[1]
+        \State{$\mathcal{S} \leftarrow y, d = 0$}
+        \While{$\PARENS{\mathcal{S} = \emptyset}$ or $\PARENS{d > D_{\text{max}}}$}
+            \State{$\braces{e_{-d}^1,\ldots,e_{-d}^k} \leftarrow \text{BreadthFirstSeach}_{\text{back}}\PARENS{\mathcal{S}}$}
+            \For{$j$ in $\braces{1,\ldots,k}$}
+                \If{$\sum_\ell \mbf{C}\PARENS{y,e_{-d}^j,\ell} < \varepsilon$}
+                    \State{$\mathcal{S} \leftarrow e_{-d}^j$}
+                \EndIf
+            \EndFor%
+        \EndWhile%
+    \end{algorithmic}
+    \endgroup
+
+    \bigskip
+
+    Granger因果性が閾値以上になるまで結果の方から遡っている．
+
+\end{frame}
+
+
+\begin{frame}
+    \frametitle{ニューラルネットワークを使った因果推論}
+    前述の手法ではグラフに記述したい事象やそれらの間の関係が存在しないことが多い．
+
+    \bigskip
+
+    これを解決するためencoder-decoderを使う．
+
+    \begin{itemize}
+        \item Encoderへの入力：原因
+
+        \item Decoderへの入力/Decoderからの出力：結果
+    \end{itemize}
+
+    \begin{figure}
+        \centering
+        \includegraphics[page=5,clip,width=0.9\textwidth,trim={300 710 60 68}]{paper.pdf}
+    \end{figure}
+\end{frame}
+
+\section{Experiment}
+\begin{frame}
+    \frametitle{実験}
+
+    テキストデータ（原因）
+    \begin{itemize}
+        \item 2008年から2013年までのツイート(1 mil.\ tweets/day)
+        \item 2010年から2013年までのブログとニュース(Google's news API)
+    \end{itemize}
+
+    \bigskip
+
+    数値データ（結果）
+    \begin{itemize}
+        \item 2001年から執筆当時までの株価データ（NASDAQとNYSEの6,200銘柄）
+        \item 2012年の大統領選挙の投票データ(USA Today, Huffington Post, Reuters, etc.)
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{実験1: 因果性の有効性}
+    因果性$C$の有効性を確認するため，
+    $C$の値を変化させたときの，
+    $y$とランダムに生成された時系列データの関係を見る．
+    \begin{figure}
+        %\begin{subfigure}[b]{\textwidth}
+        %    \centering
+        %    \includegraphics[page=6,clip,width=0.5\hsize,trim={310 710 60 50}]{paper.pdf}
+        %    \caption{$y \leftarrow r f_1,\ldots,r f_k$}
+        %\end{subfigure}
+        %\begin{subfigure}[b]{\textwidth}
+        %    \centering
+        \includegraphics[page=6,clip,width=0.8\hsize,trim={310 615 60 155}]{paper.pdf}
+        %    \caption{$y \to r f_1,\ldots,r f_k$}
+        %\end{subfigure}
+        \caption{Googleの株価と原因となる特徴量の比較．}
+    \end{figure}
+    青（$C$を大きくしたとき）のほうが株価の変化に敏感である．
+\end{frame}
+
+\begin{frame}
+    \frametitle{実験2: テキスト特徴量による数値予測}
+    使用する特徴量の有効性を確認するため，
+    株価データ(\textbf{Stock})と大統領選挙の票数予測(\textbf{Poll})の
+    データを使い予測を行う．
+
+    \begin{table}
+        \scriptsize
+        \begin{tabular}{ccrrrrrrr}
+            \toprule
+            \multirowcell{2}[-0.7ex][c]{\textbf{Data}}
+            &
+            \multirowcell{2}[-0.7ex][c]{\textbf{Step}}
+            & \multicolumn{2}{c}{\textbf{Time Series}} & \multicolumn{5}{c}{\textbf{Time Series + Text}} \\
+            \cmidrule(lr){3-4}\cmidrule(lr){5-9}
+              & & \header{SpikeM} & \header{LSTM} & $C_{\text{\rmfamily rand}}$ & $C_{\text{\rmfamily words}}$ &
+            $C_{\text{\rmfamily topics}}$ & $C_{\text{\rmfamily senti}}$ & $C_{\text{\rmfamily comp}}$ \\
+            \cmidrule(lr){1-1}
+            \cmidrule(lr){2-2}
+            \cmidrule(lr){3-3}
+            \cmidrule(lr){4-4}
+            \cmidrule(lr){5-5}
+            \cmidrule(lr){6-6}
+            \cmidrule(lr){7-7}
+            \cmidrule(lr){8-8}
+            \cmidrule(lr){9-9}
+            \textbf{Stock} & 1 & 102.13 & 6.80 & 3.63 & 2.97 & 3.01 & 3.34 & \textbf{1.96} \\
+            \textbf{Stock} & 3 & 99.8   & 7.51 & 4.47 & 4.22 & 4.65 & 4.87 & \textbf{3.78} \\
+            \textbf{Stock} & 5 & 97.99  & 7.79 & 5.32 & \textbf{5.25} & 5.44 & 5.95 & 5.28 \\
+            \midrule
+            \textbf{Poll}  & 1 & 10.13  & 1.46 & 1.52 & 1.27 & 1.59 & 2.09 & \textbf{1.11} \\
+            \textbf{Poll}  & 3 & 10.63  & 1.89 & 1.84 & 1.56 & 1.88 & 1.94 & \textbf{1.49} \\
+            \textbf{Poll}  & 5 & 11.13  & 2.04 & 2.15 & 1.84 & 1.88 & 1.96 & \textbf{1.82} \\
+            \bottomrule
+        \end{tabular}
+        \caption{特徴量ごとの予測誤差．}
+    \end{table}
+    テキストの特徴量を用いた自己回帰モデルが，
+    SpikeM \parencite{matsubara2012}やLSTMを用いた予測を上回る．
+\end{frame}
+
+\begin{frame}
+    \frametitle{実験3: ニューラルネットによる推論I}
+    CG\textsc{raph}上の原因・結果について，
+    原因をニューラルネットで結果を予測するタスク．
+
+    \begin{table}
+        \scriptsize
+        \begin{tabular}{ll}
+            \toprule
+            \header{Cause \cause{\ } Efffect in CG\textsc{raph}}
+            & \header{Beam Predictions} \\
+            \midrule
+            \multirowcell{3}[-1ex][l]{%
+                the dollar's \\
+                \cause{cause} against the yen
+            } & [1] \cause{caus} against the yen \\
+            & [2] \cause{caus} against the dollar \\
+            & [3] \cause{caus} against other currencies \\
+            \midrule
+            \multirowcell{3}[-1ex][l]{%
+                without any execise \\
+                \cause{leadto} against the yen
+            } & [1] \cause{leadto} a difference \\
+            & [2] \cause{caus} the risk \\
+            & [3] \cause{make} their weight \\
+            \bottomrule
+        \end{tabular}
+    \end{table}
+\end{frame}
+
+\begin{frame}
+    \frametitle{実験3: ニューラルネットによる推論II}
+    BLEUで評価する．
+    \begin{table}
+        \small
+        \begin{tabular}{lccc}
+            \toprule
+                           & BLEU @ 1 & BLEU @ 3A & BLEU @ 5A \\
+            \midrule
+            \textbf{S2S}            & 10.15    & 8.80      & 8.69   \\
+            \textbf{S2S + WE}       & 11.86    & 10.78     & 10.04   \\
+            \textbf{S2S + WE + REL} & 12.42    & 12.28     & 11.53   \\
+            \bottomrule
+        \end{tabular}
+        \caption{\textbf{S2S}: sequence to sequence, \textbf{WE}: word embedding, and \textbf{REL}: relation specific attention.}
+    \end{table}
+\end{frame}
+
+\begin{frame}
+    \frametitle{実験4: 因果関係の説明の生成}
+    原因・結果のイベントを与えられたときに
+    CG\textsc{raph}の経路を生成する．
+
+    \bigskip
+
+    ニューラルネットによって生成された因果関係の列の例
+
+        \causestart{excess}
+        \cause{match}
+        excess\_materialism
+        \cause{caus}
+        people\_make\_films
+        \cause{make}
+        money
+        \cause{changed}
+        twitter
+        \cause{turned}
+        facebook
+        \causegoal{facebook's stock} ↓
+\end{frame}
+
+
+\begin{frame}
+    \frametitle{説明生成の評価}
+    生成された説明についてaccuracyを人手で評価した．
+
+    →ニューラルのほうがよい結果．
+
+    \bigskip
+
+    \begin{table}
+        \begin{tabular}{ccc}
+            \toprule
+            \textbf{Reasoner}      & \textbf{SYMB} & \textbf{NEUR} \\
+            \midrule
+            \textbf{Accuracy (\%)} & 42.5 & 57.5 \\
+            \bottomrule
+        \end{tabular}
+    \end{table}
+
+    \bigskip
+
+    定量的な評価は難しい．
+\end{frame}
+
+\begin{frame}
+    \frametitle{感想}
+    \setlength{\leftmargini}{1em}
+    \begin{itemize}
+        \item 多様なデータで多様な手法を試している．
+            SNSや経済のニュースなどの汚いデータをたくさん使ってるのがすごい．
+
+            （例）「テスト1」という記事やテキスト形式の表など．
+
+            \bigskip
+
+        \item テキストに関する特徴量を日毎にとっている．
+            予測するときに株価の変化について報じたニュースや
+            投資家・専門家のコメントが使われているのでは？
+    \end{itemize}
+\end{frame}
+
+\section{Bibliography}
+\begin{frame}[plain,noframenumbering,allowframebreaks]
+\frametitle{参考文献}
+    \setbeamertemplate{bibliography item}[text]
+    \printbibliography
+\end{frame}
+
+\end{document}
