@@ -15,7 +15,7 @@
             maxcitenames=2,
             firstinits]{biblatex}
 \ExecuteBibliographyOptions{doi=false,url=false}
-\AtBeginBibliography{\small}
+\AtBeginBibliography{\scriptsize}
 \newbibmacro{string+doi}[1]{%
     \iffieldundef{doi}{%
         \iffieldundef{url}{%
@@ -30,7 +30,6 @@
 \DeclareFieldFormat[inproceedings]{title}{\usebibmacro{string+doi}{\mkbibquote{#1}}}
 \addbibresource{reference.bib}
 \usepackage{booktabs}
-\usepackage{subcaption}
 \usepackage{multirow,makecell}
 \usepackage{colortbl}
 \usepackage[hang,flushmargin]{footmisc}
@@ -253,7 +252,7 @@
     \bigskip
 
     $\Delta\PARENS{\beta_{y,f,\ell}}$をラグ$\ell$で特徴量$f$をいれたときの
-    $\beta$の分散（の絶対値？）の増減とする．このとき
+    $\beta$の分散の増減とする．このとき
     \begin{align*}
         C\PARENS{y,F} = \sum_{k, \ell} \Delta\PARENS{\beta_{y,f,\ell}}
     \end{align*}
@@ -297,7 +296,7 @@
     \emph{cause-effect graph} (CG\textsc{raph})を作る．
 
 
-    （例）obama \cause{attracts (C\textsc{ause}\_\textsc{motion})} more educated voters
+    （例）obama \cause{C\textsc{ause}\_\textsc{motion}} more educated voters
 \end{frame}
 
 
@@ -328,6 +327,8 @@
 
         \item C\textsc{ause\_change}やC\textsc{ause\_motion}などの関係を抽出し，
             それぞれの始点と終点で原因・関係・結果の組を作る．
+
+            （例）(obama, C\textsc{ause}\_\textsc{motion}, more educated voters)
 
             \smallskip
 
@@ -409,29 +410,20 @@
 \end{frame}
 
 \begin{frame}
-    \frametitle{実験1: 因果性の有効性}
-    因果性$C$の有効性を確認するため，
-    $C$の値を変化させたときの，
-    $y$とランダムに生成された時系列データの関係を見る．
+    \frametitle{実験1: テキストの特徴量と時系列データの関係性の分析}
     \begin{figure}
-        %\begin{subfigure}[b]{\textwidth}
-        %    \centering
-        %    \includegraphics[page=6,clip,width=0.5\hsize,trim={310 710 60 50}]{paper.pdf}
-        %    \caption{$y \leftarrow r f_1,\ldots,r f_k$}
-        %\end{subfigure}
-        %\begin{subfigure}[b]{\textwidth}
-        %    \centering
-        \includegraphics[page=6,clip,width=0.8\hsize,trim={310 615 60 155}]{paper.pdf}
-        %    \caption{$y \to r f_1,\ldots,r f_k$}
-        %\end{subfigure}
+        \centering
+        \includegraphics[page=6,clip,width=0.8\textwidth,trim={300 720 60 50}]{paper.pdf}
+
+        \hrule
+
+        \includegraphics[page=6,clip,width=0.8\textwidth,trim={300 720 60 210}]{paper.pdf}
         \caption{Googleの株価と原因となる特徴量の比較．}
     \end{figure}
-    青（$C$を大きくしたとき）のほうが株価の変化に敏感である．
 \end{frame}
 
 \begin{frame}
     \frametitle{実験2: テキスト特徴量による数値予測}
-    使用する特徴量の有効性を確認するため，
     株価データ(\textbf{Stock})と大統領選挙の票数予測(\textbf{Poll})の
     データを使い予測を行う．
 
@@ -464,10 +456,10 @@
             \textbf{Poll}  & 5 & 11.13  & 2.04 & 2.15 & 1.84 & 1.88 & 1.96 & \textbf{1.82} \\
             \bottomrule
         \end{tabular}
-        \caption{特徴量ごとの予測誤差．}
+        \caption{特徴量ごとの誤差．}
+
+        ここに結論を書く．
     \end{table}
-    テキストの特徴量を用いた自己回帰モデルが，
-    SpikeM \parencite{matsubara2012}やLSTMを用いた予測を上回る．
 \end{frame}
 
 \begin{frame}
@@ -479,8 +471,7 @@
         \scriptsize
         \begin{tabular}{ll}
             \toprule
-            \header{Cause \cause{\ } Efffect in CG\textsc{raph}}
-            & \header{Beam Predictions} \\
+            Cause \cause{\ } Efffect in CG\textsc{raph} & Beam Predictions \\
             \midrule
             \multirowcell{3}[-1ex][l]{%
                 the dollar's \\
@@ -492,9 +483,9 @@
             \multirowcell{3}[-1ex][l]{%
                 without any execise \\
                 \cause{leadto} against the yen
-            } & [1] \cause{leadto} a difference \\
-            & [2] \cause{caus} the risk \\
-            & [3] \cause{make} their weight \\
+            } & [1] \cause{leadto} against the yen \\
+            & [2] \cause{caus} against the dollar \\
+            & [3] \cause{caus} against other currencies \\
             \bottomrule
         \end{tabular}
     \end{table}
@@ -502,7 +493,6 @@
 
 \begin{frame}
     \frametitle{実験3: ニューラルネットによる推論II}
-    BLEUで評価する．
     \begin{table}
         \small
         \begin{tabular}{lccc}
@@ -510,8 +500,8 @@
                            & BLEU @ 1 & BLEU @ 3A & BLEU @ 5A \\
             \midrule
             \textbf{S2S}            & 10.15    & 8.80      & 8.69   \\
-            \textbf{S2S + WE}       & 11.86    & 10.78     & 10.04   \\
-            \textbf{S2S + WE + REL} & 12.42    & 12.28     & 11.53   \\
+            \textbf{S2S + WE}       & 10.15    & 8.80      & 8.69   \\
+            \textbf{S2S + WE + REL} & 10.15    & 8.80      & 8.69   \\
             \bottomrule
         \end{tabular}
         \caption{\textbf{S2S}: sequence to sequence, \textbf{WE}: word embedding, and \textbf{REL}: relation specific attention.}
@@ -519,11 +509,9 @@
 \end{frame}
 
 \begin{frame}
-    \frametitle{実験4: 因果関係の説明の生成}
+    \frametitle{実験4: 因果関係の説明}
     原因・結果のイベントを与えられたときに
     CG\textsc{raph}の経路を生成する．
-
-    \bigskip
 
     ニューラルネットによって生成された因果関係の列の例
 
@@ -536,9 +524,22 @@
         money
         \cause{changed}
         twitter
-
         \cause{turned}
-        \causegoal{facebook} ↓
+        facebook
+        \causegoal{facebook's stock} ↓
+\end{frame}
+
+
+\begin{frame}
+    \frametitle{}
+    10
+    \begin{itemize}
+        \item \texttt{TSLA}: Tesla
+        \item \texttt{MSFT}: Microsoft
+        \item \texttt{GOOGL}: Alphabet
+        \item \texttt{YHOO}: Altaba
+        \item \texttt{ORCL}: 
+    \end{itemize}
 \end{frame}
 
 
@@ -551,7 +552,7 @@
     \bigskip
 
     \begin{table}
-        \begin{tabular}{lcc}
+        \begin{tabular}{ccc}
             \toprule
             \textbf{Reasoner}      & \textbf{SYMB} & \textbf{NEUR} \\
             \midrule
@@ -566,47 +567,15 @@
 \end{frame}
 
 \begin{frame}
-    \frametitle{まとめと今後の課題}
-    \textbf{まとめ}
-
-    \begin{itemize}
-        \item 株価などの時系列データの変化を
-            説明する因果の列を生成する手法を提案．
-
-        \item 手法は基本的には古典的・代表的な
-            ものを使っているが大規模なデータに応用できるような
-            工夫をしている．
-    \end{itemize}
-
-    \bigskip
-
-    \textbf{Future Work}
-    \begin{itemize}
-        \item 時間や場所，事実性などを考慮
-        \item 先門家による詳細な評価
-    \end{itemize}
-\end{frame}
-
-\begin{frame}
-    \frametitle{感想}
-    \setlength{\leftmargini}{1em}
+    \frametitle{まとめ}
     \begin{itemize}
         \item 多様なデータで多様な手法を試している．
             SNSや経済のニュースなどの汚いデータをたくさん使ってるのがすごい．
-
-            （例）「テスト1」という記事やテキスト形式の表など．
-
-            \bigskip
-
-        \item テキストに関する特徴量を日毎にとっている．
-            予測するときに株価の変化について報じたニュースや
-            投資家・専門家のコメントが使われているのでは？
-
     \end{itemize}
 \end{frame}
 
 \section{Bibliography}
-\begin{frame}[plain,noframenumbering]
+\begin{frame}[plain,noframenumbering,allowframebreaks]
 \frametitle{参考文献}
     \setbeamertemplate{bibliography item}[text]
     \printbibliography
