@@ -1,0 +1,419 @@
+\documentclass[unicode,20pt]{beamer}
+\usepackage[orientation=portrait,size=a0,final,scale=1.5]{beamerposter}
+\usepackage{booktabs}
+\usepackage{indent}
+\usepackage{framed}
+\newcommand\header[1]{\multicolumn{1}{c}{\textbf{#1}}}
+\usetheme{sakuraposter}
+\newfontfamily\exo{Exo2}
+\ltjsetparameter{%
+    jacharrange={%
+        -2, % Greek and Cyrillic letters
+        -3  % Punctuations and Miscellaneous symbols
+    },
+    alxspmode={`#,allow},
+    alxspmode={`/,allow}
+}
+\usepackage[natbib,%
+            backend=biber,
+            hyperref=false,
+            style=authoryear,
+            maxcitenames=2,
+            firstinits]{biblatex}
+\ExecuteBibliographyOptions{doi=false,url=false}
+\AtBeginBibliography{\footnotesize}
+\addbibresource{reference.bib}
+\newcommand\emoji[1]{\raisebox{-5pt}{\includegraphics[height=31pt]{emoji-#1}\hspace{.1em}}}
+\newcommand\better[1]{\textcolor{sPink}{\textbf{#1}}}
+\title{Evaluation Metrics for Automatically Generated Metaphorical Expressions}
+\author{Akira Miyazawa and Yusuke Miyao}
+\institute{The Graduate University for Advanced Studies / National Institute of Informatics}
+\newcommand\msubsection[1]{\textcolor{sPink}{\textbf{\large \exo{#1}}}}
+\newcommand\mettype[1]{\textcolor{sDarkBlue}{\textbf{#1}}}
+\newcommand\myemph[1]{\textcolor{sPink}{\textbf{#1}}}
+\hypersetup{%
+    unicode,
+    colorlinks=false,
+    allcolors=sDarkBlue
+}
+\setbeamertemplate{headline}{%
+    \leavevmode
+    \begin{beamercolorbox}[wd=\paperwidth]{headline}
+        \centering
+        \vskip14mm
+        \usebeamercolor{title in headline}{%
+            \usebeamerfont{title in headline}\inserttitle
+        }
+        \par
+        \vskip8mm
+        \usebeamercolor{author in headline}{%
+            \usebeamerfont{author in headline}\insertauthor
+        }
+        \par
+        \vskip8mm
+        \usebeamercolor{institute in headline}{%
+            \usebeamerfont{institute in headline}\insertinstitute
+        }
+        \par
+    \vskip14mm
+    \end{beamercolorbox}
+}
+
+\begin{document}
+\setlength\labelsep{\dimexpr\labelsep - 0.2em\relax}
+\setlength\leftmargini{\dimexpr\leftmargini - 0.1em\relax}
+\begin{frame}
+    \vspace*{-2ex}
+    \begin{columns}[t]
+        \begin{column}{.47\textwidth}
+            \begin{block}{INTRODUCTION}
+                \textbf{Automatic generation of metaphors} helps
+                us write novels, poems, etc.
+
+                \bigskip
+
+                Existing systems
+                have focused on only \textbf{similes}
+                such as ``\emph{T} like \emph{S}''
+                \citep{enkitada2001,abe2006}.
+
+                \bigskip
+
+                We propose
+                \myemph{metaphoricity},
+                \myemph{novelty},
+                \myemph{comprehensibility},
+                and \myemph{overall evaluation}
+                to get \textbf{``good metaphors''}.
+
+                \bigskip
+
+
+            \end{block}
+
+            \begin{block}{EXPERIMENTAL SETTINGS}
+
+                By \textbf{crowdsourcing},
+                we got \textbf{10 scores}
+                for each expression and metric.
+                The scores were
+                evaluated on a \textbf{five-point scale}.
+
+                \bigskip
+                \bigskip
+
+                \begin{columns}[c]
+                    \begin{column}{0.4\textwidth}
+                        \raggedleft
+                        \includegraphics[width=0.9\textwidth]{crowdsourcing2-crop.png}
+                    \end{column}
+
+                    \begin{column}{0.53\textwidth}
+                        Do you feel that the expression is metaphorical?
+
+                        \colorbox{sLightGray}{\textcolor{black}{%
+                            \textbf{\emph{ai ga ahureru} (love overflows)}}}
+
+                        \smallskip
+
+                         \hspace*{.2em}5. It seems to be metaphorical.
+
+                         \hspace*{.2em}1. It doesn't seem to be metaphorical.
+                    \end{column}
+                \end{columns}
+            \end{block}
+
+        \end{column}
+        \begin{column}{.47\textwidth}
+
+            \begin{block}{TARGETS}
+
+                We made 1,360 Japanese expressions
+                by combining 40 nouns and 34 verbal phrases
+                following the method of \citet{ennabeshima2011}.
+
+                \bigskip
+                \bigskip
+
+                \msubsection{Example}
+                \begin{center}
+                \emph{ai} (love) + \emph{X ga ahureru} (\emph{X} overflows)
+                → \emph{ai ga ahureru} (love overflows)
+                \end{center}
+
+                \bigskip
+
+                \msubsection{Nouns}
+
+                \begin{itemize}
+                    \item \mettype{FLUID AND SOLID}
+
+                        \emph{mizu} (water) \emoji{u1f4a7},
+                        \emph{suna} (sand) \emoji{u1f3dc},
+                        \emph{iwa} (rock) \emoji{u26f0}, etc.
+
+                    \item \mettype{EMOTION}
+
+                        \emph{kimoti} (feeling) \emoji{u1f610},
+                        \emph{ai} (love) \emoji{u1f60d},
+                        \emph{tanosisa} (enjoyment) \emoji{u1f606},
+
+                        \emph{kyouhu} (fear) \emoji{u1f628},
+                        \emph{ikari} (anger) \emoji{u1f624},
+                        \emph{kanasimi} (sorrow) \emoji{u1f622}, etc.
+%                        \emph{zouo} (hatred) \emoji{u1f620},
+%                        \emph{human} (complaint) \emoji{u1f612},
+
+                    \item \mettype{IDEA}
+
+                        \emph{rikai} (understanding) \emoji{u1f44d},
+                        \emph{jouhou} (information) \emoji{u1f4be}, etc.
+
+                    \item \mettype{OTHERS}
+
+                        \emph{kinsen} (money) \emoji{u1f4b0},
+                        \emph{jikan} (time) \emoji{u23f0},
+                        %\emph{roudou} (labor) \emoji{u1f469-200d-1f527},
+                        %\emph{keeki} (cake) \emoji{u1f370},
+                        %\emph{ari} (ant) \emoji{u1f41c},
+                        %\emph{suimin} (sleep) \emoji{u1f634},
+                        \emph{neko} (cat) \emoji{u1f63a}, etc.
+
+                \end{itemize}
+
+                \bigskip
+
+                \msubsection{Verbal Phrases}
+
+                \begin{itemize}
+                    \item \mettype{PHYSICAL ACTION RELATED TO WATER}
+
+                        \emph{X ga ahureru} (\emph{X} overflows),
+%                        \emph{X ni hitasu} (\emph{Y} dips Z in \emph{X}),
+%                        \emph{X de susugu} (\emph{Y} rinses \emph{Z} with \emph{X}),
+                        \emph{X wo nomu} (somebody drinks \emph{X}),
+%                        \emph{X wo kumitoru} (\emph{Y} scoops up \emph{X}),
+                        etc.
+                \end{itemize}
+
+            \end{block}
+
+        \end{column}
+    \end{columns}
+
+    \vspace{11mm}
+
+    \begin{columns}[t]
+        \begin{column}{.968\textwidth}
+            \begin{alertblock}{METRICS}
+
+                \begin{columns}[t]
+                    \begin{column}{.3\textwidth}
+                        \msubsection{Metaphoricity}
+
+                        \textbf{Metaphoricity} measures how metaphorical an expression is.
+
+                        \begin{table}
+                            \centering\scriptsize
+                            \begin{tabular}{rllc}
+                                \toprule%
+                                \header{Rank} & \header{Noun (\emph{X})} & \header{Verbal phrase} & \header{Score} \\
+                                \midrule%
+                                1 & \emph{kotoba} (word)     & \emph{X ga huttou-suru} (\emph{X} boils)          & 3.9 \\
+                                2 & \emph{kanjou} (emotion)  & \emph{X ni oboreru} (\emph{Y} almost drowns in \emph{X}) & 3.8 \\
+                                3 & \emph{zetubou} (despair) & \emph{X ga ahureru} (\emph{X} overflows)          & 3.7 \\
+                                \multicolumn{4}{c}{$\vdots$} \\
+                                1356 & \emph{mizu} (water) & \emph{X ga huttou-suru} (\emph{X} boils)      & 0.0 \\
+                                1356 & \emph{mizu} (water) & \emph{X ga nagareru} (\emph{X} flows)         & 0.0 \\
+                                1356 & \emph{mizu} (water) & \emph{X wo nomu} (\emph{Y} drinks \emph{X})          & 0.0 \\
+                                \bottomrule%
+                            \end{tabular}
+                        \end{table}
+
+                        High-ranked expressions often use nouns related to emotion
+                        such as \emph{zetubou} (despair).
+
+                        \begin{figure}
+                            \centering
+                            \includegraphics[width=0.92\textwidth]{metaphoricity-en}
+                        \end{figure}
+
+                    \end{column}
+
+                    \begin{column}{.3\textwidth}
+                        \msubsection{Novelty}
+
+                        \textbf{Novelty} measures
+                        how novel an expression looks or sounds.
+
+                        \begin{table}[!t]
+                            \centering\scriptsize
+                            \begin{tabular}{rllc}
+                                \toprule%
+                                \header{Rank} & \header{Noun (\emph{X})} & \header{Verbal phrase} & \header{Score} \\
+                                \midrule%
+                                1 & \emph{ari} (ant)             & \emph{X ga simiru} (\emph{X} soaks into \emph{Y})    & 4.0 \\
+                                1 & \emph{neko} (cat)            & \emph{X wo siboridasu} (\emph{Y} squeezes \emph{X})  & 4.0 \\
+                                1 & \emph{neko} (cat)            & \emph{X ga nagarederu} (\emph{X} flows out)   & 4.0 \\
+                                \multicolumn{4}{c}{$\vdots$} \\
+                                1353 & \emph{mizu} (water)      & \emph{X ga nagareru} (\emph{X} flows)             & 0.0 \\
+                                1353 & \emph{mizu} (water)      & \emph{X ga waku} (\emph{X} gushes out)            & 0.0 \\
+                                1353 & \emph{mizu} (water)      & \emph{X wo nomu} (\emph{Y} drinks \emph{X})              & 0.0 \\
+                                \bottomrule%
+                            \end{tabular}
+                        \end{table}
+
+                        Expressions that use nouns for concrete objects were ranked high.
+
+                        \begin{figure}
+                            \centering
+                            \includegraphics[width=0.92\textwidth]{novelty-en}
+                        \end{figure}
+
+                    \end{column}
+
+                    \begin{column}{.3\textwidth}
+                        \msubsection{Comprehensibility}
+
+                        \textbf{Comprehensibility}
+                        measures how easy it is to understand the meaning of expressions.
+
+                        \begin{table}[!t]
+                            \centering\scriptsize
+                            \begin{tabular}{rllc}
+                                \toprule%
+                                \header{Rank} & \header{Noun (\emph{X})} & \header{Verbal phrase} & \header{Score} \\
+                                \midrule%
+                                1 & \emph{ai} (love)         & \emph{X ni oboreru} (\emph{Y} almost drowns in \emph{X}) & 4.0 \\
+                                1 & \emph{kanjou} (emotion)  & \emph{X wo kumitoru} (\emph{Y} scoops up \emph{X})       & 4.0 \\
+                                1 & \emph{mizu} (water)      & \emph{X de susugu} (\emph{Y} rinses \emph{Z} with \emph{X})     & 4.0 \\
+                                \multicolumn{4}{c}{$\vdots$} \\
+                                1356 & \emph{ari} (ant)             & \emph{X ga simiru} (\emph{X} soaks into \emph{Y})    & 0.0 \\
+                                1356 & \emph{iwa} (rock)            & \emph{X wo susuru} (\emph{Y} sips \emph{X}) & 0.0 \\
+                                1356 & \emph{zouo} (hatred)         & \emph{X de susugu} (\emph{Y} rinses \emph{Z} with \emph{X}) & 0.0 \\
+                                \bottomrule%
+                            \end{tabular}
+                        \end{table}
+
+                        This metric shows the opposite tendency
+                        to the novelty.
+                        The corr.\ coefficient was −0.92.
+
+                        \begin{figure}
+                            \centering
+                            \includegraphics[width=0.92\textwidth]{comprehensibility-en}
+                        \end{figure}
+
+                    \end{column}
+                \end{columns}
+            \end{alertblock}
+        \end{column}
+    \end{columns}
+%    \end{adjustwidth}
+    \vspace{11mm}
+
+    \begin{columns}[t]
+        \begin{column}{.47\textwidth}
+
+            \begin{block}{OVERALL EVALUATION}
+                \msubsection{Overall Evaluation}
+
+                Here we defined it as
+                the average of the three metrics.
+
+                \bigskip
+                \bigskip
+
+                \msubsection{Goodness}
+
+                A volunteer chose one
+                from each pair of high- and low-ranked expressions
+                that made him more inclined to use (marked red in the table).
+
+                \smallskip
+
+                \begin{table}[t]
+                    \centering\scriptsize
+                    \begin{tabular}{lcl}
+                        \toprule%
+                        \header{High-ranked expression [rank in overall eval.]}
+                        &
+                        & \header{Low-ranked expression [rank in overall eval.]} \\
+                        \midrule
+                        \better{\emph{human wo nomu} (\emph{Y} drinks complaints)} [23]
+                            &
+                            & \emph{abura wo kumitoru} (\emph{Y} scoops up oil) [1087] \\
+                        \better{\emph{ikari ga koboreru} (anger spills out)} [6]
+                            &
+                            & \emph{iwa ni oboreru} (\emph{Y} almost drowns in a rock) [1117] \\
+                        \better{\emph{syuutisin ga tamaru} (shame gets collected)} [44]
+                            &
+                            & \emph{syuutisin wo sosogu} (\emph{Y} pours shame) [856] \\
+                        \better{\emph{jouhou ga nigoru} (information gets cloudy)} [106]
+                            &
+                            & \emph{kuuki wo makitirasu} (\emph{Y} scatters the air) [212] \\
+                        \better{\emph{kanasimi ga simiru} (sorrow soaks into \emph{Y})} [32]
+                            &
+                            & \emph{rikai ga nagareru} (understanding flows) [721] \\
+                        \emph{tanosisa ga uzumaku} (enjoyment whirls) [81]
+                            &
+                            & \better{\tiny \emph{human ni tukaru} (\emph{Y} gets submerged in complaints)} [1241] \\
+                        \emph{kotoba ga nizimu} (words ooze) [14]
+                            &
+                            & \better{\emph{kyouhu ga nagareru} (fear flows)} [307] \\
+                        \better{\emph{kanjou wo sosogu} (\emph{Y} pours emotion)} [44]
+                            &
+                            & {\tiny \emph{ito X ni tukaru} (\emph{Y} gets submerged in intention) [654]} \\
+                        \better{\emph{huan ga nagarederu} (anxiety flows out)} [44]
+                            &
+                           & \emph{jounetu wo kumitoru} (\emph{Y} scoops up passion) [165] \\
+                        \better{\tiny \emph{jouhou ni oboreru} (\emph{Y} almost drowns in information)} [23]
+                            &
+                           & \emph{abura ga tamaru} (oil gets collected) [1241] \\
+                        \bottomrule
+                    \end{tabular}
+                \end{table}
+
+                \bigskip
+
+                \msubsection{Metaphoricity}
+
+                The author judged 8 of the 10 expressions as metaphorical
+                by using MIPVU \citep{steen2010}.
+            \end{block}
+
+        \end{column}
+
+        \begin{column}{.47\textwidth}
+
+            \begin{block}{CONCLUSION}
+                \setlength\leftmargini{2.8em}
+                \begin{itemize}
+                    \item We proposed metrics to evaluate automatically generated metaphors.
+
+                    \item We actually evaluated expressions by crowdsourcing.
+
+                    \item The result shows the validity of the metrics
+                            and their relationship.
+
+                    \item High-ranked expressions
+                        in the overall eval.\ are good metaphors.
+                \end{itemize}
+
+                \bigskip
+                \bigskip
+
+                The results are available at
+                \href{https://github.com/pecorarista/metaphor-evaluation-result}{\textcolor{sDarkBlue}{https://github.com/pecorarista/metaphor-evaluation-result}}.
+            \end{block}
+
+            \begin{block}{REFERENCE}
+                \setbeamertemplate{bibliography item}[text]
+                \begin{indentation}{1.3em}{1em}
+                    \printbibliography
+                \end{indentation}
+            \end{block}
+        \end{column}
+    \end{columns}
+\end{frame}
+\end{document}

@@ -1,0 +1,51 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{beamerinnerthemesakuraposter}[2017/09/09 Sakura Poster inner theme]
+\RequirePackage{fdsymbol}
+\setbeamertemplate{block begin}{%
+    \vskip.5ex
+    \begin{beamercolorbox}[rounded=true,%
+                           shadow=true,%
+                           leftskip=1em,%
+                           colsep*=.75ex]{block title}%
+        \usebeamerfont*{block title}\insertblocktitle
+    \end{beamercolorbox}%
+    \usebeamerfont{block body}%
+    \begin{beamercolorbox}[rounded=true,shadow=true,%
+                           leftskip=1em,%
+                           rightskip=1em,%
+                           colsep*=.75ex,%
+                           sep=1ex,%
+                           vmode]{block body}%
+}
+
+\setbeamertemplate{block end}{%
+    \end{beamercolorbox}
+    \vskip1.5ex
+}
+
+\setbeamertemplate{block alerted begin}{%
+    \vskip.5ex
+    \begin{beamercolorbox}[rounded=true,%
+                           shadow=true,%
+                           leftskip=1em,%
+                           colsep*=.75ex]{block alerted title}%
+        \usebeamerfont*{block title}\insertblocktitle
+    \end{beamercolorbox}%
+    \usebeamerfont{block body}%
+    \begin{beamercolorbox}[rounded=true,shadow=true,%
+                           leftskip=1em,%
+                           rightskip=1em,%
+                           colsep*=.75ex,%
+                           sep=1ex,%
+                           vmode]{block alerted body}%
+}
+
+\setbeamertemplate{block alerted end}{%
+    \end{beamercolorbox}
+    \vskip1.5ex
+}
+
+\setbeamertemplate{navigation symbols}{}
+
+\setbeamertemplate{itemize item}{\usebeamercolor{itemize item}$\medblackdiamond$}
+\mode<all>
