@@ -1,0 +1,957 @@
+\documentclass[12pt,noamssymb,unicode,hyphens]{beamer}
+\usepackage{etex}
+\usepackage{luacode}
+\usepackage{subcaption}
+\usepackage{makecell}
+\usepackage{multirow}
+\usepackage{colortbl}
+\usepackage{natbib}
+\usepackage{framed}
+\usepackage{graphicx}
+\usepackage{ccicons}
+\usepackage{amsmath}
+\usepackage{tikz}
+\usepackage{booktabs}
+\usepackage{framed}
+\usepackage{luatexja-ruby}
+\usetheme{sakura}
+\renewcommand\footnoterule{\vskip18pt\rule{.45\textwidth}{.05em}\vskip.65ex}
+\renewcommand{\thefootnote}{[\arabic{footnote}]}
+\definecolor{sHeatMapRed}{HTML}{F03B20}
+\definecolor{sHeatMapOrange}{HTML}{FEB24C}
+\definecolor{sHeatMapBeige}{HTML}{FFEDA0}
+\definecolor{borderLightBlue}{HTML}{BEEEF7}
+\definecolor{ggplotGreen}{HTML}{1eb5b8}
+\definecolor{ggplotOrange}{HTML}{eb746a}
+\definecolor{ggplotYellow}{HTML}{b19b19}
+\definecolor{ggplotLightGreen}{HTML}{2cad3f}
+\definecolor{ggplotBlue}{HTML}{6792cd}
+\ltjsetparameter{%
+    jacharrange={%
+        -2, % Exclude Greek and Cyrillic letters.
+        -3  % Punctuations and Miscellaneous symbols.
+    },
+    alxspmode={`/,allow},
+    alxspmode={`#,allow},
+    alxspmode={`−,allow},
+}
+\newjfontfamily\chinese{Hiragino Sans GB}
+\newfontfamily\dejavu{Fira Sans}
+\usefonttheme{professionalfonts}
+\setmainfont[
+    Extension={.ttf},
+    ItalicFont={*i},
+    BoldFont={*bd},
+    BoldItalicFont={*bi},
+]{times}
+\usepackage{polyglossia}
+\setdefaultlanguage{english}
+\usepackage{wtref}
+\newref{eq,fig,tab,expr,sec}
+\setrefstyle{eq}{prefix=式}
+\setrefstyle{expr}{refcmd=(\ref{#1})}
+\setrefstyle{fig}{prefix=図}
+\setrefstyle{tab}{prefix=表}
+\setrefstyle{sec}{prefix=第,suffix=節}
+\AtBeginDocument{
+    \renewcommand{\figurename}{図}
+    \renewcommand{\tablename}{表}
+    \renewcommand{\refname}{参考文献}
+}
+\setbeamertemplate{caption}[numbered]
+\DeclareCaptionLabelSeparator{ZenkakuColon}{：}
+\captionsetup{labelsep=ZenkakuColon}
+\newcounter{iframe}
+\renewcommand{\theiframe}{\Roman{iframe}}
+\newcommand\numberedtitle[1]{\refstepcounter{iframe}#1\theiframe}
+\setmainfont{Times LT Pro}
+\usepackage[mtphrb,slantedGreek]{mtpro2}
+%https://tex.stackexchange.com/questions/24136/natbib-and-hyperref-for-author-year-style-produces-two-links/27235
+\usepackage{etoolbox}
+\usepackage{appendixnumberbeamer}
+\newcommand\bm[1]{\mathbold{#1}}
+\makeatletter
+\renewcommand<>\beamer@framefootnotetext[1]{%
+  \global\setbox\beamer@footins\vbox{%
+    \hsize\framewidth
+    \textwidth\hsize
+    \columnwidth\hsize
+    \unvbox\beamer@footins
+    \reset@font\footnotesize
+    \@parboxrestore
+    \protected@edef\@currentlabel
+         {\csname p@footnote\endcsname\@thefnmark}%
+    \color@begingroup
+      \uncover#2{\@makefntext{%
+        \rule\z@\footnotesep\ignorespaces\parbox[t]{.9\textwidth}{#1\@finalstrut\strutbox}\vskip1sp}}%
+    \color@endgroup}%
+}
+
+\pretocmd{\NAT@citex}{%
+  \let\NAT@hyper@\NAT@hyper@citex
+  \def\NAT@postnote{#2}%
+  \setcounter{NAT@total@cites}{0}%
+  \setcounter{NAT@count@cites}{0}%
+  \forcsvlist{\stepcounter{NAT@total@cites}\@gobble}{#3}}{}{}
+\newcounter{NAT@total@cites}
+\newcounter{NAT@count@cites}
+\def\NAT@postnote{}
+
+% include postnote and \citet closing bracket in hyperlink
+\def\NAT@hyper@citex#1{%
+  \stepcounter{NAT@count@cites}%
+  \hyper@natlinkstart{\@citeb\@extra@b@citeb}#1%
+  \ifnumequal{\value{NAT@count@cites}}{\value{NAT@total@cites}}
+    {\ifNAT@swa\else\if*\NAT@postnote*\else%
+     \NAT@cmt\NAT@postnote\global\def\NAT@postnote{}\fi\fi}{}%
+  \ifNAT@swa\else\if\relax\NAT@date\relax
+  \else\NAT@@close\global\let\NAT@nm\@empty\fi\fi% avoid compact citations
+  \hyper@natlinkend}
+\renewcommand\hyper@natlinkbreak[2]{#1}
+
+% avoid extraneous postnotes, closing brackets
+\patchcmd{\NAT@citex}
+  {\ifNAT@swa\else\if*#2*\else\NAT@cmt#2\fi
+   \if\relax\NAT@date\relax\else\NAT@@close\fi\fi}{}{}{}
+\patchcmd{\NAT@citex}
+  {\if\relax\NAT@date\relax\NAT@def@citea\else\NAT@def@citea@close\fi}
+  {\if\relax\NAT@date\relax\NAT@def@citea\else\NAT@def@citea@space\fi}{}{}
+
+\makeatother
+\setbeamertemplate{page number in head/foot}[appendixframenumber]
+\hypersetup{%
+    unicode,
+    colorlinks,
+    allcolors=sDarkBlue,
+    pdftitle={Automatic Generation of Metaphorical Expressions},
+    pdfauthor={Miyazawa Akira},
+}
+\newcommand\parentheses[1]{\left(#1\right)}
+\newcommand\brackets[1]{\left[#1\right]}
+\newcommand\braces[1]{\left\{#1\right\}}
+\newcommand\norm[1]{\left\lVert#1\right\rVert}
+\newcommand\abs[1]{\left\lvert#1\right\rvert}
+\newcommand\header[1]{\multicolumn{1}{c}{\textbf{#1}}}
+\newcommand\met[1]{\textcolor{sRed}{\textbf{#1}}}
+\newcommand\lit[1]{\textcolor{sDarkBlue}{\textbf{#1}}}
+\newcommand\redtt[1]{\textcolor{sRed}{\texttt{#1}}}
+\newcommand\bluett[1]{\textcolor{sDarkBlue}{\texttt{#1}}}
+\DeclareRobustCommand\{{\ifmmode\lbrace\else\textbraceleft\fi}
+\DeclareRobustCommand\}{\ifmmode\rbrace\else\textbraceright\fi}
+\DeclareMathOperator\rarity{rar}
+\DeclareMathOperator\similarity{sim}
+\DeclareMathOperator\figurativeness{fig}
+\DeclareMathOperator\sigmoid{sigmoid}
+\DeclareMathOperator\overallscore{os}
+\DeclareMathOperator\pmi{PMI}
+\usepackage{gb4e,cgloss4e}
+\renewcommand\eachwordone{\itshape}
+\renewcommand\eachwordtwo{\relax}
+\renewcommand\eachwordthree{\relax}
+\noautomath%
+\title{動詞を用いたメタファー表現の自動生成}
+\subtitle{%
+メタファーを理解するとはどういうことか\\
+---心理学的アプローチおよび工学的アプローチ---}
+\date{2018年12月16日}
+\institute{総合研究大学院大学}
+\author{宮澤 彬}
+\begin{document}
+
+\begin{frame}[noframenumbering,plain]
+    \maketitle
+\end{frame}
+
+\begin{frame}
+    \frametitle{はじめに}
+    メタファーには非メタファー的な表現では得られない
+    視覚的な効果などを狙って，小説や演説などで好んで使われる．
+    \begin{leftbar}
+        \met{懐中電灯のように他人を照らす}（批判する）\met{だけで、自分を照らさないのはいけない}
+
+        \bigskip
+
+        \met{大きな海}（中国）は\met{風雨}に翻弄されることはない。
+        中国は５千年以上の苦難を\met{乗り越え}て、\met{変わらずここにある}。
+
+    \bigskip
+
+    {\footnotesize
+        習近平国家主席の演説を，朝日新聞DIGITAL
+        「『世界の市場』見せつけた中国 輸入博で『爆買い外交』」
+        (\url{https://digital.asahi.com/articles/ASLC54W7XLC5UHBI01W.html})
+        より引用．
+    }
+    \end{leftbar}
+\end{frame}
+
+\begin{frame}
+\frametitle{本研究の目的}
+
+    \textbf{日本語を対象として「よいメタファー表現」を自動生成する}
+
+    \bigskip
+
+    \textbf{生成の目的（メタファーの利点）}
+    \begin{itemize}
+        \item 政治家が説得力のある演説をするのに効果的\citep{black2011}．
+
+        \item メタファー的な表現は，非メタファー的な表現と比較して，感情に及ぼす影響が大きい\citep{mohammad2016}．
+
+        \item 新たな（実在しない）事物や現象の名付けに不可欠．
+
+        （例）「炎上」「燃料の投下」「延焼」
+
+    \end{itemize}
+
+    → \textbf{小説や演説原稿の執筆支援といった応用}
+
+\end{frame}
+
+\section{関連研究}
+\begin{frame}
+    \frametitle{\numberedtitle{関連研究}（レトリック）}
+    \textbf{（広義の）メタファー}または\textbf{比喩}は，
+    レトリックの一部門として古代ギリシャの時代から研究されてきた．
+    \begin{itemize}
+        \item \textbf{直喩}
+
+            「ような」といった比喩を明示する言葉を使う表現
+
+            （例）「りんごのような頬」，「風のように走る」
+
+        \item \textbf{（狭義の）メタファー}または\textbf{隠喩}
+
+            中心的な意味とは異なる意味で使われている表現
+
+            （例）「愛情を\met{注ぐ}」，「\met{澄んだ}気持ち」
+
+        \item \textbf{メトニミー}
+
+            「隣接性」をもつ別の語を用いる表現
+
+            （例）「筆を折る」，「漱石を読む」
+
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{\numberedtitle{関連研究}（コーパス言語学）}
+    \citet{steen2010}は
+    \href{http://ota.ox.ac.uk/desc/2553}{\emph{BNC Baby}}の各語に
+    \emph{metaphor-related word} (MRW)などのラベルを付与したコーパス
+    \href{http://ota.ahds.ac.uk/headers/2541.xml}{\emph{VU Amsterdam Metaphor Corpus}}
+    を構築した．
+
+    \bigskip
+
+    MRWの判定基準(\emph{MIPVU})は以下のようなものである．
+    \begin{enumerate}
+        \item 語の\textbf{文脈語義}を特定する．
+        \item \textbf{より基礎的な語義}\footnote{%
+            より具体的であったり，
+            五感に結び付きやすかったり，
+            身体的な動作に関係しているような語義．
+        }が現代語の辞書に存在するか確かめる．
+        \item そのような語義が存在して，かつ文脈語義がその語義との関連で理解される場合，
+            それをMRWと見なす．
+    \end{enumerate}
+\end{frame}
+
+\begin{frame}
+    \frametitle{\numberedtitle{関連研究}（コーパス言語学/MIPVU）}
+    例えば以下の文中の“struck”はMRWである．
+    \begin{center}
+        \itshape
+        His speech \met{struck} me as the feeblest of the day.
+    \end{center}
+
+    \begin{leftbar}
+        \textbf{strike} /straɪk/ \textsc{verb}
+        \begin{enumerate}
+            \item to hit against, or to crash into, someone or something
+                \textbf{← より基礎的な語義}
+            \item to make someone have a particular opinion or feeling
+                \textbf{← 文脈語義}
+        \end{enumerate}
+
+        \hfill\textcolor{gray}{\emph{Macmillan Dictionary}}
+    \end{leftbar}
+\end{frame}
+
+\begin{frame}
+    \frametitle{\numberedtitle{関連研究}（自然言語処理）}
+    自然言語処理においてメタファーを扱うタスクは主に以下の3つである．
+
+    \bigskip
+
+    \textbf{メタファー識別} \citep{tsvetkov2014}
+
+    （例）“prisoner \lit{escaped} jail” → \texttt{Lit},
+
+    \hspace*{2.5\zw}“blunder \met{escaped} notice” → \texttt{Met}
+
+    \bigskip
+
+    \textbf{メタファー理解} \citep{iwayama1991,shutova2013}
+
+     （例）\parbox[t]{0.8\textwidth}{「りんごのような頬」\par
+        {%
+            \footnotesize
+            \texttt{\textbraceleft"色": \textbraceleft"肌色": 0, \met{"赤": 1}, "青白": 0\textbraceright,}\par
+            \texttt{ "外形": \textbraceleft\met{"球状": 1}, "平面状": 0\textbraceright,}\par
+            \texttt{ "表面": \textbraceleft\met{"滑らか": 1}, "ざらざら": 0\textbraceright\textbraceright}\par
+        }
+      }
+
+
+    \hspace*{2.5\zw}“\met{hold back} (the) truth” → “\lit{conceal} (the) truth”
+
+    \bigskip
+
+    \textbf{メタファー生成} \citep{abe2006}
+
+    （例）“character” + “young, innocent, and fine”
+
+    \hspace*{2.5\zw}→ “the character like a puppy”
+
+\end{frame}
+
+
+\begin{frame}
+    \frametitle{\numberedtitle{関連研究}（自然言語処理/メタファー識別）}
+    Tsvetkovらは，
+    複数の言語に対応したメタファー識別モデルを提案した\citep{tsvetkov2013,tsvetkov2014}．
+    \begin{itemize}
+        \item \textbf{抽象度と想像可能性}
+
+            \href{http://ota.oucs.ox.ac.uk/headers/1054.xml}{\emph{MRC psycholinguistic database}} \citep{wilson1988}
+
+            （例）\texttt{think}: 346|384, \texttt{cat}: 485|551
+
+        \item \textbf{上位概念}
+
+            \href{https://wordnet.princeton.edu/}{\emph{WordNet}} \citep{miller1995}
+
+            （例）$\text{\texttt{cat.n.01}}\in\text{\texttt{noun.animal}}$
+        \item \textbf{単語のベクトル表現}
+
+            \citet{huang2012}, \citet{faruqui2014}
+
+        \item \textbf{固有表現}
+
+            （例）$\text{\texttt{京都}} \in \text{\texttt{location}}$
+    \end{itemize}
+\end{frame}
+
+\section{タスク定義}
+\begin{frame}
+
+\frametitle{タスク定義I}
+
+    \textbf{入力}
+
+    主語・目的語・動詞からなる表現「$s$が$o$を$v$」（これを$(s, o, v)$と表記）で，$v$が非メタファー的に使われているもの
+
+    （例）$(s, o, v) = (\text{“彼”}, \text{“気持ち”}, \text{“考慮する”})$
+
+    \bigskip
+
+    \textbf{出力}
+
+    表現$(s, o, v')$が後述する評価指標で高く評価されるような$v'$の集合．
+    例えば入力と同義であることや，メタファー的であることが評価される．
+
+    \smallskip
+
+    （例）$\{\text{“汲み取る”}，\text{“掬い取る”}, \text{“理解する”}\}$
+
+\end{frame}
+
+\begin{frame}
+\frametitle{タスク定義II}
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\textwidth]{architecture.pdf}
+    \caption{システムの概要図}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{タスク定義III}
+なぜ動詞とその目的語の組を対象とするのか
+
+\begin{itemize}
+    \item 動詞はメタファー的に使われやすい\footnote{%
+            ニュースにおける各品詞のMRWの割合は，
+            名詞13.2\%，形容詞21.0\%，
+            動詞27.6\%である\citep{steen2010}．
+        }
+    \item メタファー検知・理解のタスクでSVOを扱う研究が多い\citep{shutova2013,tsvetkov2014}
+\end{itemize}
+
+\bigskip
+
+なぜ日本語を対象とするのか
+
+\begin{itemize}
+    \item 自ら評価を行いやすい
+    \item 評価者を募りやすい
+\end{itemize}
+\end{frame}
+
+
+\section{評価指標・評価方法}
+\setcounter{iframe}{0}
+\begin{frame}
+    \frametitle{\numberedtitle{評価指標}}
+    各出力は表現として以下の指標について人手で評価される．
+    各例は入力を「彼が気持ちを考慮する」とした場合．
+
+    \smallskip
+
+    \begin{itemize}
+        \item \textbf{適切性}
+
+            入力表現と比較して，どの程度意味が似ているか．
+
+        \item \textbf{メタファー性}
+
+            どの程度メタファー的か．
+
+        \item \textbf{新規性}
+
+            どの程度新しいと感じるか．
+
+        \item \textbf{理解可能性}
+
+            どの程度理解しやすいか．
+
+        \item \textbf{相対的な好ましさ}
+
+            ある別な表現と比較して，どちらをより使いたいと感じるか．
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{\numberedtitle{評価指標}（生成・評価）}
+    \citet{miyazawa2017}はメタファー生成タスクに
+    必要な評価指標として\textbf{メタファー性}・\textbf{新規性}・\textbf{理解可能性}を導入した．
+
+    \bigskip
+
+    また，それらがクラウドソーシングで評価できること，
+    全指標で高評価の表現はより使いたいと感じられやすいことを示した．
+    \begin{table}\centering
+        \caption{理解可能性の評価結果（抜粋）．}
+        \begin{tabular}{|c|c|c|c|c|c|c|}
+        \hline
+        & 水 & 不満 & 愛 & 希望 & 嫉妬 & ネコ \\
+        \hline
+            \emph{X}が溢れる & \cellcolor{sHeatMapRed}\textcolor{white}{3.6} & \cellcolor{sHeatMapRed}\textcolor{white}{3.8} & \cellcolor{sHeatMapRed}\textcolor{white}{3.7} & \cellcolor{sHeatMapRed}\textcolor{white}{3.3} & \cellcolor{sHeatMapRed}\textcolor{white}{3.5} & \cellcolor{sHeatMapOrange}2.1 \\
+        \hline
+            \emph{X}が満ちる & \cellcolor{sHeatMapRed}\textcolor{white}{3.8} & \cellcolor{sHeatMapRed}\textcolor{white}{3.2} & \cellcolor{sHeatMapRed}\textcolor{white}{3.4} & \cellcolor{sHeatMapRed}\textcolor{white}{3.6} & \cellcolor{sHeatMapOrange}2.2 & \cellcolor{sHeatMapBeige}1.0 \\
+        \hline
+            \emph{X}を撒き散らす & \cellcolor{sHeatMapRed}\textcolor{white}{3.5} & \cellcolor{sHeatMapRed}\textcolor{white}{3.9} & \cellcolor{sHeatMapOrange}2.9 & \cellcolor{sHeatMapOrange}2.2 & \cellcolor{sHeatMapOrange}2.6 & 0.4 \\
+        \hline
+            \emph{X}が漏れる & \cellcolor{sHeatMapRed}\textcolor{white}{3.9} & \cellcolor{sHeatMapRed}\textcolor{white}{3.8} & \cellcolor{sHeatMapOrange}2.1 &0.9& \cellcolor{sHeatMapBeige}1.9 & 0.4 \\
+        \hline
+            \emph{X}が濁る & \cellcolor{sHeatMapRed}\textcolor{white}{3.7} & \cellcolor{sHeatMapBeige}1.4 & \cellcolor{sHeatMapBeige}1.5 &0.8&0.4& 0.1 \\
+        \hline
+            \emph{X}が沸騰する & \cellcolor{sHeatMapRed}\textcolor{white}{4.0} & \cellcolor{sHeatMapOrange}2.1 & \cellcolor{sHeatMapOrange}2.0 & \cellcolor{sHeatMapBeige}1.2 & \cellcolor{sHeatMapOrange}2.0 & 0.3 \\
+        \hline
+        \end{tabular}
+    \end{table}
+\end{frame}
+
+\begin{frame}
+    \frametitle{\numberedtitle{評価指標}}
+    また\citet{miyazawa2017}では，
+    メタファー性・新規性・理解可能性が\textbf{すべて高い表現は，好ましい}（より使いたいと感じさせる）\textbf{メタファー表現}であることを示した．
+    \begin{table}[t]
+        \centering\footnotesize
+        \caption{評価の和による順位と好ましさ．}\label{tab:human}
+        \begin{tabular}{llc}
+            \toprule%
+            \header{上位{10\%}の表現}
+            & \header{下位{90\%}の表現}
+            & \header{上位が好ましい} \\
+            \midrule
+            \met{不満を飲む}(23)       & 油を汲み取る(1087)    & $\checkmark$ \\
+            \met{怒りがこぼれる}(6)    & 岩に溺れる(1117)      & $\checkmark$ \\
+            \met{羞恥心が溜まる}(44)   & 羞恥心を注ぐ(856)     & $\checkmark$ \\
+            ?情報が濁る(106)      & 空気を撒き散らす(212) & $\checkmark$ \\
+            \met{悲しみがしみる}(32)   & 理解が流れる(721)     & $\checkmark$ \\
+            \met{楽しさが渦巻く}(81)   & 不満に漬かる(1241)    & − \\
+            \met{言葉が滲む}(14)       & 恐怖が流れる(307)     & − \\
+            \met{感情を注ぐ}(44)       & 意図に漬かる(654)     & $\checkmark$ \\
+            \met{不安が流れ出る}(44)   & 情熱を汲み取る(165)   & $\checkmark$ \\
+            \met{情報に溺れる}(23)     & 油が溜まる(1241)      & $\checkmark$ \\
+            \bottomrule
+        \end{tabular}
+    \end{table}
+\end{frame}
+
+\setcounter{iframe}{0}%
+\begin{frame}
+    \frametitle{\numberedtitle{評価方法}}
+    評価はクラウドソーシングによって行う．
+    各表現，各指標について例えば以下のような設問を$N$人に提示する．
+    \begin{leftbar}
+        以下の表現は新しいですか。5段階で評価してください。
+
+        \hspace*{7\zw}「新聞社が結果を見送る」
+
+        \begin{enumerate}
+            \setcounter{enumi}{4}
+            \item 使ったこと、見聞きしたことがない新しい表現である
+            \setcounter{enumi}{0}
+            \item 広く使われている慣用的な表現である
+        \end{enumerate}
+
+        選択肢は1から5の順で段階的に変化するものとします。
+    \end{leftbar}
+    得られた回答$(a_i)_{i = 1}^N$を次式で集約し，最終的なスコアとする．
+    \begin{align}
+        \sum_{i = 1}^N \frac{a_i - 1}{4}.
+    \end{align}
+\end{frame}
+
+\begin{frame}
+    \frametitle{\numberedtitle{評価方法}}
+    相対的な好ましさの評価では，表現$\varepsilon$と$\varepsilon'$のどちらを
+    より使いたいと感じるか尋ね，
+    Bradley--Terryモデル\citep{bradley1952}で実数のスコアを得る．
+
+    \bigskip
+
+    表現$\varepsilon$が$\varepsilon'$より好ましい（これを$\varepsilon \succ \varepsilon'$と表記）確率を
+    \begin{align}
+        p(\varepsilon \succ \varepsilon')
+            = \frac{\pi_{\varepsilon}}{\pi_{\varepsilon} + \pi_{\varepsilon'}}
+    \end{align}
+    とモデル化する．
+    各$\varepsilon \succ \varepsilon'$が$n_{\varepsilon\varepsilon'}$回ずつ観測される尤度は
+    \begin{align}
+        L\parentheses{\bm{\pi}} = \log\prod_{\varepsilon \ne \varepsilon'} \parentheses{\frac{\pi_{\varepsilon}}{\pi_{\varepsilon} + \pi_{\varepsilon'}}}^{n_{\varepsilon\varepsilon'}}
+    \end{align}
+    である．これを最大化する$\bm{\pi} = (\pi_\varepsilon)_\varepsilon$は一意に求められるため，
+    その各要素$\pi_\varepsilon^*$を$\varepsilon$の相対的な好ましさのスコアとして用いる．
+\end{frame}
+
+\section{提案手法}
+\begin{frame}
+    \frametitle{内部スコア}
+    各評価指標に対応した
+    自動計算可能なスコア（\textbf{内部スコア}）を導入し，
+    これらが大きくなるような候補を出力する．
+    \begin{table}[t]
+        \centering
+        \caption{評価指標と内部スコアの対応関係．}
+        \begin{tabular}{ccc}
+            \toprule
+                \header{評価指標} &
+                \header{内部スコア} \\
+            \midrule
+                適切性           & 類似性 \\
+                メタファー性     & 比喩らしさ \\
+                新規性           & 希少性 \\
+                理解可能性       & （普遍性）    \\
+                相対的な好ましさ & 総合スコア \\
+            \bottomrule
+        \end{tabular}
+    \end{table}
+\end{frame}
+
+\begin{frame}
+    \frametitle{類似性}
+    表現同士の意味の近さを直接測ることは難しいため，
+    動詞のベクトル表現間のコサイン類似度で近似する．
+    すなわち入力$(s, o, v)$と出力$(s, o, v')$の類似性を
+    \begin{align}
+        \similarity\parentheses{v, v'} =
+        \frac{1}{2}\parentheses{%
+            1 + \frac{%
+                    \gamma\parentheses{v} \cdot \gamma\parentheses{v'}
+                }{%
+                    \norm{\gamma \parentheses{v}}\norm{\gamma\parentheses{v'}}
+                }
+        }
+    \end{align}
+    で定義する．ここで$\gamma$は語にそのベクトル表現を対応させる写像である．
+    アフィン変換は0以上1以下の値をとるようにするためのものである．
+\end{frame}
+
+\begin{frame}
+    \frametitle{比喩らしさ}
+    はじめに表現をメタファー的か否か(\texttt{Met/Lit})に分類する識別モデルを構築する．
+    表現$(s, o, v')$の意味に関する特徴量を$\phi(s, o, v')$と表す．
+    比喩らしさを以下で定義する．
+    \begin{align}
+        \figurativeness\parentheses{s, o, v'}
+        &= p\parentheses{\text{\texttt{Met}} \mid \phi\parentheses{s, o, v'}}.
+    \end{align}
+    特徴量は基本的に\citet{tsvetkov2014}に基づく．
+\end{frame}
+
+\begin{frame}
+    \frametitle{希少性I}
+    表現$(s, o, v)$の希少性$\rarity$を以下で定義する．
+\begin{align}
+    \rarity\parentheses{o, v}
+    = \parentheses{\displaystyle 1 + \frac{p\parentheses{g\parentheses{o}, v}}{p\parentheses{g\parentheses{o}}p\parentheses{v}}}^{-1}. \eqlabel{rarity}
+\end{align}
+    ここで$p$はある語(unigram)またはある連続する2語(bigram)の生起確率で，
+    $g(o)$は$o$の属するクラスターを表す．
+
+    \bigskip
+
+    これは2語の関連の度合いを測る自己相互情報量(PMI)
+    \begin{align}
+        \pmi\parentheses{o, v} = \log \frac{p\parentheses{o, v}}{p\parentheses{o}p\parentheses{v}}
+    \end{align}
+    の変種である．
+\end{frame}
+
+\begin{frame}
+    \frametitle{希少性II}
+    PMIを直接使わないのは
+    \begin{enumerate}
+        \item $\mathbb{R} \setminus [0, 1]$の値をとることがある
+        \item コーパス中で共起しない$(o, v)$はすべて$-\infty$なってしまう
+    \end{enumerate}
+    からである．
+
+    \bigskip
+
+    1つ目の解決策として，変換$x \mapsto \sigmoid(-x)$を適用する．
+
+    \bigskip
+
+    2つ目の（部分的な）解決策として，
+    各名詞のベクトル表現から作られたクラスター$\{\mathcal{C}_i\}_{i = 1}^K$
+    と各動詞$v$の共起確率$p(\mathcal{C}_i,v)$を用いることにする．
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{総合スコア}
+    総合スコアは，類似性・新規性・比喩らしさの調和平均である．
+    \begin{align}
+        & \overallscore\parentheses{s,o,v,v'} \notag \\
+        & = 3 \parentheses{\frac{1}{\similarity\parentheses{v, v'}} +
+                           \frac{1}{\rarity\parentheses{o, v'}} +
+                           \frac{1}{\figurativeness\parentheses{s, o, v'}}}^{-1}.
+    \end{align}
+    重要度や値の分布について検証不足のため重み付けなどは行っていない．
+\end{frame}
+
+\setcounter{iframe}{0}
+\section{データセット}
+\begin{frame}
+    \frametitle{\numberedtitle{データセット}}
+    必要なデータセットは以下である．
+    \begin{itemize}
+        \item 動詞に\texttt{Met}/\texttt{Lit}のラベルが付いた表現のリスト．
+            入力と，メタファー識別器の訓練・テストに用いる．
+
+            （例）$\mathcal{D} = [(\text{“取材陣が息を\met{殺す}”}, \text{\texttt{Met}}), \ldots,$
+
+            \hspace*{2.5\zw}$\phantom{\mathcal{D} = [}(\text{“\texttt{<person/>}が小説を\lit{朗読する}”}, \text{\texttt{Lit}})]$
+
+        \item 言い換えの候補となる他動詞の集合．
+
+            （例）$\mathcal{V} = \{\text{“開ける”}, \ldots, \text{“考慮する”}\}$
+
+        \item 比喩らしさの特徴量として用いる，語の意味に関する情報．
+
+            （例）抽象度，想像可能性，上位概念
+
+        \item 単語のベクトル表現．類似性・新規性・比喩らしさの計算に用いる．
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{\numberedtitle{データセット}（入力と訓練・テストデータ）}
+    ラベル付きの表現には\citet{miyazawa2016}のデータセットを用いた．
+    これは
+    \href{http://nlp.ist.i.kyoto-u.ac.jp/EN/index.php?Kyoto\%20University\%20Text\%20Corpus}{京大コーパス} \citep{kawahara2002}
+    のOV対の一部にMIPVUの簡略版に基づくラベル付けをしたものである．
+%    \begin{table}
+%        \centering
+%        \caption{データセットの分布．アノテーター(A1, A2)の間には緩やかな合意があることが分かる．}
+%        \begin{tabular}{ccc}
+%            \toprule
+%                                 & \header{動詞} \\
+%            \midrule
+%                \#\,\texttt{Met} + \#\,\texttt{Lit} & 725           \\
+%                A1の\#\,\texttt{Met}     & 214 (29.5\%)  \\
+%                A2の\#\,\texttt{Met}     & 205 (28.3\%)  \\
+%                Fleiss’ κ\footnote{%
+%                    Fleiss’ κ \citep{fleiss1971}は
+%                    アノテーター間の一致率の指標の一つで，
+%                    偶然による一致の影響を考慮したもの．
+%                } & 0.587         \\
+%            \bottomrule
+%        \end{tabular}
+%    \end{table}
+    \begin{table}
+        \centering
+        \caption{データセットの評価．Fleiss’ κ\footnote{%
+            Fleiss’ κ \citep{fleiss1971}は
+            アノテーター間の一致率の指標の一つで，
+            偶然による一致の影響を考慮したもの．
+        }
+        が0.4を超えており，アノテーターA1とA2の間に緩やかな合意があることが分かる．}
+        \begin{tabular}{cccc}
+            \toprule
+                \header{動詞の総数}
+                & \header{A1の{\normalfont \#\,\texttt{Met}}}
+                & \header{A2の{\normalfont \#\,\texttt{Met}}}
+                & \header{Fleiss’ κ} \\
+                \midrule
+                725 & 214 (29.5\%) & 205 (28.3\%) & 0.587\\
+            \bottomrule
+        \end{tabular}
+    \end{table}
+\end{frame}
+
+\begin{frame}
+    \frametitle{\numberedtitle{データセット}（言い換えの候補）}
+    「現代日本語書き言葉均衡コーパス」(BCCWJ)の動詞から
+    「京都大学格フレーム」\citep{kawahara2006a,kawahara2006b}を用いて
+    他動詞のみを抽出した．
+    \begin{leftbar}
+        \textbf{飲む/のむ:動1}
+
+        \texttt{<ヲ格>} 酒 87526, 薬 43330, ビール 40683, 水 36182, …
+    \end{leftbar}
+\end{frame}
+
+\begin{frame}
+    \frametitle{\numberedtitle{データセット}（比喩らしさの特徴量）}
+    \begin{itemize}
+        \item \textbf{抽象度・想像可能性}
+
+            「\href{http://compling.hss.ntu.edu.sg/wnja/index.en.html}{日本語WordNet}」\citep{isahara2008}で英語に翻訳し
+            MRC psycholinguistic databaseを参照
+        \item \textbf{上位概念}
+
+            日本語WordNetで英語に翻訳し\href{https://wordnet.princeton.edu/}{\emph{WordNet}} \citep{miller1995}を参照
+
+        \item \textbf{単語のベクトル表現}
+
+            CBOWアルゴリズム\citep{mikolov2013}をBCCWJに適用して得た100次元ベクトル
+        \item \textbf{固有表現}
+
+            京都大学テキストコーパスのアノテーションを利用
+    \end{itemize}
+\end{frame}
+
+\section{実験}
+\begin{frame}
+    \frametitle{実験の概要}
+    本研究では3つの実験を行う．
+    実験2と3ではクラウドソーシングを利用する．
+    \begin{itemize}
+        \item \textbf{実験1}
+
+            メタファー識別器の性能を計測する
+        \item \textbf{実験2}
+
+            各内部スコアと人手評価と相関しているか検証する
+        \item \textbf{実験3}
+
+            総合スコアが，相対的な好ましさをモデル化できているか検証する
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{実験1：メタファー識別器の性能}
+    精度，再現率ともに0.5以上になっており，
+    メタファーの識別器として機能していることが確認できた．
+
+    \bigskip
+
+    データセットが異なるため単純には比較できないが\citet{tsvetkov2014}のF値0.86と比べると低い．
+    データサイズの拡大，アノテーションの見直しなどで改善できる可能性がある．
+    \begin{table}[t]
+        \centering\footnotesize
+        \caption{メタファー識別器の性能．}
+        \begin{tabular}{cccc}
+            \toprule%
+            \header{正解率} & \header{精度} & \header{再現率} & \header{F値} \\
+            \midrule%
+            0.83   & 0.78 & 0.50 & 0.61 \\
+            \bottomrule
+        \end{tabular}
+    \end{table}
+\end{frame}
+
+\begin{frame}
+    \frametitle{実験2：人手評価と内部スコアの相関}
+    10個の入力表現から得られた出力について，
+    内部スコアとクラウドソーシングで得られた評価値を比較した．
+    これらの間には弱い相関が成り立つことが分かった．
+    \begin{table}
+        \centering
+        \caption{内部スコアと人手評価の相関係数．}\tablabel{correlation}
+        \begin{tabular}{ccr}
+            \toprule%
+                \header{内部スコア}
+                & \header{評価指標} & \header{相関係数} \\
+            \midrule%
+                類似性     & 適切性       & 0.27 \\ % 0.142843 \\
+                比喩らしさ & メタファー性 & 0.38 \\ % 0.143168 \\
+                新規性     & 新規性       & 0.35 \\ % 0.271743 \\
+                普遍性     & 理解可能性   & 0.35 \\ % 0.271743 \\
+            \bottomrule
+        \end{tabular}
+    \end{table}
+\end{frame}
+
+\begin{frame}
+    \frametitle{実験2：人手評価と内部スコアの相関}
+    \begin{figure}
+        \begin{subfigure}[b]{0.45\textwidth}
+            \raggedleft
+            \includegraphics[width=0.7\hsize]{apt.pdf}
+        \end{subfigure}
+        \hfill
+        \begin{subfigure}[b]{0.45\textwidth}
+            \raggedright
+            \includegraphics[width=0.7\hsize]{met.pdf}
+        \end{subfigure}
+        \vskip0.7\baselineskip
+        \begin{subfigure}[b]{0.45\textwidth}
+            \raggedleft
+            \includegraphics[width=0.7\hsize]{nov.pdf}
+        \end{subfigure}
+        \hfill
+        \begin{subfigure}[b]{0.45\textwidth}
+            \raggedright
+            \includegraphics[width=0.7\hsize]{comp.pdf}
+        \end{subfigure}
+        \caption{内部スコアとクラウドソーシングで得られた評価の関係．}\figlabel{correlation}
+\end{figure}
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{実験2：人手評価と内部スコアの相関}
+    \small
+    \textbf{相関が弱くなった原因}
+    \begin{itemize}\itemsep0em
+        \item 評価者はわかりにくい表現のメタファー性を高く評価する傾向
+
+            （例）「Xさんがデータを漕ぐ」
+
+            \hspace{2.5\zw}（メタファー性：0.5，比喩らしさ：0.05）
+
+        \item 目的語と動詞が整合していない表現がある
+
+            （例）「Xさんが株を出る」（新規性：0.85，希少性：0.21）
+
+        \item 常に自動詞として使う動詞が候補に含まれてしまっている
+
+            （例）「*圧政者が漁民を負ける」
+
+    \end{itemize}
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{実験3：総合スコアと相対的な好ましさ}
+    \begin{table}
+        \centering\footnotesize
+        \caption{Kendallの$\tau$を用いた内部スコアと相対的な好ましさの比較．
+        記号$*$は有意水準5{\%}で帰無仮説「$\tau = 0$」が棄却されることを表す．}\tablabel{kendall}
+        \setlength\aboverulesep{0mm}
+        \setlength\belowrulesep{0mm}
+        \setlength\extrarowheight{3.5pt}
+        \begin{tabular}{lrrrr}
+            \toprule
+            \header{入力表現}
+            & \header{$\similarity$}
+            & \header{$\figurativeness$}
+            & \header{$\rarity$}
+            & \header{$\overallscore$} \\[0.605mm]
+            \midrule
+            \rowcolor{borderLightBlue}
+            新聞社が結果を集計する
+            & *0.64 & −0.02 & 0.42 & 0.42 \\
+            〇〇さんが株を購入する
+            & 0.33 & −0.20 & −0.07 & −0.20 \\
+            \rowcolor{borderLightBlue}
+            〇〇さんが小説を朗読する
+            & −0.16 & *0.56 & −0.24 & *0.69 \\
+            〇〇さんが会社を設立する
+            & −0.38 & 0.47 & −0.38 & *0.51 \\
+            \rowcolor{borderLightBlue}
+            軍団が記録を塗り替える
+            & −0.24 & −0.24 & −0.07 & −0.29 \\
+            〇〇さんが本を読む
+            & 0.29 & 0.07 & −0.20 & 0.07 \\
+            \rowcolor{borderLightBlue}
+            〇〇さんが水を注ぐ
+            & 0.20 & −0.07 & −0.38 & −0.67 \\
+            圧政者が漁民を襲撃する
+            & −0.42 & 0.29 & 0.11 & 0.33 \\
+            \rowcolor{borderLightBlue}
+            〇〇さんがデータを示す
+            & −0.33 & 0.02 & −0.33 & 0.22 \\
+            私が村を訪れる
+            & 0.07 & −0.07 & 0.33 & −0.20 \\
+            \bottomrule
+        \end{tabular}
+    \end{table}
+\end{frame}
+
+\begin{frame}
+    \frametitle{実験3：総合スコアと相対的な好ましさ}
+    \textbf{近い事例}
+
+    「〇〇さんが会社を支える」はシステム，人手評価ともに
+   最上位であった（類似性：0.60，比喩らしさ：0.94，新規性：0.77）．
+
+    \bigskip
+
+    \textbf{離れている事例}
+
+    「〇〇さんが水を授受する」は人手評価では最も好まれたものの，
+    システムでは最下位であった（類似性：0.52，比喩らしさ：0.0015，新規性：1.0）．
+
+    \bigskip
+
+    比喩らしさと新規性は，極端に大きい，または極端に小さい値をとりやすい．
+\end{frame}
+
+\section{まとめと今後の課題}
+\begin{frame}
+    \frametitle{まとめと今後の課題}
+    \textbf{まとめ}
+    \begin{enumerate}
+        \item メタファー生成のタスクの定義を行った
+        \item 新しい評価指標を導入した
+        \item ベースライン手法を実装した
+        \item クラウドソーシングで評価を行った
+    \end{enumerate}
+
+    \bigskip
+
+    \textbf{今後の課題}
+    \begin{itemize}
+        \item （文脈を考慮した）言い換えとしての好ましさの評価
+        \item 理解可能性に対応した内部スコアの定式化
+        \item 他の言語や統語構造（Adj-Nなど）への応用
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[plain,noframenumbering,allowframebreaks]
+\frametitle{参考文献}
+    \footnotesize
+    \bibliographystyle{jecon}
+    \bibliography{references.bib}
+\end{frame}
+
+\end{document}
