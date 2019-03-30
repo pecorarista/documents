@@ -1,0 +1,1040 @@
+\documentclass[a4paper,11pt]{jsarticle}
+\usepackage{amsmath,amssymb}	%記号の追加、align環境の導入
+\usepackage{bm}				%\bm{}で太字のベクトルが使えるようになる
+\usepackage{mathrsfs}			%カリグラフィ體を使えるようにする
+\usepackage{graphicx}			%文字の擴大・縮小、回転など
+\usepackage{color}				%色を扱う
+\usepackage{otf}
+\usepackage{framed}			%影のついた枠で囲む、左に縦線を表示する
+%\usepackage{indent}			%文中で部分的に用紙幅を調整
+\usepackage{okumacro}			%ルビを振る
+%
+%%%%% 用帋・餘白の設定 %%%%%
+%
+	\renewcommand{\headfont}{\bfseries}
+	\pagestyle{plain}					%頁番号は中央下に表示
+	\setlength{\textwidth}{140mm}		%本文の幅
+	\setlength{\textheight}{214mm}		%本文の高さ
+	\setlength{\oddsidemargin}{2.8mm}	%奇數頁の左餘白
+	\setlength{\evensidemargin}{2.8mm}	%偶數頁の左餘白
+	\setlength{\topmargin}{1mm}			%上のベースラインからヘッダーまでの距離
+	\setlength{\headheight}{1mm}		%ヘッダーの高さ
+	\setlength{\headsep}{4mm}			%ヘッダーの底から本文までの距離
+	\setlength{\footskip}{14mm}			%本文からフッターの底までの距離
+	\everymath{\displaystyle}			%本文中でも數式は大きく表示
+%
+%%%%% 左の縱綫 %%%%%
+%
+	\newenvironment{myleftbar}{%
+		\def\FrameCommand{\vrule width 1pt \hspace{10pt}}% 
+		\MakeFramed {\advance\hsize-\width \FrameRestore}}%
+		{\endMakeFramed}
+%
+%%%%% 脚注 %%%%%
+%
+	\makeatletter
+		\def\thefootnote{\ifnum\c@footnote>\z@\leavevmode\lower.5ex%
+		\hbox{${}^{\@arabic\c@footnote)}$}\fi}
+	\makeatother
+%
+%%%%% 數式番号 %%%%%
+%
+	\makeatletter
+		\renewcommand{\theequation}{%
+    		\thesection.\arabic{equation}}\@addtoreset{equation}{section}
+	\makeatother
+%
+%%%%%% lowered numerator fraction %%%%%
+%
+\DeclareRobustCommand{\lfrac}[2]{{\lower.4ex\hbox{\begingroup\ensuremath{#1}\endgroup}\over{\hspace{.2mm}#2\hspace{.2mm}}}} 
+%
+%
+%%%%%%%%%% くコ:彡本文 %%%%%%%%%%
+%
+%
+\begin{document}
+\abovedisplayskip=2.55mm
+\belowdisplayskip=3.2mm
+\xkanjiskip=.6mm
+%\definecolor{shadecolor}{gray}{.8}
+%\FrameSep=1pt
+
+\vspace*{5mm}
+
+\begin{center}
+{\huge \textbf{一般化された横断性条件の必要性について}}
+
+\vspace*{8mm}
+
+	{\Large 宮澤　彬}
+
+\vspace*{3mm}
+
+早稲田大学政治経済学部経済学科4年 学籍番号：1A082446-1
+
+\vspace*{2.5mm}
+
+e-mail: pecorarista@akane.waseda.jp
+
+\vspace*{2.5mm}
+
+平成23年12月9日
+
+\end{center}
+
+
+\vspace*{7mm}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\section{はじめに}
+
+この論文が対象とするのは，経済学で扱われる無限期間の効用最大化問題，
+特にその解が満たすべき条件である．扱う問題の例として次の1部門の最適成長モデルが挙げられる．
+\begin{align}
+	\left\{
+		\begin{array}{l}
+			\mathrm{maximize} \hspace{3mm} \sum_{t=0}^\infty \beta^t u(c_t) \vspace{1.4mm}\\
+			\mathrm{subject}\hspace{1.2mm}\mathrm{to}\quad x_{t+1}=f(x_t)-c_t\,,\vspace{1.4mm}\\
+			\vspace{1.4mm}
+			\hspace{18.9mm}x_t \geq 0\,,\;c_t\geq 0 \quad \mathrm{for}\quad\! t=0,\,1,\,\ldots,\\
+			\hspace{18.9mm}x_0 > 0 :\, \mathrm{given}.
+		\end{array}
+        \right.
+\end{align}
+このモデルについて説明すると，
+まず$x_t$は，第$t$期に利用可能な資産の量を表している．
+今期を第$t$期とすれば，次期に利用可能な資産$x_{t+1}$は，
+今期に$x_t$を投じて生産された$f(x_t)$と，
+そのうち今期に消費した量$c_t$の差となる．
+そして$\beta^t u(c_t)$は，第$t$期に$c_t$だけ消費することで得る
+効用$u(c_t)$を，
+0と1の間の定数$\beta$で割り引いて現在価値に換算したものである．
+課題はそれらの総和を最大化することである．
+この問題は「今期に利用可能な資産のうち，どれだけを生産のために使い，
+どれだけを消費するのがよいか」という問いに対して示唆を与える．
+特に(1.1)において生産関数$f$を$f(x)=x$としたものはCake Eating Problemと呼ばれる．
+こうすると資産の量が増えることがないため，
+例えば石油や金属のような涸渇性資源の利用方法を考える上で意味を持つ．
+
+上述の問題を含むように，この論文で扱う問題を以下の形で一般化しておく．
+\begin{align}
+	\left\{
+		\begin{array}{l}
+			\mathrm{maximize} \hspace{3mm} \sum_{t=0}^\infty u_t(c_t)\vspace{1.4mm}\\
+			\mathrm{subject}\hspace{1.2mm}\mathrm{to}\quad (x_{t+1}+c_t,x_t) \in F_t
+ 			\subset \mathbb{R}^N \times \mathbb{R}^N\quad \mathrm{for}\quad\! t=0,\,1,\,\ldots,\vspace{2mm}\\
+        		\hspace{19.7mm}x_0 \in \mathbb{R}^N :\, \mathrm{given}.
+		\end{array}
+        \right.
+\end{align}
+ここで$u_t$は第$t$期の効用関数である．効用が時点に依存することを許すので
+割引率は既に織り込まれているものと考える．資産は
+$N$種類を想定する．よって$x_t$と$c_t$はそれぞれ$N$次元ベクトルになる．
+生産関数をはじめ，$x_t$や$c_t$に課された条件は
+すべて集合$F_t$によって表現されている．
+$x_t$や$c_t$を時系列に並べたもの，
+$\langle c_0,\,c_1,\,c_2,\,\ldots \rangle$は\textbf{経路}(path)と呼ばれ，
+本論文では$\langle c_{t} \rangle_{t=0}^\infty$のように表す．
+すべての$t$で$(x_{t+1}+c_t,x_t)\in F_t$を満たす経路は\textbf{実行可能}な経路と呼ばれる．
+問題(1.2)における主たる関心は任意の実行可能な経路$\langle (c_t,x_{t+1}) \rangle_{t=0}^\infty$のうち，
+効用の総和を最大化させるような経路を決定することである．
+
+(1.2)で表される問題の解について今まで多くの研究がなされてきた．
+この種の問題の標準的なテキストであるStokey and Lucas (1989)によると，
+例えば解の存在については「各期の制約集合が非空かつコンパクト
+で効用関数が有界かつ連続であれば解が存在する」ことが保証されている(ibid. Theorem 4.6)．
+またある経路が最適であれば，
+\hspace{.6mm}\ruby{\textbf{Euler}}{オイラー}\textbf{方程式}と
+\textbf{横断性条件}(transversality condition)という条件を満たさなければ
+ならないことがよく知られている．
+
+ここでEuler方程式と横断性条件（以下TVC）について説明しておく．
+まずEuler方程式とは，最適な消費の経路$\langle c_0^*,c_1^*,\ldots \rangle$によって得られる総効用は，
+それからわずかに外れた経路$\langle c_0^*,\ldots,c_{t-1}^*,c_t^*+h,c_{t+1}^*-h,c_{t+2}^*,\ldots \rangle$によって得られる
+総効用以上であるということを微分を用いて定式化したものである．
+Euler方程式が必要条件であることは簡単に説明できる．
+仮に最適な経路がEuler方程式を満たしていないとしよう．
+このときある連続する2時点間で消費量を融通することで
+最適な経路から得られていた効用よりも高い効用が得られることになる．
+しかしこれはもとの経路が最適であったことと矛盾している．
+このようにEuler方程式は直感と結びついた自然な概念である．
+
+一方，TVCが何であるかを直感的に説明することはやや難しい．
+実はこの問いに対する何らかの答えを得たい，というのが本論文を執筆したそもそもの
+動機である．今の段階で大まかな説明を試みると，まずこれは終端条件の一種である．
+終端条件とは，例えば「最終期（第$T$期）には資産を使い切る$(x_T=0)$」という条件や，
+「永遠に借金をし続けてはならない」という条件(no-Ponzi-game rule)などを指す．
+TVCの数式による表現は例えば$\lim_{t \to \infty} \beta^t (du(c_t^*)/dc)\hspace{.2mm}x_{t+1}^*=0$
+で与えられる．この形から分かるようにTVCは有限期間の問題では生じない，
+無限期間の問題に特有の条件である．
+あるいは有限期間の場合には自動的に成立しているものと考えてもよい．
+TVCの簡単な説明として「無限の将来では資産を使い切ること」と言われることがある．
+ただし「使い切る」というのはあくまで最適性から導かれる主張で
+あって，no-Ponzi-game ruleのような，モデルを構築する際に
+設定されるものとは性質が異なる．
+よってTVCに対する理解を深める上で，
+設定として課される条件と区別することは一つの前進であり，
+そのために最適性の必要条件としてこれを導出することは重要である．
+
+しかしながら前掲のStokey and Lucas (1989)では
+TVCの必要性を「困難な問題」であるとして証明を与えず，
+参考文献としてPeleg and Ryder (1972), Weitzman (1973), Ekeland and Scheinkman (1986)を挙げるにとどめている．
+これらの論文ではどのような証明が与えられているかというと，
+まずPeleg and Ryder (1972)とWeitzman (1973)はどちらも
+「効用関数が凹である」という仮定を置き，
+「凸集合の分離定理」を使うことで証明している．
+またEkeland and Scheinkman (1986)は効用関数が凹でない
+場合にも成り立つことを示した．その方法では微分を用いる．
+この証明は後にKamihigashi (2000)によって改良されている．
+これはEkeland and Scheinkman (1986)の技術的な
+難しさを，巧妙な経路を作ることで回避したものである．
+しかし微分を用いる点では前述の論文と同じである．
+
+ここまで述べてきたように，TVCの研究においては
+効用関数に凹性や微分可能性の仮定が置かれることが多かった．
+しかし「無限の将来で資産を使い切ること」という直感に従う限り，
+凹性や微分可能性を置く必然性は感じられない．
+また一般に凹性，あるいは微分可能性は，
+解の存在や一意性を保証するための十分条件として使われる条件である．
+よって必要性の証明にこれらを用いなければならないとは考えにくい．
+
+次のCake Eating Problemを考えよう．
+\begin{align}
+	\left\{
+		\begin{array}{l}
+			\mathrm{maximize} \hspace{3mm} \sum_{t=0}^\infty \beta^t \min \left\{ c_t^2,1\right\} \vspace{1.4mm}\\
+			\mathrm{subject}\hspace{1.2mm}\mathrm{to}\quad x_{t+1}=x_t-c_t\,,\vspace{1.4mm}\\
+			\vspace{1.4mm}
+			\hspace{18.9mm}x_t \geq 0\,,\;c_t\geq 0 \quad \mathrm{for}\quad\! t=0,\,1,\,\ldots,\\
+			\hspace{18.9mm}x_0 > 0 :\, \mathrm{given}.
+		\end{array}
+        \right.
+\end{align}
+ここで用いられている効用関数$u(c)=\min\,\{c^2,1\}$は凹でない．
+さらに$c=1$という微分不可能な点を持つ．
+この問題では次の経路が解になっている．
+\begin{align}
+	(\bar{c}_t,\bar{x}_{t+1})=
+		\left\{
+			\begin{array}{cl}
+				(1,x_0-(t+1)) &\;\; t=0,\,1,\,\ldots,\,[x_0]-1,\vspace{1.4mm}\\
+				(x_0-[x_0],0) &\;\; t=[x_0],\vspace{1.4mm}\\
+				(0,0)	&\;\; t=[x_0]+1,[x_0]+2\,\ldots
+			\end{array}
+		\right.
+\end{align}
+ここで記号$[x]$は$x$を超えない最大の整数を表している．
+(1.4)で与えられる経路が解になっていることは第4章で証明する．
+関心があるのはTVCが満たされているかどうかであるが，
+$\lim_{t \to \infty} \beta^t (du(\bar{c}_t)/dc) \hspace{.2mm} \bar{x}_{t+1}=0$
+を計算してみると満たされていることがすぐに確認できる．
+この例によってTVCの成立には凹性や微分可能性が必須でないことが示唆される．
+しかし上で述べた先行研究の結果はどれも(1.3)に適用することができない．
+
+広範な効用関数のクラスを含む形でTVCの必要性を示すことができれば，
+それはTVCの持つ意味合いを考える上で大きな役割を果たすはずである．
+そして本論文は実際にそのような証明を示す．
+証明のアイディアはKamihigashi (2000, 2003)に近いが
+証明法それ自体はそれらと異なるオリジナルのものである．
+
+本論文の構成は以下のとおりである．
+まず第2章は大きく二つの内容に分けられる．
+一つ目は，(1.2)のタイプの問題を扱う上で
+最も重要な概念「最適性」が，実は期間を無限に設定したことにより
+曖昧さや不完全さを持っていることを紹介し，それを解決する方法について説明する．
+二つ目に，次章の証明で用いる「下方Dini導関数」を導入し，
+その諸性質を見る．
+第3章の前半では(1.2)に置かれる仮定と補題を示し，
+後半でTVCの必要性の証明をする．
+TVCを理解するための具体例を第4章で挙げる．また(1.4)の経路が
+(1.3)の解であることの証明もそこで扱う．
+最後に第5章で結論を述べる．
+
+\vspace{7mm}
+
+\section{最適性と微分概念の一般化}
+
+有限期間の場合と異なり，無限期間の場合には最適という語に曖昧さが生じる．
+単純に考えれば，最適な経路$\langle (c_t^*,x_{t+1}^*) \rangle_{t=0}^\infty$とは，
+任意の実行可能な経路$\langle (c_t,x_{t+1}) \rangle_{t=0}^\infty$について
+\begin{align}
+	\sum_{t=0}^\infty u_t(c_t^*)\geq \sum_{t=0}^\infty u_t(c_t)
+\end{align}
+を満たす経路である．しかしこの定義では
+${\textstyle \sum_{t=0}^\infty} (-1)^t$といった経路が実行可能であるときに総効用が定義されないといった問題がある．
+これを解決するには上極限あるいは下極限を用いればよい．ここではKamihigashi (2000)にならい次のように定義する．
+
+%\begin{indentation}{5pt}{5pt}
+%\begin{shaded}
+%\vspace*{5pt}
+\vspace{7mm}
+\noindent \textbf{定義2.1}\hspace*{.7mm} ある実行可能な経路$\langle (c_t^*,x_{t+1}^*) \rangle_{t=0}^\infty$が任意の実行可能な経路$\langle (c_t,x_{t+1}) \rangle_{t=0}^\infty$に対して
+\begin{align}
+	\limsup_{T\to \infty}\; \sum_{t=0}^T \, \left(u_t(c_t^*)-u_t(c_t) \right)\geq 0
+\end{align}
+を満たすとき，経路$\langle (c_t^*,x_{t+1}^*) \rangle_{t=0}^\infty$は\textbf{最適}であると言う．
+\vspace{7mm}
+%\vspace*{5pt}
+%\end{shaded}
+%\end{indentation}
+
+式(2.2)の意味するところを簡単に述べると，無限個の$T$で${\textstyle \sum_{t=0}^T}\, u_t(c_t^*)\geq {\textstyle \sum_{t=0}^T}\, u_t(c_t)$が成立するということである．
+また詳しく述べると，任意の正数$\varepsilon$に対し，
+ある自然数$T_0$が存在して，いかなる$T \geq T_0$を選ぼうとも
+\begin{align*}
+	\sup_{S\geq T}\, \sum_{t=0}^T \, \left(u_t(c_t^*)-u_t(c_t) \right)\geq -\varepsilon
+\end{align*}
+が成立するということである．
+
+この定義は${\textstyle \sum}$の中に$\infty$と$-\infty$が同時に含まれない限り意味を持つ．また
+すべての経路で総効用が収束する場合には(2.2)が
+(2.1)に一致するので，定義2.1は単純な定義の自然な拡張であることが分かる．
+
+なお最適性の定義としては(2.2)において$\limsup$を$\liminf$に置き換えたものを
+考えてもよい．こちらもまた総効用が収束しないときにも有効であり，
+収束する場合は(2.1)に一致する．一般に$\liminf a_n \geq 0$ならば$\limsup a_n \geq 0$が成り立つので，この最適性は定義2.1よりも強い条件であると言える．これから考えていくものは最適な経路が満たすべき必要条件なので，より弱い最適性の下で示しておけば，
+より強い最適性を採用した場合にも自動的に示されたことになる．
+したがって定義2.1を採用することが正当化されると考えられる．
+
+\bigskip
+
+次に，微分不可能な関数に対して導関数に対応するものを導入することを考える．
+これにはいくつかの方法が知られているが，ここで用いるのは
+\textbf{下方Dini導関数}(lower Dini derivative)と呼ばれるものである．
+まず定義から述べる．
+
+%\begin{indentation}{5pt}{5pt}
+%\begin{shaded}
+%\vspace*{5pt}
+\vspace{7mm}
+\noindent \textbf{定義2.2}\hspace*{.7mm} 関数$\psi$を$\mathbb{R}^N$の開集合$\varOmega$上の実数値関数とする．このとき$y_0 \in \varOmega$と$h \in \mathbb{R}^N$に対して
+\begin{align*}
+	D_{+}\psi(y_0)(h):=
+	\lim_{\delta \to +0}\inf_{0<\alpha<\delta}\lfrac{\psi(y_0+\alpha h)-\psi(y_0)}{\alpha}
+\end{align*}
+を$\psi$の$y_0$における$h$方向への下方Dini導関数と呼ぶ．
+\vspace{7mm}
+%\vspace*{5pt}
+%\end{shaded}
+%\end{indentation}
+
+下方Dini導関数$D_{+}\psi(y_0)(h)$はある$\mathbb{R}\cup\{\pm \infty\}$の元としてただ一つに定まる．
+また通常の意味での導関数，すなわちFr\'{e}chet導関数$D\psi(y_0)$が存在するとき，
+$D_{+}\psi(y_0)(h)$は$D\psi(y_0)h$に一致する．したがって下方Dini導関数は
+Fr\'{e}chet導関数の拡張になっている．$D_{+}\psi(y_0)(h)$が有限の値をとるためには，
+$y_0$において\textbf{局所Lipschitz条件}が満たされていればよい．このことを次に命題として述べる．
+
+%\begin{indentation}{5pt}{5pt}
+%\begin{shaded}
+%\vspace*{5pt}
+\vspace{7mm}
+\noindent \textbf{命題2.2}\hspace*{.7mm} 関数$\psi:\mathbb{R}^N \to \mathbb{R}$が$y_0\in \mathbb{R}^N$で
+局所Lipschitz条件を満たしているとする．このとき任意の$h \in \mathbb{R}^N$に対して，$-\infty<D_+\psi(y_0)(h)<\infty$が成り立つ．
+\bigskip
+%\vspace*{5pt}
+%\end{shaded}
+%\end{indentation}
+
+\noindent \textbf{証明}\hspace{.7mm} $\psi$が$y_0$で局所Lipschitz条件を満たすので，
+ある$L\geq 0$と$r>0$が存在して，
+任意の$y \in V:=\{\,z \in \mathbb{R}^N\,;\;\|z-y_0\|<r \,\}$について
+\begin{align*}
+	|\psi(y)-\psi(y_0)|\leq L \|y-y_0\|
+\end{align*}
+が成り立つ．そこで$h \in \mathbb{R}^N$が与えられたとき，
+$\delta:=r/(1+\|h\|)$とすれば，任意の$\alpha \in (0,\delta)$で
+$y_0+\alpha h \in V$となり
+\begin{align*}
+	\lfrac{|\psi(y_0+\alpha h)-\psi(y_0)|}{\alpha} \leq \lfrac{L\|\alpha h\|}{\alpha}=L\|h\|
+\end{align*}
+すなわち
+\begin{align*}
+	-L\|h\| \leq \lfrac{\psi(y_0+\alpha h)-\psi(y_0)}{\alpha} \leq L\|h\|
+\end{align*}
+が成り立つ．したがって$-\infty <D_{+}\psi(y_0)(h)< \infty$である．\hfill \rule[-2pt]{5pt}{10pt}
+
+\vspace{7mm}
+
+下方Dini導関数は，通常の導関数のように$h$について
+線型性を持っていない．これは例えば$\psi(y)=|y|$としたとき，
+$D_+\psi(0)(2)=1$かつ$D_+\psi (0)(1)+D_+\psi (0)(1)=2$であることから分かる．
+ただし1次同次性，すなわち実数$k$に対して$D_{+}\psi(y_0)(k h)=k D_{+}\psi(y_0)(h)$が成り立つ，
+という性質は条件付きで成立する．その条件は$k$が非負であることであり，
+理由は$k\geq 0$が$\mathbb{R}$の部分集合$A$に対して$\inf (kA)=k \inf A$を満たすからである\footnote{ここで$kA$は集合$\{\,kx \;;\; x \in A\,\}$を表している．}．
+
+\newpage
+
+$\delta \to 0$のとき$\inf_{0<\alpha<\delta}(\psi(y_0+\alpha h)-\psi(y_0))/\alpha$は単調に増加するので，
+下方Dini導関数は
+\begin{align*}
+	D_{+}\psi(y_0)(h)=\sup_{\delta>0}\inf_{0<\alpha<\delta}\lfrac{\psi(y_0+\alpha h)-\psi(y_0)}{\alpha}
+\end{align*}
+と表すこともできる．したがって
+上限の性質より，任意の$\varepsilon$に対してある$\delta_\varepsilon>0$が
+存在して
+\begin{align*}
+	D_{+}\psi(y_0)(h)-\varepsilon<\inf_{0<\alpha<\delta_\varepsilon}\lfrac{\psi(y_0+\alpha h)-\psi(y_0)}{\alpha}
+\end{align*}
+が成り立つ．この事実は定理の証明で用いる．
+
+\vspace{7mm}
+
+\section{横断性条件とその必要性}
+
+%\begin{indentation}{5pt}{5pt}
+%\begin{shaded}
+\vspace{2mm}
+
+\noindent \textbf{定理}\hspace*{.7mm} 最適制御問題(1.2)において，
+以下の仮定(A1)-(A6)が満たされているとする．
+\begin{enumerate}
+\item[\textbf{(A1)}] 関数$u_t$は，時間によらず一つの関数$u:\mathbb{R}^N \to \mathbb{R}\cup \{-\infty\}$と割引率$\beta \in (0,1)$を用いて$u_t(c)=\beta^t u(c)$と表される．
+
+\item[\textbf{(A2)}] 最適な経路$\langle (c_t^*,x_{t+1}^*) \rangle_{t=0}^\infty$が存在する．
+
+\item[\textbf{(A3)}] 任意の経路について${\textstyle \sum_{t=0}^\infty}\, \beta^t u(c_t)<\infty$かつ，最適な経路について${\textstyle \sum_{t=0}^\infty}\, \beta^t |u(c_t^*)|<\infty$が成り立つ．
+
+\item[\textbf{(A4)}] 効用関数$u$は各$c_t^*$で局所Lipschitz条件を満たす．
+
+\item[\textbf{(A5)}] 任意の$\lambda \in [\hspace{.3mm}0,1\hspace{.1mm}]$に対し各$t \in \mathbb{Z}_+$で$(\lambda (x_{t+1}^*+c_t^*),\lambda x_t^*)\in F_t$となる．
+
+\item[\textbf{(A6)}] ある定数$\ell \in [\hspace{.3mm}0,1)$によって，
+任意の$\lambda \in [\hspace{.3mm}\ell,1)$に対し
+\begin{align*}
+	\lfrac{\beta^t u(c_t^*)-\beta^t u(\lambda c_t^*)}{1-\lambda}\leq m_t(\ell)\,,\;\, \sum_{t=0}^\infty m_t(\ell)<\infty
+\end{align*}
+となる非負実数の列$\langle m_t (\ell)\rangle_{t=0}^\infty$がとれる．
+\end{enumerate}
+\noindent このとき，最適経路$(c_t^*,x_t^*)$について
+\begin{align}
+	\limsup_{T \to \infty}\, \beta^T D_+u(c_T^*)(x_{T+1}^*)\leq 0
+\end{align}
+が成り立つ．これを横断性条件という．
+\vspace{7mm}
+%\vspace*{5pt}
+%\end{shaded}
+%\end{indentation}
+
+定理を証明する前に各仮定の正当性を吟味しておく．(A1)に関して言うと$u_t(c)=\beta^t u(c)$は必須ではない．しかし(A3)で収束性を仮定している以上，
+$u_t$は何らかの方法で割り引かれている必要があり，
+そこで一般的な定式化に合わせこのように設定した．
+また(A4)-(A6)にも言えることであるが，横断性条件は
+十分大きな$t$における主張であるから，すべての$t \in \mathbb{Z}_+$で成り立たなくとも，
+ある$\tau \in \mathbb{Z}_+$があって$t\geq \tau$を満たすすべての$t$で成り立っていればよい．
+
+(A2)については，いま我々が関心を持つのが
+「最適な経路が満たすべき条件」である以上，妥当な仮定であると言える．
+次の(A3)は$\infty$に発散する経路が存在しないこと，そして
+最適な経路において総効用が$\pm \infty$に発散
+しないことを要請している．この仮定は，
+各$t$で$u(c_t^*)>-\infty$が満たされることを含意している．
+また(A3)が満たされているならば定義2.1は意味を持つ．
+
+(A4)は効用に関して今まで置かれることの多かった，
+凹性あるいは微分可能性の仮定を弱めたものだと言える．
+なぜなら開凸集合上で凹または$C^1$級の関数は
+その上で局所Lipschitz連続になるからである\footnote{証明は
+例えばBorwein (2000) Theorem 3.5.2やPerko (2000) p.71などにある．}．
+前の章で確認した通り，局所Lipschitz条件は下方Dini導関数が
+実数であるための十分条件であり，効用関数が不連続であっても下方Dini導関数は
+定義される．しかし直感として，不連続な場合にはそもそも
+解が存在しないほうが自然であり，
+また既に(A2)を置いているので，
+不連続な場合は除くことに問題はないと考える．
+
+(A5)は，第$t$期の最適な消費と資源の組$(x_{t+1}^*+c_t^*,x_t^*)$と，消費をせず，また資源の持ち越しもしない組$(0,0)$が任意の割合で組み合わせられることを要請している．
+これは$F_t$が原点について星形である\footnote{集合$A$が点$a \in A$について星形であるとは，任意の$b \in A$について$\overline{ab}=\{\,(1-\tau)a+\tau b \;;\; 0\leq \tau \leq 1\,\}$が$A$に含まれることを言う．}と言い換えられる．
+
+最後の(A6)は，最適な経路とそれからわずかに逸れた経路との効用の差の総和が，絶対収束するほど小さくできるという仮定であり，他の仮定に比べ若干複雑な仮定である．これが満たされるための十分条件を示しておく．
+
+%\begin{indentation}{5pt}{5pt}
+%\begin{shaded}
+%\vspace*{5pt}
+\vspace{7mm}
+\noindent \textbf{命題3.1}\hspace*{.7mm} 効用関数$u$が$\mathbb{R}^N$で
+（大域的に）Lipschitz連続であるとする．さらにどのような実行可能な経路についても，
+十分大きなすべての$t$で$\beta^t \|c_t\|\leq \gamma^t$を成り立たせるような$\gamma \in (0,1)$が存在するとする．このとき仮定(A6)は満たされる．
+\bigskip
+%\vspace*{5pt}
+%\end{shaded}
+%\end{indentation}
+
+\noindent \textbf{証明}\hspace{.7mm} すべての$t\in \mathbb{Z}_+$で$\beta^t\|c_t\|<\gamma^t$が成り立つとしても
+一般性を失わない．
+$u$が$\mathbb{R}^N$上でLipschitz連続であるから，ある定数$L\geq 0$が存在して，どのような$\lambda \in (0,1)$に対しても
+\begin{align*}
+	|u(c_t)-u(\lambda c_t)|\leq L\|c_t-\lambda c_t\|=L(1-\lambda)\|c_t\|
+\end{align*}
+が成り立つ．よって
+\begin{align*}
+	\lfrac{\beta^t u(c_t^*)-\beta^t u (\lambda c_t^*)}{1-\lambda}\leq \beta^t \lfrac{L(1-\lambda)\|c_t^*\|}{1-\lambda}=L\beta^t \|c_t^*\|\leq L\gamma^t
+\end{align*}
+となり，${\textstyle \sum_{t=0}^\infty}\,L\gamma^t=L/(1-\gamma)$であるから
+仮定(A6)が満たされている．\hfill \rule[-2pt]{5pt}{10pt}
+
+\vspace{7mm}
+
+$\beta^t \|c_t\|<\gamma^t$を満たす$\gamma$が存在することの直感的な意味は
+消費量を指数関数的に増加させ続けることができないという意味である．上の命題は
+応用上よく使われる$u(c)=\sqrt{c}$や$u(c)=\log c$に用いることはできない．
+これらは$c=0$においてLipschitz連続でないからである．
+これらを扱うために次の命題を示す．
+
+%\begin{indentation}{5pt}{5pt}
+%\begin{shaded}
+%\vspace*{5pt}
+
+\vspace{7mm}
+\noindent \textbf{命題3.2}\hspace*{.7mm} 集合$A$が$0\in \mathbb{R}^N$について
+星形であるとする．このとき$f:A\to \mathbb{R}$が凹関数ならば，任意の$\ell \in (0,1)$\,, $\lambda \in [\hspace{.3mm} \ell,1)$で
+\begin{align*}
+	\lfrac{f(y_0)-f(\lambda y_0)}{1-\lambda}\leq \lfrac{f(y_0)-f(\ell y_0)}{1-\ell}
+\end{align*}
+が成り立つ．
+\bigskip
+%\vspace*{5pt}
+%\end{shaded}
+%\end{indentation}
+
+\noindent \textbf{証明}\hspace{.7mm} まず$\lambda \in [\hspace{.3mm}\ell,1)$はパラメーター$\tau$を用いて$\lambda=(1-\tau)+\tau \ell \; (\,0< \tau \leq 1\,)$と表せることに注意する．$f$が凹関数であるから$f((1-\tau)y_0+\tau \ell y_0)\geq (1-\tau)f(y_0)+\tau f(\ell y_0)$
+が成り立つ．よって
+\jot=7pt
+\begin{align*}
+	\lfrac{f(y_0)-f(\lambda y_0)}{1-\lambda}
+	&\leq \lfrac{f(y_0)-(1-\tau)f(y_0)-\tau f(\ell y_0)}{\tau(1-\ell)}\\
+	&\leq \lfrac{\tau f(y_0)-\tau f(\ell y_0)}{\tau(1-\ell)}=\lfrac{f(y_0)-f(\ell y_0)}{1-\ell}
+\end{align*}
+\jot=3pt
+を得る．\hfill \rule[-2pt]{5pt}{10pt}
+
+\vspace{7mm}
+
+この命題により$u(0)=0$を満たす関数について$\ell=0$とすれば
+\begin{align*}
+	\lfrac{\beta^t (c_t^*)-\beta^t u(\lambda c_t^*)}{1-\lambda}\leq \lfrac{\beta^tu(c_t^*)-\beta^t u(0)}{1-0}\leq \beta^t u(c_t^*)
+\end{align*}
+とが成り立つ．よって(A3)が満たされているならば(A6)も満たされる．
+
+また$u(c)=\log c$の場合には，例えば$\ell=e^{-1}$として
+\jot=6pt
+\begin{align*}
+	\lfrac{\beta^t \log c_t^*-\beta^t \log \lambda c_t^*}{1-\lambda}
+	&\leq \lfrac{\beta^t \log c_t^*-\beta^t \log \ell c_t^*}{1-\ell}\\
+	&=\beta^t \lfrac{-\log \ell}{1-\ell}=\lfrac{\beta^t}{1-e^{-1}}
+\end{align*}
+\jot=3pt
+が成り立つ．よって$u(c)=\log c$は(A6)を満たしている．
+
+\bigskip
+
+簡単な補題を2つ示してから証明に入る．
+
+%\begin{indentation}{5pt}{5pt}
+%\begin{shaded}
+%\vspace*{5pt}
+\vspace{7mm}
+\noindent \textbf{補題3.3}\hspace*{.7mm} 正項級数${\textstyle \sum_{t=0}^\infty}\, \mu_t$が
+ある実数に収束しているとする．このとき任意の正数$\varepsilon$に対して，ある自然数$T_\varepsilon$をとれば，任意の$T \geq T_\varepsilon\hspace*{.2mm}$, $S\geq T+1$に対して
+\begin{align*}
+	\sum_{t=T+1}^S \mu_t \leq \varepsilon
+\end{align*}
+が成り立つ．
+\bigskip
+%\vspace*{5pt}
+%\end{shaded}
+%\end{indentation}
+
+\noindent \textbf{証明}\hspace{.7mm} 正項級数${\textstyle \sum_{t=0}^\infty}\, \mu_t$が
+収束しているので，任意の正数$\varepsilon$に対してある自然数$T_\varepsilon$が
+存在して，すべての$T \geq T_\varepsilon$で
+\begin{align*}
+	0\leq \sum_{t=0}^\infty \, \mu_t -\sum_{t=0}^T \, \mu_t\leq \varepsilon
+\end{align*}
+が成り立つ．したがって任意に$S \geq T+1$をとれば
+\begin{align*}
+	\sum_{t=T+1}^S\, \mu_t=\sum_{t=0}^S \, \mu_t-\sum_{t=0}^T \, \mu_t\leq \sum_{t=0}^\infty \, \mu_t-\left(\, \sum_{t=0}^\infty \mu_t -\varepsilon \right)=\varepsilon
+\end{align*}
+となる．\hfill \rule[-2pt]{5pt}{10pt}
+
+%\begin{indentation}{5pt}{5pt}
+%\begin{shaded}
+%\vspace*{5pt}
+\vspace{7mm}
+\noindent \textbf{補題3.4}\hspace*{.7mm} 任意の自然数$T$と実数$\lambda \in (0,1)$を
+とる．このとき仮定(A3)が満たされているならば，以下で定義される$\langle (\widetilde{c}_t,\widetilde{x}_{t+1})\rangle_{t=0}^\infty$は実行可能である．
+\begin{align*}
+	(\widetilde{c}_t,\widetilde{x}_{t+1})=
+        	\left\{
+                	\begin{array}{ll}
+                        	(c_t^*,x_{t+1}^*)							&\;	(\,t=0,\,1,\,\ldots,\,T-1\,)\vspace{1.2mm}\\
+                                (c_T^*+(1-\lambda)\hspace{.2mm}x_{T+1}^*,\lambda x_{T+1}^*)&\;	(\,t=T\,)\vspace{1.2mm}\\
+                                (\lambda c_t^*,\lambda x_{t+1}^*)		&\;	(\,t=T+1,\,T+2,\,\ldots\,)
+                        \end{array}
+                \right.
+\end{align*}
+\bigskip
+%\vspace{5pt}
+%\end{shaded}
+%\end{indentation}
+
+\noindent \textbf{証明}\hspace{.7mm} $t<T$の範囲では明らかに$(\widetilde{x}_{t+1}+\widetilde{c}_t,\widetilde{x}_t)=(x_{T+1}^*+c_T^*,x_T^*) \in F_t$が成り立つ．
+$t=T$のときは，
+\begin{align*}
+	\widetilde{x}_{T+1}+\widetilde{c}_{T}
+	=\lambda_{T+1}^*+c_T^*+(1-\lambda)x_{T+1}^*
+	=x_{T+1}^*+c_T^*
+\end{align*}
+となり，$(\widetilde{x}_{T+1}+\widetilde{c}_T,\widetilde{x}_T)=(x_{T+1}^*+c_T^*,x_T^*)\in F_T$が分かる．また$t>T$の範囲では
+\begin{align*}
+	(\widetilde{x}_{T+2}+\widetilde{c}_{T+1},\widetilde{x}_{T+1})&=(\lambda x_{T+2}^*+\lambda c_{T+1}^*,\lambda x_{T+1}^*)\,,\\
+		(\widetilde{x}_{T+3}+\widetilde{c}_{T+2},\widetilde{x}_{T+2})&=(\lambda x_{T+3}^*+\lambda c_{T+2}^*,\lambda x_{T+2}^*)\,,\\
+\vdots
+\end{align*}
+となり，(A3)からこの経路は実行可能であることが分かる．\hfill \rule[-2pt]{5pt}{10pt}
+
+\vspace{7mm}
+
+\noindent \textbf{主定理の証明}\hspace{.7mm} 仮定(A6)より
+ある$\ell \in (0,1)$をとれば，任意の$\lambda \in [\hspace{.3mm}\ell,1)$で
+\begin{align*}
+	\lfrac{\beta^tu(c_t^*)-\beta^tu(\lambda c_t^*)}{1-\lambda}\leq m_t(\ell)\,,\;\sum_{t=0}^\infty m_t(\ell) <\infty
+\end{align*}
+を満たす非負実数の列$\langle m_t(\ell) \rangle_{t=0}^\infty$がとれる．
+
+任意に正数$\varepsilon$をとる．級数${\textstyle \sum_{t=0}^\infty} \,m_t(\ell)$が収束することから，ある自然数$T_\varepsilon$が存在して，すべての$T\geq T_\varepsilon$で
+\begin{align}
+	0\leq \sum_{t=0}^\infty m_t(\ell)-\sum_{t=0}^T m_t(\ell)=\sum_{t=T+1}^\infty m_t(\ell)<\varepsilon
+\end{align}
+が成り立つ．
+第2章の最後で述べたことから，この$\varepsilon$に対して任意の$T\geq T_\varepsilon$
+で
+\begin{align*}
+	\beta^T D_{+}u(c_T^*)(x_{T+1}^*)-\varepsilon<
+\inf_{0<1-\lambda<\delta_\varepsilon}\lfrac{\beta^T u(c_T^*+(1-\lambda)x_{T+1}^*)-\beta^T u(c_T^*)}{1-\lambda}
+\end{align*}
+すなわち
+\begin{align}
+\sup_{0<1-\lambda<\delta_\varepsilon}\lfrac{u(c_T^*)-u(c_T^*+(1-\lambda) x_{T+1}^*)}{1-\lambda}<-\beta^T D_{+}u(c_T^*)(x_{T+1}^*)+\varepsilon
+\end{align}
+となるような$\delta_\varepsilon>0$をとることができる．
+
+ここで$\lambda$を，$\ell \leq \lambda<1$と$0<1-\lambda<\delta_\varepsilon$
+が同時に満たされるよう，十分1の近くにとる．例えば$\lambda_\varepsilon:=(1+\max\{\ell,1-\delta_\varepsilon\})/2$をとすればよい．
+$T$と$\lambda_\varepsilon$を用いて新しい経路$\langle (\widetilde{c}_t, \widetilde{x}_{t+1})\rangle_{t=0}^\infty$を次のように定める．
+\begin{align*}
+	(\widetilde{c}_t,\widetilde{x}_{t+1})=
+        	\left\{
+                	\begin{array}{ll}
+                        	(c_t^*,x_{t+1}^*)							&\;	(\,t=0,\,1,\,\ldots,\,T-1\,)\vspace{1.2mm}\\
+                                (c_T^*+(1-\lambda_\varepsilon)\hspace{.2mm}x_{T+1}^*,\lambda_\varepsilon x_{T+1}^*)&\;	(\,t=T\,)\vspace{1.2mm}\\
+                                (\lambda_\varepsilon c_t^*,\lambda_\varepsilon x_{t+1}^*)		&\;	(\,t=T+1,\,T+2,\,\ldots\,)
+                        \end{array}
+                \right.
+\end{align*}
+補題3.4からこの経路は実行可能である．二つの経路$\langle (c_t^*,x_{t+1}^*) \rangle_{t=0}^\infty$と$\langle (\widetilde{c}_t,\widetilde{x}_{t+1}) \rangle_{t=0}^\infty$を比較すると，最適な経路の定義より
+\begin{align*}
+	\sup_{S \geq T} \sum_{t=0}^S \left(\beta^t u_t(c_t^*)-\beta^t u_t(\widetilde{c}_t)\right) \geq -(1-\lambda_\varepsilon)\hspace{.2mm}\varepsilon
+\end{align*}
+が成り立つ．具体的に書くと
+\begin{align*}
+        &\beta^T u_T(c_T^*)-\beta^T u_T(c_T^*+(1-\lambda_\varepsilon)x_{T+1}^*)\\
+			&\hspace*{12mm}+\sup_{S \geq T+1} \sum_{t=T+1}^S \left( \beta^t u_t(c_t^*)-\beta^t u_t(\lambda_\varepsilon c_t^*)\right)
+			\geq -(1-\lambda_\varepsilon)\varepsilon
+\end{align*}
+である．上式の両辺を$1-\lambda_\varepsilon>0$で割ると
+\begin{align*}
+        \lfrac{\beta^T u_T(c_T^*)-\beta^T u_T(c_T^*+(1-\lambda_\varepsilon)x_{T+1}^*)}{1-\lambda_\varepsilon}+\sup_{S \geq T+1} \sum_{t=T+1}^S \lfrac{\beta^t u_t(c_t^*)-\beta^t u_t(\lambda_\varepsilon c_t^*)}{1-\lambda_\varepsilon}
+			\geq -\varepsilon
+\end{align*}
+を得る．上の式に(3.2)\hspace*{.2mm},\hspace*{1.2mm}(3.3)を用いると
+\begin{align*}
+        -\beta^T D_{+x_{T+1}^*}u(c_T^*)+\varepsilon+\sup_{S \geq T+1} \sum_{t=T+1}^S m_t(\ell)
+			\geq -\varepsilon
+\end{align*}
+となるが，補題3.3より
+\begin{align*}
+	\sup_{S \geq T+1} \sum_{t=T+1}^S m_t(\ell)<\varepsilon
+\end{align*}
+が分かるので結局$\beta^T D_{+}u(c_T^*)(x_{T+1}^*)\leq 3\hspace*{.2mm}\varepsilon
+$となる．ここで$T\geq T_\varepsilon$は任意だったので(3.1)が示せた．\hfill \rule[-2pt]{5pt}{10pt}
+
+\vspace{7mm}
+
+%\begin{indentation}{5pt}{5pt}
+%\begin{shaded}
+%\vspace*{5pt}
+\vspace{7mm}
+\noindent \textbf{系3.6}\hspace*{.7mm} 仮定(A1)-(A6)に加えて，さらに
+$u$が$F_t$で微分可能かつ単調増加で，各期の資産について
+$x_{t}\in \mathbb{R}^N_+$が成り立っているならば
+\begin{align*}
+	\lim_{T \to \infty}\, \beta^T Du(c_T^*)\hspace{.2mm}x_{T+1}^*= 0
+\end{align*}
+が成り立つ．
+\bigskip
+%\vspace*{5pt}
+%\end{shaded}
+%\end{indentation}
+
+\noindent \textbf{証明}\hspace{.7mm} 第2章で述べたように微分可能なとき
+Fr\'{e}chet導関数と下方Dini導関数は一致するから
+\begin{align*}
+	\limsup_{T\to \infty}\beta^T D_+u(c_T^*)(x_{T+1}^*)=\limsup_{T\to \infty}\beta^T Du(c_T^*)\hspace{.2mm}x_{T+1}^*
+\end{align*}
+が成り立つ．$u$が単調増加であるとは任意の$h \in \mathbb{R}_+^N$について
+$u(c+h)\geq u(c)$が成り立つことであり，微分可能なときには
+$Du(c)$を表現する$1\times N$行列の各成分が非負であることと同値である．
+よって常に$x_t \in \mathbb{R}^N$ならば
+\begin{align*}
+	\limsup_{T\to \infty}\beta^T Du(c_T^*)\hspace{.2mm}x_{T+1}^*\geq 0
+\end{align*}
+が成り立ち，示すべきものが従う．\hfill \rule[-2pt]{5pt}{10pt}
+
+\vspace{7mm}
+
+\section{例}
+
+この章ではまず具体的な問題例でTVCに対する直感的な理解を試みる．
+後半では主定理が適用できる例を挙げる．また第1章で述べた(1.4)の経路が
+(1.3)の解であることの証明を行う．
+
+\bigskip
+
+次の1部門の最適成長モデルをEuler方程式とTVCを用いて
+解いてみよう．
+\belowdisplayskip=4mm
+\begin{align}
+	\left\{
+		\begin{array}{l}
+			\mathrm{maximize} \hspace{3mm} \sum_{t=0}^\infty \beta^t \log c_t \vspace{1.4mm}\\
+			\mathrm{subject}\hspace{1.2mm}\mathrm{to}\quad x_{t+1}=Ax_t^\alpha-c_t\,,\vspace{1.4mm}\\
+			\vspace{1.4mm}
+			\hspace{18.9mm}x_t \geq 0\,,\;c_t\geq 0 \quad \mathrm{for}\quad\! t=0,\,1,\,\ldots,\\
+			\hspace{18.9mm}A>0 \,,\;\alpha \in (0,1) :\, \mathrm{const.},\vspace{1.4mm}\\
+			\hspace{18.9mm}x_0 > 0 :\, \mathrm{given}.
+		\end{array}
+        \right.
+\end{align}
+ただし$\log 0:=-\infty$とする．問題(4.1)を解くために次の形に書き換える．
+\belowdisplayskip=3.2mm
+\begin{align*}
+	\left\{
+		\begin{array}{l}
+			\mathrm{maximize} \hspace{3mm} \sum_{t=0}^\infty \beta^t \log (Ax_t^\alpha-x_{t+1}) \vspace{1.4mm}\\
+			\mathrm{subject}\hspace{1.2mm}\mathrm{to}\quad x_0 > 0 :\, \mathrm{given},
+			\vspace{1.4mm}\\
+			\hspace{18.9mm}0\leq x_{t+1} \leq Ax_t^\alpha \,,\quad t=0,\,1,\,\ldots,
+		\end{array}
+        \right.
+\end{align*}
+Euler方程式は2期間の効用の和
+\begin{align*}
+	\beta^t \log(Ax_t^\alpha-x_{t+1})+\beta^{t+1} \log(Ax_{t+1}^\alpha-x_{t+2})
+\end{align*}
+を$x_t$の関数と見たときに，一階の条件が満たされているという条件なので
+\begin{align*}
+	\lfrac{1}{Ax_t^\alpha-x_{t+1}}-\lfrac{\beta \alpha Ax_{t+1}^{\alpha-1}}{Ax_{t+1}^\alpha-x_{t+2}}=0
+\end{align*}
+である．整理すると
+\begin{align*}
+	Ax_{t+1}^\alpha-x_{t+2}=\beta \alpha Ax_{t+1}^{\alpha-1}(Ax_t^\alpha-x_{t+1})
+\end{align*}
+となる．効用関数の形から$x_t=0$となる経路は最適ではない．
+よって両辺を$Ax_{t+1}^\alpha\neq 0$で割って
+$z_t:=x_{t+1}/Ax_t^\alpha$と定義すれば
+\begin{align*}
+	1-z_{t+1}=\beta \alpha  \left(\lfrac{1}{z_t}-1\right)
+\end{align*}
+という漸化式を得る．これは次のように書き換えられる．
+\begin{align*}
+	z_{t+1}=\lfrac{(1+\beta \alpha )z_t-\beta \alpha }{z_t}
+\end{align*}
+実数$z$とベクトル$(\,cz \;\;\, c\,)' \;\,(\,c \in \mathbb{R}\backslash \{0\}\,)$\footnote{記号$'$は転置を表す．}を同一視することにする．このとき
+上式の右辺は
+\begin{align*}
+	\left(\begin{array}{cc}1+\beta \alpha  & -\beta \alpha \\ 1 & 0 \end{array}\right) \left(\begin{array}{c} z_0 \\ 1 \end{array}\right)
+\end{align*}
+と表される．よって$z_t$を求めるには次を求めればよい．
+\begin{align*}
+	\left(\begin{array}{cc}1+\beta \alpha  & -\beta \alpha \\ 1 & 0 \end{array}\right)^t \left(\begin{array}{c} z_0 \\ 1 \end{array}\right)
+\end{align*}
+本題と離れるため計算は省くが，上の$2 \times 2$行列の$t$乗を計算すると
+\begin{align*}
+	\lfrac{1}{1-\beta \alpha} \left(\begin{array}{cc} 1-(\beta \alpha)^{t+1} & -\beta \alpha + (\beta \alpha )^{t+1} \\1-(\beta \alpha )^t & -\beta \alpha  +(\beta \alpha)^t \end{array}\right)
+\end{align*}
+である．したがって$z_t$は
+\jot=6pt
+\begin{align}
+	z_t	&=\lfrac{z_0\left(1-(\beta \alpha)^{t+1}\right)-\beta \alpha+(\beta \alpha)^{t+1}}{z_0\left(1-(\beta \alpha)^t\right)-\beta \alpha+(\beta \alpha)^t}\nonumber \\
+		&=\lfrac{(z_0-\beta \alpha)+(1-z_0)(\beta \alpha)^{t+1}}{(z_0-\beta \alpha)+(1-z_0)(\beta \alpha)^t}
+\end{align}
+と表される．まだ$z_0=x_1/Ax_0^\alpha$が分かっていない．
+そこでTVCを用いる．
+
+この問題のTVCは
+\begin{align*}
+		\lim_{t \to \infty}\beta^t \lfrac{1}{c_t}x_{t+1}=\lim_{t \to \infty}\frac{\beta^t x_{t+1}}{Ax_t^\alpha-x_{t+1}}=\lim_{t \to \infty}\frac{\beta^t z_t}{1-z_t}=0
+\end{align*}
+である．これを計算すると
+\jot=7pt
+\begin{align*}
+        	&\lim_{t \to \infty}
+	\lfrac{(z_0-\beta \alpha)\beta^t+(1-z_0)(\beta \alpha)^{t+1}\beta^t}%
+        {(z_0-\beta \alpha)+(1-z_0)(\beta \alpha)^t-(z_0-\beta \alpha)-(1-z_0)(\beta \alpha)^{t+1}}\\
+        =&\lim_{t \to \infty}
+	\frac{(z_0-\beta \alpha)\beta^t+(1-z_0)(\beta \alpha)^{t+1}\beta^t}%
+        {(1-z_0)(\beta \alpha)^t(1-\beta \alpha)}\\
+        =&\lim_{t \to \infty}\left(\lfrac{z_0-\beta \alpha}{(1-z_0)(1-\beta \alpha)}\alpha^{-t}+
+	\lfrac{\beta \alpha}{1-\beta \alpha}\beta^t\right)=0
+\end{align*}
+\jot=3pt
+となる．上式で$t \to \infty$としたとき$\beta^t \to 0$であるが，$\alpha^{-t} \to \infty$であるから$z_0-\beta \alpha=0$，すなわち$x_1=\beta \alpha A x_0^\alpha$が分かる．
+よって(4.2)から$x_{t+1}=\beta\alpha Ax_t^\alpha$を得る．
+
+\bigskip
+
+この例から次のような結論を得る．
+Euler方程式からは$x_{t+1}$と$x_t$の関係式，
+今回の問題では(4.2)を得ることができた．
+しかし(4.2)を満たす経路の中から本当に最適な
+経路を選ぶためにはTVCを用いなければならなかった．
+そのような意味で
+Euler方程式は短期的，あるいは局所的な最適化の条件であり，
+TVCは長期的，大域的な最適化の条件であると言える．
+
+\vspace{7mm}
+
+第3章で得られた結果の適用可能性について考えるため，次の問題を取り上げる．
+\begin{align}
+	\left\{
+		\begin{array}{l}
+			\mathrm{maximize} \hspace{3mm} \sum_{t=0}^\infty \beta^t \min \left\{ \lfrac{c^{1-\theta}}{1-\theta}\hspace{.2mm},\lfrac{1}{1-\theta}\right\} \vspace{1.4mm}\\
+			\mathrm{subject}\hspace{1.2mm}\mathrm{to}\quad x:=x_0 > 0 :\, \mathrm{given},
+			\vspace{1.4mm}\\
+			\hspace{18.9mm}x_{t+1}=x_t-c_t\,,\vspace{1.4mm}\\
+			\hspace{18.9mm}x_t \geq 0\,,\;c_t\geq 0\,,\quad t=0,\,1,\,\ldots
+		\end{array}
+        \right.
+\end{align}
+関数$u(c)=c^{1-\theta}/(1-\theta)$は
+マクロ経済学で一般に用いられるCRRA族の効用関数であり，
+この$\theta$は$0<\theta<1$を満たすパラメーターである．
+問題(4.3)において効用関数は$c=1$で微分可能ではない．
+よって微分可能性を仮定して得られたTVCは使えない．
+主定理では微分可能性を仮定していなかったので
+問題(4.3)にも適用可能であると推測される．
+以下で簡単にそのことを検証する．
+
+まず(A1)は明らかに満たされている．(A2)については
+効用関数が有界かつ連続であり，
+各期間の制約集合はコンパクトであるから
+解は存在し\footnote{Stokey and Lucas (1989) Theorem 4.6}満たされている．
+またこの解は発散しないから，発散する経路は存在しない．よって(A3)が満たされる．
+(A4)の成立を確認する．注意しなければならないのは
+$(du(c)/dc)=c^{-\theta}$
+であり，$c\to 0+$としたときに傾きが$\infty$になることである．よって
+$c_t^*=0 \;(\,t=t_0+1,\,t_0+2,\,\ldots \,)$とはならないことを確認すればよい．
+ただしそうならないことが直感的には明らかであっても証明は難しい．
+よってここでは確認せず，(A4)の簡単な検証法を得ることは
+今後の課題の一つとする．
+(A5)については一般に$\lambda \in (0,1)$に対して$\lambda^\alpha \geq \lambda$
+が成り立つから，$x_t+c_t \leq A x_t^\alpha$ならば
+\begin{align*}
+	\lambda (x_t+c_t)\leq \lambda A x_t^\alpha \leq A(\lambda x_t)^\alpha
+\end{align*}
+となり確認できる．(A6)は効用関数$u$が凹かつ$u(0)=0$であるから命題3.2と(A3)の成立により満たされている．以上のことから第3章で得た主定理は(4.3)のような問題にも適用可能であると考えられる．
+
+\vspace{7mm}
+
+以下では，第1章で例として挙げた次の問題
+\begin{align}
+	\left\{
+		\begin{array}{l}
+			\mathrm{maximize} \hspace{3mm} \sum_{t=0}^\infty \beta^t \min \left\{c_t^2,1\right\} \vspace{1.4mm}\\
+			\mathrm{subject}\hspace{1.2mm}\mathrm{to}\quad x:=x_0 > 0 :\, \mathrm{given},
+			\vspace{1.4mm}\\
+			\hspace{18.9mm}x_{t+1}=x_t-c_t\,,\vspace{1.4mm}\\
+			\hspace{18.9mm}x_t \geq 0\,,\;c_t\geq 0\,,\quad t=0,\,1,\,\ldots
+		\end{array}
+        \right.\tag{1.3}
+\end{align}
+において経路(1.4)が解であることを示す．
+証明の流れは以下のようになっている．
+まず
+\belowdisplayskip=4mm
+\begin{align}
+	(\bar{c}_t,\bar{x}_{t+1})=\left\{
+			\begin{array}{cl}
+				(1,x_0-(t+1)) &\;\; t=0,\,1,\,\ldots,\,[x_0]-1\,,\vspace{1.4mm}\\
+				(x_0-[x_0],0) &\;\; t=[x_0]\,,\vspace{1.4mm}\\
+				(0,0)	&\;\; t=[x_0]+1,[x_0]+2\,\ldots,\,
+			\end{array}
+		\right.\tag{1.4}
+\end{align}
+が解であると予想する．この予想は直感的な推論に基づく．
+つまり$c_t>1$は明らかに資産の無駄なので最適な経路では$c_t\leq 1$が成り立っていると考えられ，また資産が豊富にある状態で$c_t<1$の消費を行っても，
+持ち越した資産から得られる効用は大きく割り引かれてしまうから早い段階で$c_t= 1$
+の消費をすべきだと考えられるのである．
+次に行うことは(1.4)によって得られる総効用を初期資産$x$の関数と見て
+\belowdisplayskip=3.2mm
+\begin{align*}
+	v(x):=\lfrac{1-\beta^{[x]}}{1-\beta}+\beta^{[x]}\hspace*{.2mm}(x-[x])^2
+\end{align*}
+を求めることである．そして$I:=[\hspace{.3mm}0,x_0\hspace{.1mm}]$上の
+有界かつ連続な関数全体の集合を$C(I)$として，作用素$T:(C(I),\|\cdot\|_\infty)\to (C(I),\|\cdot\|_\infty)$を\footnote{$\|f\|_{\infty}=\sup_{x \in I}|f(x)|$.}
+\begin{align*}
+	T:g(x) \mapsto \max_{0\leq c \leq x}\{u(c)+\beta g(x-c)\}
+\end{align*}
+で定義する．この$T$はBellman作用素と呼ばれるものである．
+もし$v$が$T$の不動点であれば，すなわち$Tv=v$を満たしていれば，
+$v(x)$は初期資産$x$の下で最大化された総効用である．
+そのことが示されれば自動的に$v(x)$をもたらす経路(1.4)は
+最適ということになる．なおこれから先では次の事実を頻繁に用いる．証明は省く．
+
+%\begin{indentation}{5pt}{5pt}
+%\begin{shaded}
+%\vspace*{5pt}
+\vspace*{7mm}
+\noindent \textbf{命題4.1}\hspace*{.7mm} 任意の実数$y$と任意の整数$n$について$[y+n]=[y]+n$が成り立つ．
+\vspace*{7mm}
+%\vspace*{5pt}
+%\end{shaded}
+%\end{indentation}
+
+\noindent (i) $0< x <1$のとき．このとき$[x-c]=0$なので，$F(c)=u(c)+\beta v(x-c)$を計算すると
+\begin{align*}
+	F(c)&=\min\{1,c^2\}+\lfrac{\beta-\beta^{[x-c]+1}}{1-\beta}+\beta^{[x-c]+1}(x-c-[x-c])^2\\
+				&=c^2+\beta (x-c)^2\\
+				&=(1+\beta)\left(c-\lfrac{\beta x}{1+\beta}\right)^2+\lfrac{\beta x^2}{1+\beta}
+\end{align*}
+となる．最右辺の形から
+\begin{align*}
+	\max_{0\leq c \leq x} F(c)=\max \,\{F(0),F(x)\}=\{\beta x^2, x^2\}=x^2
+\end{align*}
+であり，これは$v(x)\;(\,x\in (0,1)\,)$に一致する．よって$0\leq x<1$のときには
+$(Tv)(x)=v(x)$が成り立つ．
+
+\bigskip
+
+\noindent (ii) $x\geq 1$のとき．このとき(1.3)を解いたときと同様に$x$を$x=n+r$と表す． $0\leq \breve{c}<1$とすると
+\begin{align*}
+	F(\breve{c})&=\min\{1,\breve{c}^2\}+\lfrac{\beta-\beta^{[x-\breve{c}]+1}}{1-\beta}+\beta^{[x-\breve{c}]+1}(x-\breve{c}-[x-\breve{c}])^2\\
+	&=\breve{c}^2+\lfrac{\beta-\beta^{[-\breve{c}]+n+1}}{1-\beta}+\beta^{[-\breve{c}]+n+1}(r-\breve{c}-[r-\breve{c}]))^2\\
+	&=\breve{c}^2+\lfrac{\beta-\beta^{n}}{1-\beta}+\beta^{n}(r-\breve{c}-[r-\breve{c}])^2
+\end{align*}
+が成り立つ．$F(\breve{c})$と$F(1)$を比較すると
+\begin{align*}
+	&\hspace*{-2mm}F(1)-F(\breve{c})\\
+&=\left( 1+\lfrac{\beta-\beta^{n}}{1-\beta}+\beta^{n}r^2
+		\right)-\left(c^2+\lfrac{\beta-\beta^{n}}{1-\beta}+\beta^{n}(r-c-[r-c])^2\right)\\
+			&=1-\breve{c}^2+\beta^{n}r^2-\beta^{n}(r-\breve{c}-[r-\breve{c}])^2\\	
+			&=\left\{
+				\begin{array}{ll}
+				1-\breve{c}^2+\beta^nr^2-\beta^n(r-\breve{c})^2 \quad &\mathrm{if}\quad 0\leq \breve{c}\leq r \vspace{1.4mm}\\
+				1-\breve{c}^2+\beta^nr^2-\beta^n(r-\breve{c}+1)^2 \quad &\mathrm{if}\quad r<\breve{c}< 1
+				\end{array}
+			\right.
+\end{align*}
+となる．最右辺の上の式が正であることは明らかである．
+一方で下の式は
+\begin{align*}
+	f(\breve{c}):=-(1+\beta^n)\left( \breve{c}-\lfrac{\beta^n(r+1)}{1+\beta^n}\right)^2+
+				\lfrac{(\beta^nr-1)^2}{1+\beta^n}
+\end{align*}
+という式で表される放物線である．ここで
+\begin{align*}
+\lim_{\breve{c} \to r+0}f(\breve{c})= (1-\beta^n)(1-r^2)>0\,,\;\lim_{\breve{c} \to 1-0}f(\breve{c})=0
+\end{align*}
+であるから
+$F(1)-F(\breve{c})>0$が言える．よって
+$0\leq c\leq 1$の範囲では$F(1)$が最大であることが分かった．
+
+次に$x>1$であり$c=1+R\;(R>0)$ととることができた場合，
+\begin{align*}
+	F(1+R)	&=1+\lfrac{\beta-\beta^{[n-1-R]+1}}{1-\beta}+\beta^{[n-1-R]+1}(x-(1+R)-[x-(1+R)])^2\\
+			&=1+\lfrac{\beta-\beta^{n+[-R]}}{1-\beta}+\beta^{n+[-R]}(r-R-[r-R])^2
+\end{align*}
+が成り立つ．$R>0$により$[-R]\leq -1$なので$F(1)-F(1+R)$を計算すると
+\begin{align*}
+	F(1)-F(1+R)&=\lfrac{\beta^{n+[-R]}-\beta^n}{1-\beta}+\beta^nr^2-\beta^{n+[-R]}(r-R-[r-R])^2\\
+				&>\lfrac{\beta^{n+[-R]}-\beta^n}{1-\beta}+\beta^nr^2-\beta^{n+[-R]}\\
+				&=\lfrac{\beta^{n+[-R]+1}-\beta^n}{1-\beta}+\beta^nr^2 \geq 0
+\end{align*}
+となるので$c\geq 1$の範囲でも$F(1)$が最大である．
+以上より$x\geq 1$の場合も$(Tv)(x)=v(x)$が成り立ち，$v$が不動点であることが分かった．
+ゆえに$v$は最大化された総効用である．したがって(1.4)の経路は最適である．
+
+\vspace{7mm}
+
+\section{結論}
+
+本論文では効用関数が凹でも微分可能でもない場合について
+TVCの必要性を示すことができた．その証明で
+要となったのは最適な経路をもとに新しく経路を作ることであった．
+そしてこの経路はある時点で最適な消費量から外れると
+その影響が永続するような経路である．
+一方でEuler方程式を導く際に考えたのは
+連続する2時点間のみで最適な経路から外れた経路であり，
+これは他の時点の消費量には影響を与えないような経路であった．
+この点でEuler方程式とTVCは対照的であり，
+Euler方程式は短期的，局所的な最適化，
+TVCは長期的，大域的な最適化の条件であると言える．
+これは第4章で具体的な問題を解いて
+得た考察と一致する．
+
+また主定理で得られたTVCの形を解釈すると，
+最適な経路では，ある期から先では常に，
+生産に当てていた資産を消費に回すことで得られる
+効用の割引現在価値の増加分は無視できるほど
+小さいことを述べたものと解釈することもできる．
+これは効用関数の導関数と資産の積で表されるTVCからは
+得にくい結論である．この結論から第1章で述べた
+「無限の将来で資産を使い切る」という直感的な
+説明は「総効用を改善する余地のある資産の残し方をしない」
+と言い換えることができる．
+
+これでTVCが何かという問いに一定の答えを出すという本論文の目的は
+達成されたと考える．そしてその答えは
+直感と結びついた自然なものである．
+よって成長モデルに限らずさまざまな
+無限期間の効用最大化問題に対してTVCの必要性を示すことが
+今後の課題として残される．
+
+\newpage
+
+\begin{center}
+	{\large \textbf{参考文献}}
+\end{center}
+\leftskip=22pt
+\parindent=-22pt
+
+Borwein, Jonathan M. and Adrian S. Lewis (2000) \textsl{Convex Analysis and Nonlinear Optimization}, CMS Books in Mathematics, Springer-Verlag.
+
+Cull, Paul, Mary E. Flahive and Robert O. Robson (2005) \textsl{Difference Equations: From Rabbits to Chaos} Springer-Verlag.
+
+Ekeland, Ivar and Jos\'{e} A. Scheinkman (1986) ``Transversality conditions for Some Infinite Horizon
+Discrete Time  Optimization Problems," Mathematics of Operations Research 11, 216-229.
+
+Jeyakumar, Vaithilingam and Dinh The Luc (2008) \textsl{Nonsmooth Vector Functions and Continuous Optimization}, Springer Optimization and Its Applications 10, Springer-Verlag.
+
+Kamihigashi, Takashi (2000) ``A Simple Proof of Ekeland and Scheinkman's Result on the Necessity of a Transversality Condition," Economic Theory 20, 427-433.
+
+Kamihigashi, Takashi (2002) ``A Simple Proof of Necessity of the Transversality Condition," Economic Theory 20, 427-433.
+
+Kamihigashi, Takashi (2003) ``Necessity of Transversality Conditions for Stochastic 
+Problems," Journal of Economic Theory 109,140-149.
+
+Kamihigashi, Takashi (2005) ``Necessity of Transversality Condition for Stochastic Models with Bounded or CRRA Utility," Journal of Economic Dynamics and Control 29(8), 1313-1329.
+
+Peleg, Bezalel and Harl E. Ryder, Jr. (1972) ``On Optimal Consumption Plans in a Multi-Sector Economy" Review of Economic Studies 39, 159-170.
+
+Perko, Lawrence (2006) \textsl{Differential Equations and Dynamical Systems}, Texts in Applied Mathematics 7, Springer-Verlag. 
+
+Stokey, Nancy L. and Robert E. Lucas, Jr. (with Edward C. Prescott) (1989) \textsl{Recursive Methods in Economic Dynamics}, Harvard University Press.
+
+Weitzman, Martin (1973) ``Duality Theory for Infinite Horizon Convex Models," Management
+Science 19, 783-789.
+\end{document}
